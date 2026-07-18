@@ -411,7 +411,7 @@ AUTH_REQUIRE_EMAIL_VERIFICATION = env.bool(
     "AUTH_REQUIRE_EMAIL_VERIFICATION", default=False
 )
 AUTH_EMAIL_DELIVERY_ENABLED = env.bool("AUTH_EMAIL_DELIVERY_ENABLED", default=False)
-AUTH_EMAIL_FROM = env("AUTH_EMAIL_FROM", default="noreply@edunaukri.com")
+AUTH_EMAIL_FROM = env("AUTH_EMAIL_FROM", default="noreply@edunaukari.com")
 AUTH_FRONTEND_BASE_URL = env("AUTH_FRONTEND_BASE_URL", default="http://localhost:3000")
 WEB_BASE_URL = env("WEB_BASE_URL", default="http://127.0.0.1:8000")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default=AUTH_EMAIL_FROM)

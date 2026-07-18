@@ -35,7 +35,7 @@ This directory (`docker/nginx`) houses the production-grade reverse proxy config
 ## 🔒 Key Features & Configurations
 
 ### 1. SSL/TLS & Bootstrap Resilience
-* **Automated Bootstrap**: When the Nginx container builds (`docker/nginx/Dockerfile`), it runs `openssl` to generate a **self-signed fallback certificate** (`edunaukri.crt`), **RSA private key** (`edunaukri.key`), and a **2048-bit Diffie-Hellman parameter file** (`dhparam.pem`) in `/etc/nginx/ssl/live/`.
+* **Automated Bootstrap**: When the Nginx container builds (`docker/nginx/Dockerfile`), it runs `openssl` to generate a **self-signed fallback certificate** (`edunaukari.crt`), **RSA private key** (`edunaukari.key`), and a **2048-bit Diffie-Hellman parameter file** (`dhparam.pem`) in `/etc/nginx/ssl/live/`.
 * **Zero-Crash Startup**: This allows Nginx to start immediately on brand-new servers before Certbot/Let's Encrypt certificates are provisioned. Once real certificates are mounted into `/etc/nginx/ssl/live/` via Docker volumes, Nginx automatically serves valid production certificates.
 * **Modern Cryptography**: Enforces `TLSv1.2` and `TLSv1.3` only with forward secrecy ciphers (`ECDHE-ECDSA-AES128-GCM-SHA256...`).
 * **Session Optimization**: Uses `ssl_session_cache shared:SSL:10m;` and `ssl_session_timeout 1d;` for fast TLS re-handshakes without session ticket risks (`ssl_session_tickets off;`).
@@ -69,7 +69,7 @@ Three distinct shared memory zones protect backend resources:
 
 To issue free Let's Encrypt certificates on your production domain:
 
-1. Ensure your DNS records (`A` and `AAAA`) for `www.edunaukri.com` and `edunaukri.com` point to your server IP.
+1. Ensure your DNS records (`A` and `AAAA`) for `www.edunaukari.com` and `edunaukari.com` point to your server IP.
 2. Run Certbot using a temporary container sharing the `certbot_data` (`/var/www/certbot`) and `ssl_data` (`/etc/nginx/ssl/live`) volumes:
    ```bash
    docker run -it --rm \
@@ -77,10 +77,10 @@ To issue free Let's Encrypt certificates on your production domain:
      -v edunaukri_ssl_data:/etc/letsencrypt \
      certbot/certbot certonly --webroot \
      -w /var/www/certbot \
-     -d edunaukri.com -d www.edunaukri.com \
-     --email admin@edunaukri.com --agree-tos --no-eff-email
+     -d edunaukari.com -d www.edunaukari.com \
+     --email admin@edunaukari.com --agree-tos --no-eff-email
    ```
-3. Copy or symlink the issued Let's Encrypt files inside `ssl_data` so they match `edunaukri.crt` and `edunaukri.key`, or update `/etc/nginx/conf.d/edunaukri.conf` to point directly to `/etc/letsencrypt/live/edunaukri.com/fullchain.pem` and `privkey.pem`.
+3. Copy or symlink the issued Let's Encrypt files inside `ssl_data` so they match `edunaukari.crt` and `edunaukari.key`, or update `/etc/nginx/conf.d/edunaukri.conf` to point directly to `/etc/letsencrypt/live/edunaukari.com/fullchain.pem` and `privkey.pem`.
 4. Reload Nginx without downtime:
    ```bash
    docker compose exec nginx nginx -s reload

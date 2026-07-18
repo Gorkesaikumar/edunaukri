@@ -12,9 +12,9 @@ RUN mkdir -p /etc/nginx/ssl/live \
 # Generate fallback self-signed certificate & 2048-bit DH parameters during build
 # This ensures Nginx starts cleanly even before Let's Encrypt certificates are mounted via volumes
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/nginx/ssl/live/edunaukri.key \
-    -out /etc/nginx/ssl/live/edunaukri.crt \
-    -subj "/CN=edunaukri.local/O=EduNaukri/C=IN" \
+    -keyout /etc/nginx/ssl/live/edunaukari.key \
+    -out /etc/nginx/ssl/live/edunaukari.crt \
+    -subj "/CN=edunaukari.local/O=EduNaukari/C=IN" \
     && openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
 
 # Remove default Nginx config

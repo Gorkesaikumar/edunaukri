@@ -425,7 +425,7 @@ class SystemHealthMonitoringService:
             send_mail(
                 subject=subject,
                 message=plain_message,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@edunaukri.com"),
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@edunaukari.com"),
                 recipient_list=recipients,
                 html_message=html_message,
                 fail_silently=False,
