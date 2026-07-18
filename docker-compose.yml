@@ -41,7 +41,7 @@ services:
     volumes:
       - static_data:/app/staticfiles:ro
       - media_data:/app/media:ro
-      - ssl_data:/etc/nginx/ssl/live
+      - ssl_data:/etc/letsencrypt:ro
       - certbot_data:/var/www/certbot
     networks:
       - app_net
