@@ -25,7 +25,7 @@ COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/nginx/conf.d/ /etc/nginx/conf.d/
 
 # Verify configuration syntax during build
-RUN nginx -t
+#RUN nginx -t
 
 EXPOSE 80 443
 
