@@ -37,7 +37,7 @@ def get_logging_config(*, debug: bool = False, log_to_file: bool = True) -> dict
     base_dir = Path(__file__).resolve().parent.parent
     logs_dir = base_dir / "logs"
     if log_to_file:
-        logs_dir.mkdir(exist_ok=True)
+        logs_dir.mkdir(parents=True, exist_ok=True)
 
     console_formatter = "verbose" if debug else "json"
     

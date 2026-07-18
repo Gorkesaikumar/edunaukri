@@ -39,14 +39,10 @@ COPY --from=builder /wheels /wheels
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir /wheels/* && rm -rf /wheels
 
-# Create required application directories
-RUN mkdir -p /app/logs /app/media /app/staticfiles
-
-# Copy the complete project
 COPY --chown=appuser:appuser . /app/
 
-# Fix permissions AFTER all COPY instructions
-RUN chmod 755 /app/docker/entrypoint.sh \
+RUN mkdir -p /app/logs /app/media /app/staticfiles \
+    && chmod 755 /app/docker/entrypoint.sh \
     && chown -R appuser:appuser /app
 
 USER appuser
