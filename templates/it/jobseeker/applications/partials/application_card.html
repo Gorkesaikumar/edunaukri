@@ -1,0 +1,48 @@
+<article class="jsd-app-card{% if not app.is_active %} jsd-app-card--inactive{% endif %}" data-application-id="{{ app.id }}">
+    <div class="jsd-app-card__brand">
+        <div class="jsd-job-card__logo">
+            {% if app.logo_url %}
+            <img src="{{ app.logo_url }}" alt="{{ app.company_name }} logo" loading="lazy">
+            {% else %}
+            <span class="jsd-app-card__initial">{{ app.logo_initial }}</span>
+            {% endif %}
+        </div>
+        <div class="jsd-app-card__head">
+            <div class="d-flex align-items-center gap-1 flex-wrap">
+                <p class="jsd-app-card__company mb-0">{{ app.company_name }}</p>
+                {% if app.company_verified %}
+                <i class="bi bi-patch-check-fill jsd-verified" title="Verified employer"></i>
+                {% endif %}
+                <span class="jsd-app-domain">{{ app.domain_label }}</span>
+            </div>
+            <h2 class="jsd-app-card__title"><a href="{{ app.detail_url }}">{{ app.title }}</a></h2>
+        </div>
+        {% if app.match_percent %}
+        <span class="jsd-job-card__match">{{ app.match_percent }}% Match</span>
+        {% endif %}
+    </div>
+
+    <div class="jsd-app-card__meta">
+        <span class="jsd-app-badge {{ app.status_badge }}"><i class="bi {{ app.status_icon }}"></i> {{ app.status_label }}</span>
+        <span><i class="bi bi-calendar3"></i> Applied {{ app.applied_date }}</span>
+        <span><i class="bi bi-clock-history"></i> Updated {{ app.last_updated }}</span>
+    </div>
+
+    <div class="jsd-app-card__recruiter">
+        <div class="jsd-app-card__avatar">
+            {% if app.recruiter_avatar %}
+            <img src="{{ app.recruiter_avatar }}" alt="{{ app.recruiter_name }}">
+            {% else %}
+            <i class="bi bi-person-badge"></i>
+            {% endif %}
+        </div>
+        <div>
+            <p class="mb-0 fw-semibold">{{ app.recruiter_name }}</p>
+            <p class="mb-0 text-muted small">Recruiter</p>
+        </div>
+    </div>
+
+    <div class="jsd-app-card__actions">
+        <a href="{{ app.detail_url }}" class="jsd-btn jsd-btn--soft">View Details</a>
+    </div>
+</article>

@@ -1,0 +1,502 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#4F46E5",
+                "surface-container": "#f0ecf9",
+                "on-surface": "#1b1b24",
+                "on-surface-variant": "#464555",
+                "outline-variant": "#c7c4d8",
+                "background": "#fcf8ff",
+                "surface": "#ffffff",
+                "error": "#ba1a1a",
+                "success": "#10b981"
+              },
+              borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "16px",
+                "xl": "20px",
+                "full": "9999px"
+              },
+              spacing: {
+                "gutter": "16px",
+                "md": "1.25rem",
+                "sm": "0.75rem",
+                "xs": "0.5rem"
+              },
+              fontSize: {
+                "display-lg": ["32px", {"lineHeight": "1.1", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                "headline-md": ["18px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                "body-md": ["13px", {"lineHeight": "1.4"}],
+                "caption": ["11px", {"lineHeight": "1.2", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    }catch(_e){}</script></head><body class="bg-background text-on-surface text-body-md">
+
+<!-- Top Navigation -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 h-14 bg-white/90 backdrop-blur-md border-b border-outline-variant/30">
+    <div class="flex items-center gap-6"><div class="flex items-center h-8 w-auto"><img src="https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY" alt="EduNaukri Logo" class="h-8 w-auto object-contain"></div>
+        
+        
+        <!-- Enhanced Global Search (Azure Style) -->
+        <div class="hidden md:flex items-center bg-gray-100/80 px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 focus-within:bg-white transition-all w-[480px]">
+            <span class="material-symbols-outlined text-on-surface-variant/60 !text-base">search</span>
+            <input class="bg-transparent border-none text-body-md w-full px-2 focus:ring-0 placeholder:text-on-surface-variant/40" placeholder="Search resources, logs, or entities..." type="text">
+            <div class="flex items-center gap-1 opacity-40">
+                
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <div class="hidden lg:flex items-center gap-2 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">System Live</span>
+        </div>
+        <div class="flex items-center gap-2 border-l border-outline-variant/30 pl-4">
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-gray-100">
+                <span class="material-symbols-outlined !text-lg">notifications</span>
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-gray-100">
+                <span class="material-symbols-outlined !text-lg">settings</span>
+            </button>
+            <div class="flex items-center gap-2 ml-2 cursor-pointer">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-bold leading-none"><br></p>
+                    <p class="text-[9px] text-primary uppercase font-extrabold tracking-tighter">Super Admin</p>
+                </div>
+                <img class="w-8 h-8 rounded-lg object-cover ring-1 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5yq-gU_PX8oQvz2_-Y4KfoTAGvoW9gAKFqUeIXSkqv-qYkDzCUrKrOtZl4WBntIo6LH9lOKc44Jy3mOksaY1KRKrPozCDJpyTo3Z5Dwi8UwdvEhi7vw5KQnoU0DNKKm6eoUOICQh3x_3S7XKHMOAdwjdsqe5m5fXqxOq-Z1BVqKd41VC6Uq4vbjs_8qbDpmhvkKPtgK47ggcIvXmEHRq2rdt3ntg47cjAX23texEntmqWZPkZw8aJUQ">
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Compact Sidebar -->
+<aside class="fixed left-0 top-14 h-[calc(100vh-56px)] w-56 bg-white border-r border-outline-variant/30 flex flex-col py-4">
+    <nav class="flex-1 overflow-y-auto sidebar-scroll px-3 space-y-4">
+        <!-- Management -->
+        <div>
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">Management</p>
+            <div class="space-y-0.5">
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-primary bg-primary/5 font-bold">
+                    <span class="material-symbols-outlined !text-base">dashboard</span> Dashboard
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">developer_board</span> IT Recruitment
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">school</span> Faculty Domain
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">group</span> Users
+                </a>
+            </div>
+        </div>
+
+        <!-- Financials -->
+        <div class="">
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">Financials</p>
+            <div class="space-y-0.5">
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">receipt_long</span> Invoices
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">payments</span> Revenue
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">security</span> Claims
+                </a>
+            </div>
+        </div>
+
+        <!-- System -->
+        <div class="">
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">System Control</p>
+            <div class="space-y-0.5">
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">health_and_safety</span> Health
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">terminal</span> Logs
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-gray-50">
+                    <span class="material-symbols-outlined !text-base">settings</span> Settings
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="px-3 pt-4 border-t border-outline-variant/20">
+        <button class="w-full bg-primary text-white rounded-lg py-2 font-bold text-xs flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined !text-sm">add</span> Create Campaign
+        </button>
+    </div>
+</aside>
+
+<!-- Main High-Density Content -->
+<main class="ml-56 pt-14 min-h-screen">
+    <div class="p-5 max-w-[1600px] mx-auto space-y-6">
+        
+        <!-- Executive Header -->
+        <div class="flex items-end justify-between">
+            <div>
+                <h2 class="text-2xl font-extrabold text-on-surface tracking-tight">Command Center</h2>
+                <div class="flex items-center gap-4 mt-1">
+                    
+                    <div class="h-1 w-1 rounded-full bg-on-surface-variant/30"></div>
+                    
+                </div>
+            </div>
+            <div class="flex bg-gray-100 p-1 rounded-lg">
+                <button class="px-4 py-1 text-[11px] font-bold rounded-md bg-white shadow-sm text-primary">Overview</button>
+                <button class="px-4 py-1 text-[11px] font-bold rounded-md text-on-surface-variant hover:text-on-surface">Analytics</button>
+                <button class="px-4 py-1 text-[11px] font-bold rounded-md text-on-surface-variant hover:text-on-surface">Audits</button>
+            </div>
+        </div>
+
+        <!-- High-Density KPI Multi-Row Grid -->
+        <div class="grid grid-cols-4 gap-4">
+            <!-- Row 1: Platform -->
+            <div class="col-span-4 grid grid-cols-4 bg-white p-3 rounded-lg border border-outline-variant/30 gap-6"><div class="border-r border-outline-variant/20 px-2">
+<p class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Total Users</p>
+<div class="flex items-baseline gap-2">
+<span class="text-xl font-extrabold">1.2M</span>
+<span class="text-[10px] text-emerald-500 font-bold">+12%</span>
+</div>
+</div>
+<div class="border-r border-outline-variant/20 px-2">
+<p class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Active Users</p>
+<div class="flex items-baseline gap-2">
+<span class="text-xl font-extrabold">45k</span>
+<span class="text-[10px] text-emerald-500 font-bold">Stable</span>
+</div>
+</div>
+<div class="border-r border-outline-variant/20 px-2">
+<p class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Today's Reg</p>
+<div class="flex items-baseline gap-2">
+<span class="text-xl font-extrabold">1.2k</span>
+<span class="text-[10px] text-emerald-500 font-bold">↑ 8%</span>
+</div>
+</div>
+<div class="px-2">
+<p class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Online Now</p>
+<div class="flex items-center gap-2">
+<span class="text-xl font-extrabold">850</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+</div>
+</div></div>
+
+            <!-- Row-->
+            <div class="col-span-4 grid grid-cols-4 bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/50 gap-6">
+                <div class="border-r border-indigo-100/50 px-2">
+                    <p class="text-[10px] font-bold text-indigo-900/50 uppercase">IT Seekers</p>
+                    <span class="text-lg font-bold">850k</span>
+                </div>
+                <div class="border-r border-indigo-100/50 px-2">
+                    <p class="text-[10px] font-bold text-indigo-900/50 uppercase">Recruiters</p>
+                    <span class="text-lg font-bold">12k</span>
+                </div>
+                <div class="border-r border-indigo-100/50 px-2">
+                    <p class="text-[10px] font-bold text-indigo-900/50 uppercase">Companies</p>
+                    <span class="text-lg font-bold">4.5k</span>
+                </div>
+                <div class="px-2">
+                    <p class="text-[10px] font-bold text-indigo-900/50 uppercase">IT Jobs</p>
+                    <span class="text-lg font-bold text-primary">12.4k</span>
+                </div>
+            </div>
+
+            <!-- Row 3: Faculty Domain -->
+            <div class="col-span-4 grid grid-cols-4 bg-amber-50/30 p-3 rounded-lg border border-amber-100/50 gap-6">
+                <div class="border-r border-amber-100/50 px-2">
+                    <p class="text-[10px] font-bold text-amber-900/50 uppercase">Professors</p>
+                    <span class="text-lg font-bold">350k</span>
+                </div>
+                <div class="border-r border-amber-100/50 px-2">
+                    <p class="text-[10px] font-bold text-amber-900/50 uppercase">Colleges</p>
+                    <span class="text-lg font-bold">2.1k</span>
+                </div>
+                <div class="border-r border-amber-100/50 px-2">
+                    <p class="text-[10px] font-bold text-amber-900/50 uppercase">Vacancies</p>
+                    <span class="text-lg font-bold text-amber-700">5.1k</span>
+                </div>
+                <div class="px-2">
+                    <p class="text-[10px] font-bold text-amber-900/50 uppercase">Placements</p>
+                    <span class="text-lg font-bold text-emerald-600">2.8k</span>
+                </div>
+            </div>
+
+            <!-- Row 4: Financials -->
+            <div class="col-span-4 grid grid-cols-4 bg-emerald-50/20 p-3 rounded-lg border border-emerald-100/50 gap-6">
+                <div class="border-r border-emerald-100/50 px-2">
+                    <p class="text-[10px] font-bold text-emerald-900/50 uppercase">Today's Revenue</p>
+                    <span class="text-lg font-bold text-emerald-700">$42k</span>
+                </div>
+                <div class="border-r border-emerald-100/50 px-2">
+                    <p class="text-[10px] font-bold text-emerald-900/50 uppercase">Pending Invoices</p>
+                    <span class="text-lg font-bold">142</span>
+                </div>
+                <div class="border-r border-emerald-100/50 px-2">
+                    <p class="text-[10px] font-bold text-emerald-900/50 uppercase">Overdue</p>
+                    <span class="text-lg font-bold text-error">$12k</span>
+                </div>
+                <div class="px-2">
+                    <p class="text-[10px] font-bold text-emerald-900/50 uppercase">Guarantee Claims</p>
+                    <span class="text-lg font-bold text-amber-600">8</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Management Section -->
+        <div class="grid grid-cols-12 gap-6">
+            
+            <!-- Revenue & Trends Chart -->
+            <div class="col-span-12 lg:col-span-8 bento-card bg-white p-5 rounded-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-extrabold uppercase tracking-tight">Revenue &amp; Application Growth</h3>
+                    <div class="flex gap-4">
+                        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary"></span><span class="text-[10px] font-bold">Revenue</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span class="text-[10px] font-bold">Volume</span></div>
+                    </div>
+                </div>
+                <!-- Simulated Professional Chart -->
+                <div class="h-44 flex items-end justify-between gap-1 px-2 pt-4 relative">
+                    <div class="absolute inset-x-0 top-0 h-px bg-gray-100"></div>
+                    <div class="absolute inset-x-0 top-1/2 h-px bg-gray-100"></div>
+                    <!-- Chart Bars -->
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[30%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[45%]"></div>
+                        <span class="text-[9px] font-bold mt-2">JAN</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[40%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[55%]"></div>
+                        <span class="text-[9px] font-bold mt-2">FEB</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[50%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[75%]"></div>
+                        <span class="text-[9px] font-bold mt-2">MAR</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[65%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[90%]"></div>
+                        <span class="text-[9px] font-bold mt-2">APR</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[55%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[100%]"></div>
+                        <span class="text-[9px] font-bold mt-2">MAY</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 group h-full">
+                        <div class="w-full max-w-[12px] bg-primary/20 rounded-t-sm h-[70%]"></div>
+                        <div class="w-full max-w-[12px] bg-primary rounded-t-sm h-[85%]"></div>
+                        <span class="text-[9px] font-bold mt-2">JUN</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infrastructure & Automation Widget-->
+            <div class="col-span-12 lg:col-span-4 bento-card bg-slate-900 p-5 rounded-xl text-white">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined !text-sm">settings_input_component</span> System Core
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] text-slate-400">System Uptime</p>
+                            <p class="text-sm font-bold">99.98%</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-slate-400">API Health</p>
+                            <p class="text-[10px] font-extrabold text-emerald-400 uppercase tracking-tighter">Optimal</p>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <span class="">Resume Parsing</span>
+                            <span class="">94% Success</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-primary h-full w-[94%]"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between text-[10px] font-bold">
+                            <span class="">Email Delivery</span>
+                            <span class="">99.2%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full w-[99.2%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Activity & Moderation Grid-->
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Real-Time Global Activity Table -->
+            <div class="col-span-12 lg:col-span-8 bento-card bg-white rounded-xl flex flex-col">
+                <div class="p-4 border-b border-outline-variant/30 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-extrabold uppercase tracking-tight">Real-Time Global Activity</h3>
+                        <p class="text-[10px] text-on-surface-variant/60">Live events across all regions</p>
+                    </div>
+                    <button class="text-[10px] font-bold text-primary px-2 py-1 bg-primary/5 rounded border border-primary/20">Expand Logs</button>
+                </div>
+                <div class="flex-1 overflow-x-auto custom-table-scroll max-h-[320px]">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3 border-b border-outline-variant/20">User / Role</th>
+                                <th class="p-3 border-b border-outline-variant/20">Action</th>
+                                <th class="p-3 border-b border-outline-variant/20">IP Address</th>
+                                <th class="p-3 border-b border-outline-variant/20">Location</th>
+                                <th class="p-3 border-b border-outline-variant/20">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-[11px] divide-y divide-outline-variant/10">
+                            <tr>
+                                <td class="p-3">
+                                    <div class="font-bold">John Doe</div>
+                                    <div class="text-[9px] text-on-surface-variant/60 uppercase">Recruiter</div>
+                                </td>
+                                <td class="p-3">New Job Posted: <span class="font-bold">Senior Architect</span></td>
+                                <td class="p-3 font-mono text-on-surface-variant/60">192.168.1.104</td>
+                                <td class="p-3">London, UK</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3">
+                                    <div class="font-bold">Sarah Williams</div>
+                                    <div class="text-[9px] text-on-surface-variant/60 uppercase">Candidate</div>
+                                </td>
+                                <td class="p-3">Application Submitted (IT)</td>
+                                <td class="p-3 font-mono text-on-surface-variant/60">45.23.1.88</td>
+                                <td class="p-3">San Francisco, US</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">Success</span></td>
+                            </tr>
+                            <tr class="">
+                                <td class="p-3">
+                                    <div class="font-bold">System Daemon</div>
+                                    <div class="text-[9px] text-on-surface-variant/60 uppercase">Service</div>
+                                </td>
+                                <td class="p-3">Daily Backup Initiated</td>
+                                <td class="p-3 font-mono text-on-surface-variant/60">127.0.0.1</td>
+                                <td class="p-3">AWS-US-EAST-1</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold">Processing</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-3">
+                                    <div class="font-bold">Mark Chen</div>
+                                    <div class="text-[9px] text-on-surface-variant/60 uppercase">Professor</div>
+                                </td>
+                                <td class="p-3">Payment Received: <span class="font-bold">$499</span></td>
+                                <td class="p-3 font-mono text-on-surface-variant/60">102.12.8.4</td>
+                                <td class="p-3">Singapore, SG</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">Verified</span></td>
+                            </tr>
+                            <tr class="">
+                                <td class="p-3">
+                                    <div class="font-bold">Anonymous</div>
+                                    <div class="text-[9px] text-on-surface-variant/60 uppercase">Guest</div>
+                                </td>
+                                <td class="p-3">Invalid Login Attempt</td>
+                                <td class="p-3 font-mono text-on-surface-variant/60">8.8.4.4</td>
+                                <td class="p-3">Unknown</td>
+                                <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold">Blocked</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Moderation Queue Actionable List -->
+            <div class="col-span-12 lg:col-span-4 bento-card bg-white rounded-xl flex flex-col">
+                <div class="p-4 border-b border-outline-variant/30">
+                    <h3 class="text-sm font-extrabold uppercase tracking-tight">Moderation Queue</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                    <!-- Item 1 -->
+                    <div class="p-3 rounded-lg bg-gray-50 border border-outline-variant/20">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="text-xs font-bold">Pending Job Approval (IT)</p>
+                                <p class="text-[10px] text-on-surface-variant/60">React Native Dev • TechCorp</p>
+                            </div>
+                            <span class="text-[9px] font-bold bg-primary/10 text-primary px-1.5 rounded">82 Pending</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-1 text-[10px] font-bold bg-emerald-500 text-white rounded shadow-sm hover:bg-emerald-600">Approve</button>
+                            <button class="flex-1 py-1 text-[10px] font-bold border border-outline-variant/40 text-on-surface-variant rounded hover:bg-white">Reject</button>
+                        </div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="p-3 rounded-lg bg-gray-50 border border-outline-variant/20">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="text-xs font-bold">Faculty Vacancy Review</p>
+                                <p class="text-[10px] text-on-surface-variant/60">Physics Head • Oxford Int.</p>
+                            </div>
+                            <span class="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 rounded">12 New</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-1 text-[10px] font-bold bg-emerald-500 text-white rounded shadow-sm hover:bg-emerald-600">Approve</button>
+                            <button class="flex-1 py-1 text-[10px] font-bold border border-outline-variant/40 text-on-surface-variant rounded hover:bg-white">Reject</button>
+                        </div>
+                    </div>
+                    <!-- Item 3 -->
+                    <div class="p-3 rounded-lg bg-gray-50 border border-outline-variant/20">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <p class="text-xs font-bold">Document Verifications</p>
+                                <p class="text-[10px] text-on-surface-variant/60">Batch: CERT_88293</p>
+                            </div>
+                            <span class="text-[9px] font-bold bg-gray-200 text-on-surface-variant px-1.5 rounded">145 Batch</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="w-full py-1.5 text-[10px] font-bold bg-primary text-white rounded shadow-sm hover:bg-primary/90">Open Verification Lab</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Minimal High Density Footer -->
+    <footer class="mt-8 border-t border-outline-variant/30 py-6 px-10 flex flex-col md:flex-row justify-between items-center bg-gray-50/50">
+        <div class="flex items-center gap-2 mb-4 md:mb-0">
+            <div class="w-5 h-5 bg-primary/20 rounded-md flex items-center justify-center">
+                <span class="material-symbols-outlined !text-xs text-primary">analytics</span>
+            </div>
+            <span class="text-xs font-bold text-on-surface-variant/60">EduNaukri Executive Dashboard © 2024</span>
+        </div>
+        <div class="flex gap-6 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/40">
+            <a href="#" class="hover:text-primary transition-colors">Privacy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms</a>
+            <a href="#" class="hover:text-primary transition-colors">System Health</a>
+            <a href="#" class="hover:text-primary transition-colors">Support Portal</a>
+        </div>
+    </footer>
+</main>
+
+<script class="">
+    // System Clock Update
+    function updateTime() {
+        const now = new Date();
+        const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('current-time').textContent = now.toLocaleDateString('en-US', options);
+    }
+    setInterval(updateTime, 30000);
+    updateTime();
+
+    // Hotkey for Global Search (</script></body></html>

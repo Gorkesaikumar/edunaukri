@@ -1,0 +1,79 @@
+/* ATS Style Preview Modal Layout adjustments */
+
+.ats-preview-modal .modal-dialog {
+    max-width: 1200px;
+    width: 75%;
+}
+
+.ats-preview-modal .modal-content {
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    max-height: 85vh;
+}
+
+.ats-preview-modal .modal-header {
+    border-bottom: 1px solid var(--fjd-outline-variant, #e2e8f0);
+    background-color: #ffffff;
+    padding: 1.5rem 2rem;
+}
+
+.ats-preview-modal .modal-body {
+    background-color: var(--fjd-background, #f8fafc);
+    overflow-y: auto;
+    padding: 0;
+}
+
+.ats-preview-modal .ats-preview-container {
+    padding: 2.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.ats-preview-modal .modal-footer {
+    border-top: 1px solid var(--fjd-outline-variant, #e2e8f0);
+    background-color: #ffffff;
+    padding: 1.25rem 2rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+/* Backdrop blur for a premium feel */
+.modal-backdrop.show {
+    opacity: 0.6;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    background-color: rgba(15, 23, 42, 0.7);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .ats-preview-modal .modal-dialog {
+        width: 95%;
+        margin: 1rem auto;
+    }
+    
+    .ats-preview-modal .ats-preview-container {
+        padding: 1.5rem;
+    }
+    
+    .ats-preview-modal .modal-content {
+        max-height: 90vh;
+    }
+    
+    .ats-preview-modal .modal-footer {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+    }
+    
+    .ats-preview-modal .modal-footer .btn {
+        width: 100%;
+    }
+    
+    .ats-preview-modal .modal-footer .d-flex {
+        width: 100%;
+        flex-direction: column-reverse;
+    }
+}

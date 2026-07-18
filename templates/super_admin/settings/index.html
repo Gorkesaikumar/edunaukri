@@ -1,0 +1,67 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <span class="text-xs text-emerald-700 font-bold bg-emerald-100 px-3 py-1.5 rounded-lg flex items-center gap-1">
+        <span class="material-symbols-outlined !text-sm">verified</span> Settings Active & Locked
+    </span>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Settings Registry Grid -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50">
+        <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Platform Global Configuration</h3>
+        <p class="text-[10px] text-on-surface-variant/60">Manage upload thresholds, guarantee periods, and core parameters</p>
+    </div>
+    
+    <div class="p-6 divide-y divide-outline-variant/20">
+        {% for setting in settings_list %}
+        {% if setting.key != "platform.maintenance_mode" %}
+        <div class="py-5 first:pt-0 last:pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="max-w-md">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{{ setting.key }}</span>
+                    <span class="text-[10px] uppercase font-bold text-on-surface-variant/60 bg-gray-100 px-2 py-0.5 rounded">{{ setting.category }}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant mt-1.5 leading-relaxed">{{ setting.description }}</p>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="flex-1 md:w-64">
+                    <input type="text" id="setting-val-{{ setting.key|slugify }}" value="{% for k, v in setting.value.items %}{{ v }}{% endfor %}" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+                </div>
+                <button onclick="let valStr = document.getElementById('setting-val-{{ setting.key|slugify }}').value; let valObj = {}; {% for k, v in setting.value.items %}valObj['{{ k }}'] = isNaN(valStr) ? valStr : Number(valStr);{% endfor %} superAdminAction('{{ nav_urls.settings }}', {key: '{{ setting.key }}', value: valObj, description: '{{ setting.description }}'}, 'Confirm updating setting {{ setting.key }}?');" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all shrink-0">Update</button>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="p-12 text-center text-on-surface-variant/50 text-xs">No configuration settings initialized.</div>
+        {% endfor %}
+    </div>
+</div>
+
+{% for setting in settings_list %}
+{% if setting.key == "platform.maintenance_mode" %}
+<!-- Security & Maintenance Override Banner -->
+<div class="{% if setting.value.enabled %}bg-red-100 border-red-300{% else %}bg-red-50/40 border-red-200{% endif %} border p-6 rounded-xl mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <span class="material-symbols-outlined !text-2xl">lock_clock</span>
+        </div>
+        <div>
+            <h4 class="text-sm font-extrabold text-red-950">Emergency Maintenance Lockdown Mode {% if setting.value.enabled %}(ACTIVE){% endif %}</h4>
+            <p class="text-xs text-red-900/70 mt-0.5">Restricts public login across all domains and displays emergency maintenance banner.</p>
+        </div>
+    </div>
+    {% if setting.value.enabled %}
+        <button onclick="superAdminAction('{{ nav_urls.settings }}', {key: 'platform.maintenance_mode', value: {enabled: false}, description: 'Emergency Maintenance Lockdown Mode'}, 'Are you sure you want to disable maintenance mode?');" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all shrink-0">Disable Maintenance</button>
+    {% else %}
+        <button onclick="superAdminAction('{{ nav_urls.settings }}', {key: 'platform.maintenance_mode', value: {enabled: true}, description: 'Emergency Maintenance Lockdown Mode'}, 'Are you sure you want to ACTIVATE maintenance mode? This will lock out all users.');" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all shrink-0">Enable Maintenance →</button>
+    {% endif %}
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,201 @@
+services:
+  # ==========================================
+  # Base Application Configuration Anchor
+  # ==========================================
+  x-app-common: &app-common
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - app_net
+      - data_net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+
+  # ==========================================
+  # Reverse Proxy (Production Nginx)
+  # ==========================================
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_data:/app/staticfiles:ro
+      - media_data:/app/media:ro
+      - ssl_data:/etc/nginx/ssl/live
+      - certbot_data:/var/www/certbot
+    networks:
+      - app_net
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ==========================================
+  # Application Services
+  # ==========================================
+  web:
+    <<: *app-common
+    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
+    # Port 8000 is internal on app_net; Nginx handles public traffic on ports 80/443
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health/').getcode() == 200 else 1)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  celery_worker:
+    <<: *app-common
+    command: celery -A config worker -l info
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  celery_beat:
+    <<: *app-common
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    # Beat only schedules tasks and does not need media/static volume mounts
+    volumes: []
+
+  # ==========================================
+  # Data Stores & Caching Tier
+  # ==========================================
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_DB: ${DB_NAME:-edunaukri}
+      POSTGRES_USER: ${DB_USER:-edunaukri}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edunaukri}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-edunaukri} -d ${DB_NAME:-edunaukri}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - redis_data:/data
+    networks:
+      - data_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # ==========================================
+  # Automated Backup & Verification Service
+  # ==========================================
+  backup:
+    build:
+      context: .
+      dockerfile: docker/backup/Dockerfile
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${DB_NAME:-edunaukri}
+      POSTGRES_USER: ${DB_USER:-edunaukri}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edunaukri}
+      BACKUP_RETENTION_DAILY: ${BACKUP_RETENTION_DAILY:-7}
+      BACKUP_RETENTION_WEEKLY: ${BACKUP_RETENTION_WEEKLY:-5}
+      RESTORE_TEST_ENABLED: ${RESTORE_TEST_ENABLED:-true}
+    volumes:
+      - backup_data:/backups
+      - media_data:/app/media:ro
+      - static_data:/app/staticfiles:ro
+      - .:/app/config_source:ro
+    networks:
+      - data_net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ==========================================
+  # Database Management UI (pgAdmin)
+  # ==========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@edunaukri.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - app_net
+      - data_net
+    depends_on:
+      db:
+        condition: service_healthy
+
+# ==========================================
+# Volumes & Networks
+# ==========================================
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:
+  static_data:
+  pgadmin_data:
+  ssl_data:
+  certbot_data:
+  backup_data:
+
+networks:
+  app_net:
+    driver: bridge
+  data_net:
+    driver: bridge
+    internal: true  # Prevents direct external network access to backend data tier

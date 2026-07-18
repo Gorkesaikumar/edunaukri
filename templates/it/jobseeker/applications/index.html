@@ -1,0 +1,104 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Applied Jobs | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-applications.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Applied Jobs</h1>
+            <p class="jsd-page-head__desc">Track every application from submission to hiring.</p>
+        </div>
+        <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--soft">Browse Jobs</a>
+    </div>
+</header>
+
+{% if applications_page %}
+<section class="jsd-app-analytics">
+    {% for stat in applications_page.analytics %}
+    <article class="jsd-app-stat jsd-app-stat--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }}"></i>
+        <div>
+            <p class="jsd-app-stat__value">{{ stat.value }}</p>
+            <p class="jsd-app-stat__label">{{ stat.label }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="jsd-app-filters" method="get" action="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}">
+    <label class="jsd-app-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ applications_page.filters.q }}" placeholder="Search job title or company">
+    </label>
+    <select name="status" class="jsd-app-filters__select" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="applied"{% if applications_page.filters.status == 'applied' %} selected{% endif %}>Applied</option>
+        <option value="under_review"{% if applications_page.filters.status == 'under_review' %} selected{% endif %}>Under Review</option>
+        <option value="shortlisted"{% if applications_page.filters.status == 'shortlisted' %} selected{% endif %}>Shortlisted</option>
+        <option value="interview_scheduled"{% if applications_page.filters.status == 'interview_scheduled' %} selected{% endif %}>Interview Scheduled</option>
+        <option value="offer_released"{% if applications_page.filters.status == 'offer_released' %} selected{% endif %}>Offer Released</option>
+        <option value="rejected"{% if applications_page.filters.status == 'rejected' %} selected{% endif %}>Rejected</option>
+        <option value="hired"{% if applications_page.filters.status == 'hired' %} selected{% endif %}>Hired</option>
+        <option value="withdrawn"{% if applications_page.filters.status == 'withdrawn' %} selected{% endif %}>Withdrawn</option>
+    </select>
+    <div class="jsd-app-filters__chips">
+        <label><input type="checkbox" name="active" value="1"{% if applications_page.filters.active_only %} checked{% endif %}> Active</label>
+        <label><input type="checkbox" name="interview" value="1"{% if applications_page.filters.interview_only %} checked{% endif %}> Interviews</label>
+        <label><input type="checkbox" name="offer" value="1"{% if applications_page.filters.offer_only %} checked{% endif %}> Offers</label>
+        <label><input type="checkbox" name="rejected" value="1"{% if applications_page.filters.rejected_only %} checked{% endif %}> Rejected</label>
+    </div>
+    <button type="submit" class="jsd-btn jsd-btn--primary">Apply Filters</button>
+</form>
+
+<div id="jsdApplicationsPage"
+     data-withdraw-url-template="{% url 'jobseeker_application_withdraw_api' user_uuid=portal_user_uuid application_id='00000000-0000-0000-0000-000000000000' %}">
+
+    {% if applications_page.applications %}
+    <div class="jsd-app-list">
+        {% for app in applications_page.applications %}
+        {% include "it/jobseeker/applications/partials/application_card.html" with app=app %}
+        {% endfor %}
+    </div>
+
+    {% if applications_page.total_pages > 1 %}
+    <nav class="jsd-pagination" aria-label="Applications pages">
+        {% if applications_page.page > 1 %}
+        <a class="jsd-page-btn" href="?page={{ applications_page.page|add:'-1' }}{% if applications_page.filters.q %}&q={{ applications_page.filters.q }}{% endif %}">Previous</a>
+        {% endif %}
+        <span>Page {{ applications_page.page }} of {{ applications_page.total_pages }}</span>
+        {% if applications_page.page < applications_page.total_pages %}
+        <a class="jsd-page-btn" href="?page={{ applications_page.page|add:'1' }}{% if applications_page.filters.q %}&q={{ applications_page.filters.q }}{% endif %}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="jsd-card">
+        <div class="jsd-card__body jsd-empty">
+            <i class="bi bi-briefcase"></i>
+            <h2>No applications yet</h2>
+            <p>Apply to jobs from the marketplace to start tracking your pipeline here.</p>
+            <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--primary mt-2">Browse Jobs</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to view applications.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JSD_APPLICATIONS = {
+    csrfToken: "{{ csrf_token|escapejs }}"
+  };
+</script>
+<script src="{% static 'js/jobseeker-applications.js' %}"></script>
+{% endblock %}

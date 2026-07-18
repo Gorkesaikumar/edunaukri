@@ -1,0 +1,38 @@
+<article class="jsd-card jsd-card--hover jsd-job-card">
+    <a href="{{ job.detail_url }}" class="text-decoration-none text-reset d-block">
+        <div class="jsd-job-card__top">
+            <div class="jsd-job-card__logo">
+                {% if job.logo_url %}
+                <img src="{{ job.logo_url }}" alt="">
+                {% else %}
+                <i class="bi bi-building text-muted"></i>
+                {% endif %}
+            </div>
+            <span class="jsd-job-card__match">{{ job.match_percent }}% Match</span>
+        </div>
+        <h3 class="jsd-job-card__title">{{ job.title }}</h3>
+        <p class="jsd-job-card__company">{{ job.company_name }}</p>
+        <div class="jsd-job-card__tags">
+            {% for tag in job.tags %}
+            <span class="jsd-tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+    </a>
+    <div class="jsd-job-card__foot">
+        <span class="jsd-job-card__salary">{{ job.salary_display }} <span>/ year</span></span>
+        <div class="d-flex gap-2">
+            <button type="button"
+                    class="jsd-btn jsd-btn--outline jsd-save-btn{% if job.is_saved %} is-saved{% endif %}"
+                    data-save-job-toggle
+                    data-job-id="{{ job.id }}"
+                    title="Save job"
+                    aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
+                <i class="bi {% if job.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+            </button>
+            <form method="post" action="{{ job.apply_url }}">
+                {% csrf_token %}
+                <button type="submit" class="jsd-btn jsd-btn--soft">Apply Now</button>
+            </form>
+        </div>
+    </div>
+</article>

@@ -1,0 +1,105 @@
+<aside class="jm-sidebar" id="jmFiltersSidebar" aria-label="Job filters">
+    <form id="jmFilterForm" method="get" action="{% url 'marketplace_browse_jobs' %}">
+        {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+        {% if filters.location %}<input type="hidden" name="location" value="{{ filters.location }}">{% endif %}
+
+        <div class="jm-sidebar__head">
+            <h2 class="jm-sidebar__title">Filters</h2>
+            <a href="{% url 'marketplace_browse_jobs' %}" class="jm-sidebar__reset">Reset</a>
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterDomain">Recruitment Domain</label>
+            <select class="form-select form-select-sm" id="filterDomain" name="domain">
+                <option value="all" {% if filters.domain_filter == 'all' %}selected{% endif %}>All Domains</option>
+                <option value="it" {% if filters.domain_filter == 'it' %}selected{% endif %}>IT Domain</option>
+                <option value="faculty" {% if filters.domain_filter == 'faculty' %}selected{% endif %}>Faculty Domain</option>
+            </select>
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterRole">Role</label>
+            <input class="form-control form-control-sm" id="filterRole" type="text" name="role" value="{{ filters.role }}" placeholder="e.g. Python Developer">
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterExperience">Experience (years)</label>
+            <input class="form-control form-control-sm" id="filterExperience" type="number" min="0" max="40" name="experience" value="{{ filters.experience|default:'' }}">
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterEmployment">Employment Type</label>
+            <select class="form-select form-select-sm" id="filterEmployment" name="employment_type">
+                <option value="">Any</option>
+                {% for opt in marketplace.filter_options.employment_types %}
+                <option value="{{ opt.value }}" {% if filters.employment_type == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterWorkMode">Work Mode</label>
+            <select class="form-select form-select-sm" id="filterWorkMode" name="work_mode">
+                <option value="">Any</option>
+                {% for opt in marketplace.filter_options.work_modes %}
+                <option value="{{ opt.value }}" {% if filters.work_mode == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterIndustry">Industry</label>
+            <input class="form-control form-control-sm" id="filterIndustry" type="text" name="industry" value="{{ filters.industry }}" placeholder="e.g. EdTech">
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterCompany">Company</label>
+            <input class="form-control form-control-sm" id="filterCompany" type="text" name="company" value="{{ filters.company }}">
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterSkills">Skills</label>
+            <input class="form-control form-control-sm" id="filterSkills" type="text" name="skills" value="{{ filters.skills|join:', ' }}" placeholder="Python, Django">
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterEducation">Education</label>
+            <input class="form-control form-control-sm" id="filterEducation" type="text" name="education" value="{{ filters.education }}">
+        </div>
+
+        <div class="jm-filter-group jm-filter-group--row">
+            <div>
+                <label class="jm-filter-label" for="filterSalaryMin">Min Salary (INR)</label>
+                <input class="form-control form-control-sm" id="filterSalaryMin" type="number" name="salary_min" value="{{ filters.salary_min|default:'' }}">
+            </div>
+            <div>
+                <label class="jm-filter-label" for="filterSalaryMax">Max Salary (INR)</label>
+                <input class="form-control form-control-sm" id="filterSalaryMax" type="number" name="salary_max" value="{{ filters.salary_max|default:'' }}">
+            </div>
+        </div>
+
+        <div class="jm-filter-group">
+            <label class="jm-filter-label" for="filterPosted">Posted</label>
+            <select class="form-select form-select-sm" id="filterPosted" name="posted_within">
+                <option value="">Any time</option>
+                {% for opt in marketplace.filter_options.posted_windows %}
+                <option value="{{ opt.value }}" {% if filters.posted_within == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="jm-filter-checks">
+            <label class="jm-check"><input type="checkbox" name="verified_only" value="1" {% if filters.verified_only %}checked{% endif %}> Verified companies</label>
+            <label class="jm-check"><input type="checkbox" name="remote_only" value="1" {% if filters.remote_only %}checked{% endif %}> Remote only</label>
+            <label class="jm-check"><input type="checkbox" name="hybrid_only" value="1" {% if filters.hybrid_only %}checked{% endif %}> Hybrid only</label>
+            <label class="jm-check"><input type="checkbox" name="onsite_only" value="1" {% if filters.onsite_only %}checked{% endif %}> On-site only</label>
+            <label class="jm-check"><input type="checkbox" name="featured_only" value="1" {% if filters.featured_only %}checked{% endif %}> Featured jobs</label>
+            <label class="jm-check"><input type="checkbox" name="easy_apply" value="1" {% if filters.easy_apply %}checked{% endif %}> Easy apply</label>
+            {% if is_job_seeker %}
+            <label class="jm-check"><input type="checkbox" name="saved_only" value="1" {% if filters.saved_only %}checked{% endif %}> Saved jobs</label>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="ed-btn ed-btn--gradient w-100 mt-2">Apply Filters</button>
+    </form>
+</aside>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Maintenance in Progress | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex flex-column align-items-center justify-content-center bg-light p-4">
+    <div class="text-center" style="max-width: 600px;">
+        <img src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} Logo" class="mb-4" style="height: 120px;">
+        
+        <h1 class="display-5 fw-bold text-dark mb-3">We'll be back shortly!</h1>
+        <p class="lead text-secondary mb-4">
+            {{ PLATFORM_NAME }} is currently undergoing scheduled maintenance to improve performance and reliability.
+            We apologize for any inconvenience.
+        </p>
+        
+        <div class="card shadow-sm border-0 bg-white p-4">
+            <h5 class="fw-bold text-dark mb-2">Need urgent assistance?</h5>
+            <p class="text-muted mb-0">Please contact our support team at <a href="mailto:support@edunaukri.com">support@edunaukri.com</a>.</p>
+        </div>
+        
+        <div class="mt-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-3 small">Checking system status...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple script to auto-refresh and check if maintenance is over
+    setTimeout(function() {
+        window.location.reload();
+    }, 60000); // Check every minute
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<article class="rcd-bento rcd-candidate-card rcd-marketplace-card">
+    <div class="rcd-candidate-card__head">
+        <div class="rcd-candidate-card__identity">
+            {% if candidate.photo_url %}
+            <img src="{{ candidate.photo_url }}" alt="" class="rcd-marketplace-card__photo">
+            {% else %}
+            <div class="rcd-pipeline-card__avatar">{{ candidate.initials }}</div>
+            {% endif %}
+            <div>
+                <h2 class="rcd-candidate-card__title">
+                    <a href="{{ candidate.detail_url }}" class="rcd-table__link">{{ candidate.name }}</a>
+                </h2>
+                <p class="rcd-candidate-card__subtitle">{{ candidate.headline }}</p>
+            </div>
+        </div>
+        <span class="rcd-status-pill">{{ candidate.profile_completion }}% complete</span>
+    </div>
+    {% if candidate.skills %}
+    <div class="rcd-marketplace-card__skills">
+        {% for skill in candidate.skills %}
+        <span class="rcd-job-card__tag rcd-job-card__tag--secondary">{{ skill }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <dl class="rcd-candidate-card__meta">
+        <div><dt>Experience</dt><dd>{{ candidate.experience_years }} yrs</dd></div>
+        <div><dt>Location</dt><dd>{{ candidate.location }}</dd></div>
+        <div><dt>Expected salary</dt><dd>{{ candidate.expected_salary }}</dd></div>
+        <div><dt>Work mode</dt><dd>{{ candidate.work_mode }}</dd></div>
+        <div><dt>Notice</dt><dd>{{ candidate.notice_period }}</dd></div>
+        <div><dt>Updated</dt><dd>{{ candidate.updated_label }}</dd></div>
+    </dl>
+    <div class="rcd-candidate-card__actions">
+        <a href="{{ candidate.detail_url }}" class="rcd-btn rcd-btn--primary rcd-btn--sm">View Profile</a>
+        {% if candidate.can_download_resume %}
+        <a href="{{ candidate.resume_url }}" class="rcd-btn rcd-btn--outline rcd-btn--sm" download>Resume</a>
+        {% endif %}
+        <a href="{{ candidate.messages_url }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Message</a>
+        <a href="{{ candidate.interviews_url }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Invite</a>
+        <a href="{{ candidate.saved_url }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Shortlist</a>
+    </div>
+</article>

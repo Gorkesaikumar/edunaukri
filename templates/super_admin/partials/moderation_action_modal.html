@@ -1,0 +1,29 @@
+<!-- Moderation Action Modal -->
+<div class="modal fade" id="moderationActionModal" tabindex="-1" aria-labelledby="moderationActionModalLabel" aria-hidden="true" style="z-index: 1080;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 py-3 pb-0">
+                <h5 class="modal-title fw-bold" id="moderationActionModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <div class="mb-3" id="mam-icon">
+                    <!-- Icon injected here -->
+                </div>
+                <h4 class="fw-bold mb-2" id="mam-title">Are you sure?</h4>
+                <p class="text-muted mb-4" id="mam-message">This action cannot be undone.</p>
+                
+                <form id="mam-form" onsubmit="event.preventDefault();">
+                    <div class="mb-3 text-start" id="mam-remarks-container">
+                        <label for="mam-remarks" class="form-label fw-medium small text-muted text-uppercase">Remarks (Optional)</label>
+                        <textarea class="form-control" id="mam-remarks" rows="2" placeholder="Add any moderation notes here..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 d-flex justify-content-center py-3">
+                <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4 fw-medium" id="mam-confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Institutions Marketplace | {{ PLATFORM_NAME }}{% endblock %}
+{% block meta_description %}Discover verified IT companies and educational institutions hiring on {{ PLATFORM_NAME }}.{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/institution-marketplace.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="im-hero">
+    <div class="container-xl">
+        <div class="im-hero__inner">
+            <div>
+                <span class="im-hero__badge"><i class="bi bi-buildings"></i> Institutions Marketplace</span>
+                <h1 class="im-hero__title">Discover trusted employers &amp; institutions</h1>
+                <p class="im-hero__subtitle">Explore verified IT companies and faculty institutions, view live openings, and learn about their culture before you apply.</p>
+            </div>
+            <form class="im-search" method="get" action="{% url 'institutions_browse' %}" role="search" id="imSearchForm">
+                <div class="im-search__row">
+                    <label class="im-search__field">
+                        <i class="bi bi-search"></i>
+                        <input type="search" name="q" value="{{ filters.q }}" placeholder="Search institutions, industries, cities..." id="imSearchInput">
+                    </label>
+                    <label class="im-search__field">
+                        <i class="bi bi-geo-alt"></i>
+                        <input type="text" name="location" value="{{ filters.location }}" placeholder="Location">
+                    </label>
+                    <button type="submit" class="ed-btn ed-btn--gradient">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="im-body">
+    <div class="container-xl">
+        <div class="im-layout">
+            {% include "institutions/partials/filters_sidebar.html" %}
+
+            <div class="im-main">
+                <div class="im-toolbar">
+                    <p class="im-results-count"><strong>{{ marketplace.total_count }}</strong> institution{{ marketplace.total_count|pluralize }} found</p>
+                    <select name="sort" form="imFilterForm" class="form-select form-select-sm im-sort">
+                        {% for opt in marketplace.filter_options.sort_options %}
+                        <option value="{{ opt.value }}" {% if filters.sort == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if marketplace.active_filters %}
+                <div class="im-chips">
+                    {% for chip in marketplace.active_filters %}
+                    <span class="im-chip">{{ chip.label }}: {{ chip.value }}</span>
+                    {% endfor %}
+                    <a href="{% url 'institutions_browse' %}" class="im-chip im-chip--clear">Clear all</a>
+                </div>
+                {% endif %}
+
+                <div class="im-grid" id="imInstitutionGrid">
+                    {% for item in marketplace.institutions %}
+                    {% include "institutions/partials/institution_card.html" with institution=item %}
+                    {% empty %}
+                    <div class="im-empty">
+                        <i class="bi bi-buildings"></i>
+                        <h2>No institutions found</h2>
+                        <p>Try adjusting your filters or search keywords.</p>
+                        <a href="{% url 'institutions_browse' %}" class="ed-btn ed-btn--outline">Reset</a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if marketplace.total_pages > 1 %}
+                <nav class="im-pagination">
+                    {% if marketplace.page > 1 %}
+                    <a class="im-page-btn" href="?page={{ marketplace.page|add:'-1' }}">Previous</a>
+                    {% endif %}
+                    <span>Page {{ marketplace.page }} of {{ marketplace.total_pages }}</span>
+                    {% if marketplace.page < marketplace.total_pages %}
+                    <a class="im-page-btn" href="?page={{ marketplace.page|add:'1' }}">Next</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.IM_CONFIG = {
+    suggestApiUrl: "{{ suggest_api_url|escapejs }}",
+    csrfToken: "{{ csrf_token|escapejs }}"
+  };
+</script>
+<script src="{% static 'js/institution-marketplace.js' %}"></script>
+{% endblock %}

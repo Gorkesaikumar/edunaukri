@@ -1,0 +1,293 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Settings | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-settings.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Account Settings</h1>
+            <p class="jsd-page-head__desc">Manage your account, password, notifications, privacy, connected accounts, sessions, and security activity.</p>
+        </div>
+    </div>
+</header>
+
+{% if settings_page %}
+<div class="jsd-set-layout" id="jsdSettingsPage"
+     data-api-account="{{ settings_page.api_urls.account }}"
+     data-api-password="{{ settings_page.api_urls.password }}"
+     data-api-notifications="{{ settings_page.api_urls.notifications }}"
+     data-api-privacy="{{ settings_page.api_urls.privacy }}"
+     data-api-sessions="{{ settings_page.api_urls.sessions }}"
+     data-api-revoke-others="{{ settings_page.api_urls.revoke_others }}"
+     data-api-connected="{{ settings_page.api_urls.connected }}"
+     data-api-audit="{{ settings_page.api_urls.audit }}"
+     data-api-delete="{{ settings_page.api_urls.delete_account }}">
+
+    <nav class="jsd-set-nav" aria-label="Settings sections">
+        <a href="#account" class="jsd-set-nav__link is-active"><i class="bi bi-person"></i> Account</a>
+        <a href="#password" class="jsd-set-nav__link"><i class="bi bi-shield-lock"></i> Password</a>
+        <a href="#notifications" class="jsd-set-nav__link"><i class="bi bi-bell"></i> Notifications</a>
+        <a href="#privacy" class="jsd-set-nav__link"><i class="bi bi-eye"></i> Privacy</a>
+        <a href="#connected" class="jsd-set-nav__link"><i class="bi bi-link-45deg"></i> Connected</a>
+        <a href="#sessions" class="jsd-set-nav__link"><i class="bi bi-laptop"></i> Sessions</a>
+        <a href="#activity" class="jsd-set-nav__link"><i class="bi bi-shield-check"></i> Activity</a>
+    </nav>
+
+    <div class="jsd-set-main">
+        <section class="jsd-card jsd-set-section" id="account">
+            <div class="jsd-card__body">
+                <h2><i class="bi bi-person-badge"></i> Account Information</h2>
+                <div class="jsd-set-info-grid">
+                    <div><span>Full Name</span><strong>{{ settings_page.account.full_name }}</strong></div>
+                    <div><span>Email</span><strong>{{ settings_page.account.email }}</strong></div>
+                    <div><span>Mobile</span><strong>{{ settings_page.account.phone|default:"—" }}</strong></div>
+                    <div><span>Username</span><strong>{{ settings_page.account.username }}</strong></div>
+                    <div><span>Registered</span><strong>{{ settings_page.account.registered_label }}</strong></div>
+                    <div><span>Last Login</span><strong>{{ settings_page.account.last_login_label }}</strong></div>
+                    <div><span>Account Status</span><strong>{{ settings_page.account.account_status_label }}</strong></div>
+                    <div><span>Email Verified</span><strong>{% if settings_page.account.email_verified %}<span class="jsd-set-badge jsd-set-badge--ok">Verified</span>{% else %}<span class="jsd-set-badge jsd-set-badge--warn">Pending</span>{% endif %}</strong></div>
+                    <div><span>Mobile Verified</span><strong>{% if settings_page.account.phone_verified %}<span class="jsd-set-badge jsd-set-badge--ok">Verified</span>{% else %}<span class="jsd-set-badge jsd-set-badge--warn">Not verified</span>{% endif %}</strong></div>
+                </div>
+                <hr>
+                <form id="jsdSetAccountForm" class="jsd-set-form row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="jsdSetFirstName">First Name</label>
+                        <input type="text" class="form-control" id="jsdSetFirstName" value="{{ settings_page.account.first_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="jsdSetLastName">Last Name</label>
+                        <input type="text" class="form-control" id="jsdSetLastName" value="{{ settings_page.account.last_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="jsdSetPhone">Mobile Number</label>
+                        <input type="tel" class="form-control" id="jsdSetPhone" value="{{ settings_page.account.phone }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="jsd-btn jsd-btn--primary btn-sm">Save Account Info</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="password">
+            <div class="jsd-card__body">
+                <h2><i class="bi bi-shield-lock"></i> Change Password</h2>
+                <p class="jsd-set-hint">Use a strong password with uppercase, lowercase, numbers, and special characters.</p>
+                <form id="jsdSetPasswordForm" class="jsd-set-form" novalidate>
+                    <div class="jsd-set-form-error" id="jsdSetPasswordError" hidden role="alert"></div>
+                    <div class="jsd-set-pass-field">
+                        <label class="form-label" for="jsdSetCurrentPass">Current Password</label>
+                        <div class="jsd-set-pass-wrap">
+                            <input type="password" class="form-control" id="jsdSetCurrentPass" autocomplete="current-password" required>
+                            <button type="button" class="jsd-set-pass-toggle" data-target="jsdSetCurrentPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <p class="jsd-set-field-error" id="jsdSetCurrentPassError" hidden></p>
+                    </div>
+                    <div class="jsd-set-pass-field">
+                        <label class="form-label" for="jsdSetNewPass">New Password</label>
+                        <div class="jsd-set-pass-wrap">
+                            <input type="password" class="form-control" id="jsdSetNewPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="jsd-set-pass-toggle" data-target="jsdSetNewPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <div class="jsd-set-strength"><div class="jsd-set-strength__bar" id="jsdSetStrengthBar"></div></div>
+                        <p class="jsd-set-strength__label" id="jsdSetStrengthLabel">Password strength</p>
+                        <ul class="jsd-set-pass-rules" id="jsdSetPassRules">
+                            <li data-rule="length">At least 8 characters</li>
+                            <li data-rule="upper">One uppercase letter</li>
+                            <li data-rule="lower">One lowercase letter</li>
+                            <li data-rule="digit">One number</li>
+                            <li data-rule="special">One special character</li>
+                        </ul>
+                        <p class="jsd-set-field-error" id="jsdSetNewPassError" hidden></p>
+                    </div>
+                    <div class="jsd-set-pass-field">
+                        <label class="form-label" for="jsdSetConfirmPass">Confirm New Password</label>
+                        <div class="jsd-set-pass-wrap">
+                            <input type="password" class="form-control" id="jsdSetConfirmPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="jsd-set-pass-toggle" data-target="jsdSetConfirmPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <p class="jsd-set-field-error" id="jsdSetConfirmPassError" hidden></p>
+                    </div>
+                    <button type="submit" class="jsd-btn jsd-btn--primary btn-sm" id="jsdSetPasswordBtn">
+                        <span class="jsd-set-btn__label">Update Password</span>
+                        <span class="jsd-set-btn__spinner d-none" aria-hidden="true"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="notifications">
+            <div class="jsd-card__body">
+                <h2><i class="bi bi-bell"></i> Notification Preferences</h2>
+                <div class="jsd-set-toggles">
+                    {% for item in notification_toggles %}
+                    <label class="jsd-set-toggle" data-toggle-row="{{ item.key }}">
+                        <span class="jsd-set-toggle__label">{{ item.label }}</span>
+                        <span class="jsd-set-toggle__controls">
+                            <span class="jsd-set-toggle__status" aria-live="polite"></span>
+                            <input type="checkbox" class="jsd-set-toggle__input" id="notify-{{ item.key }}" data-notify-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                            <span class="jsd-set-toggle__switch" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="privacy">
+            <div class="jsd-card__body">
+                <h2><i class="bi bi-eye"></i> Privacy Settings</h2>
+                <div class="mb-3">
+                    <label class="form-label" for="jsdSetVisibility">Profile Visibility</label>
+                    <select class="form-select" id="jsdSetVisibility">
+                        {% for value, label in settings_page.privacy.visibility_options %}
+                        <option value="{{ value }}"{% if settings_page.privacy.profile_visibility == value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="jsd-set-toggles">
+                    {% for item in privacy_toggles %}
+                    <label class="jsd-set-toggle" data-toggle-row="{{ item.key }}">
+                        <span class="jsd-set-toggle__label">{{ item.label }}</span>
+                        <span class="jsd-set-toggle__controls">
+                            <span class="jsd-set-toggle__status" aria-live="polite"></span>
+                            <input type="checkbox" class="jsd-set-toggle__input" id="privacy-{{ item.key }}" data-privacy-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                            <span class="jsd-set-toggle__switch" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="connected">
+            <div class="jsd-card__body">
+                <h2><i class="bi bi-link-45deg"></i> Connected Accounts</h2>
+                <p class="jsd-set-hint">Link Google or LinkedIn for faster sign-in. The social account email must match your {{ PLATFORM_NAME }} email.</p>
+                <div class="jsd-set-connected" id="jsdSetConnectedList">
+                    {% for account in settings_page.connected_accounts %}
+                    <article class="jsd-set-connected__item" data-provider="{{ account.provider }}">
+                        <div>
+                            <strong>
+                                {% if account.provider == "google" %}<i class="bi bi-google"></i>{% else %}<i class="bi bi-linkedin"></i>{% endif %}
+                                {{ account.label }}
+                            </strong>
+                            {% if account.connected %}
+                            <p class="mb-0 text-muted small">{{ account.provider_email|default:settings_page.account.email }}</p>
+                            <p class="mb-0 text-muted small">Connected {{ account.connected_label }}</p>
+                            {% elif not account.configured %}
+                            <p class="mb-0 text-muted small">Not available — OAuth is not configured.</p>
+                            {% else %}
+                            <p class="mb-0 text-muted small">Not connected</p>
+                            {% endif %}
+                        </div>
+                        {% if account.connected %}
+                        <button type="button" class="jsd-btn jsd-btn--danger-outline btn-sm jsd-set-disconnect" data-provider="{{ account.provider }}">Disconnect</button>
+                        {% elif account.configured %}
+                        <a href="{{ account.connect_url }}" class="jsd-btn jsd-btn--outline btn-sm">Connect</a>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="sessions">
+            <div class="jsd-card__body">
+                <div class="jsd-set-section-head">
+                    <h2><i class="bi bi-laptop"></i> Active Login Sessions</h2>
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="jsdSetRevokeOthers">Sign Out Other Devices</button>
+                </div>
+                <p class="jsd-set-hint">Each sign-in creates a unique session. Sign out devices you no longer use.</p>
+                <div class="jsd-set-sessions">
+                    {% for session in settings_page.sessions %}
+                    <article class="jsd-set-session{% if session.is_current %} is-current{% endif %}">
+                        <div>
+                            <strong>{{ session.device_label }}</strong>
+                            {% if session.is_current %}<span class="jsd-set-badge jsd-set-badge--ok">Current session</span>{% endif %}
+                            <p class="mb-0 text-muted small">{{ session.browser }} · {{ session.os_name }} · {{ session.ip_address }}</p>
+                            <p class="mb-0 text-muted small">Logged in {{ session.login_label }} · Last active {{ session.last_active_label }}</p>
+                        </div>
+                        {% if not session.is_current %}
+                        <button type="button" class="jsd-btn jsd-btn--danger-outline btn-sm jsd-set-revoke-session" data-session-id="{{ session.id }}">Sign Out</button>
+                        {% endif %}
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0">No active sessions recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section" id="activity">
+            <div class="jsd-card__body">
+                <div class="jsd-set-section-head">
+                    <h2><i class="bi bi-shield-check"></i> Security Activity</h2>
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="jsdSetRefreshActivity">Refresh</button>
+                </div>
+                <p class="jsd-set-hint">Recent sign-ins, password changes, session actions, and connected account updates.</p>
+                <div class="jsd-set-audit" id="jsdSetActivityList">
+                    {% for event in settings_page.audit_log %}
+                    <article class="jsd-set-audit__item" data-event-type="{{ event.event_type }}">
+                        <div>
+                            <strong>{{ event.title }}</strong>
+                            {% if event.description %}
+                            <p class="mb-0 text-muted small">{{ event.description }}</p>
+                            {% endif %}
+                            <p class="mb-0 text-muted small">{{ event.occurred_label }}{% if event.ip_address %} · {{ event.ip_address }}{% endif %}</p>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0" id="jsdSetActivityEmpty">No security activity recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="jsd-card jsd-set-section jsd-set-danger" id="delete">
+            <div class="jsd-card__body">
+                <h2 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Account</h2>
+                <p class="jsd-set-hint">Permanently deactivate your account. This action cannot be undone.</p>
+                <button type="button" class="jsd-btn jsd-btn--danger btn-sm" id="jsdSetDeleteOpen">Delete My Account</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade" id="jsdSetDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This will permanently deactivate your job seeker account and sign you out of all devices.</p>
+                <label class="form-label" for="jsdSetDeletePass">Confirm your password</label>
+                <input type="password" class="form-control" id="jsdSetDeletePass">
+                <p class="jsd-set-error mt-2" id="jsdSetDeleteError" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="jsd-btn jsd-btn--danger" id="jsdSetDeleteConfirm">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Sign in to manage your account settings.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JSD_SETTINGS = { csrfToken: "{{ csrf_token|escapejs }}" };
+</script>
+<script src="{% static 'js/jobseeker-settings.js' %}"></script>
+{% endblock %}

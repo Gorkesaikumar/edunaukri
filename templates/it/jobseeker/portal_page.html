@@ -1,0 +1,18 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <h1 class="jsd-page-head__title">{{ page_title }}</h1>
+    {% if page_description %}<p class="jsd-page-head__desc">{{ page_description }}</p>{% endif %}
+</header>
+
+<div class="jsd-card">
+    <div class="jsd-card__body jsd-empty">
+        <i class="bi bi-tools"></i>
+        <p>This section is being prepared. Use the sidebar to navigate your portal.</p>
+        <a href="{% url 'jobseeker_dashboard' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary mt-2">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

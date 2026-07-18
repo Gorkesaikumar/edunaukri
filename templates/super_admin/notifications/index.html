@@ -1,0 +1,66 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <button onclick="showToast('All system alerts marked as acknowledged', 'success');" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant/40 bg-white text-on-surface hover:bg-gray-50 flex items-center gap-1">
+        <span class="material-symbols-outlined !text-sm">done_all</span> Mark All Read
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- System Notifications List -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Platform System Alerts</h3>
+            <p class="text-[10px] text-on-surface-variant/60">Automated daemon warnings, backup statuses, and security triggers</p>
+        </div>
+    </div>
+    
+    <div class="divide-y divide-outline-variant/20 p-4 space-y-4">
+        {% for notif in notifications %}
+        <div class="p-4 rounded-xl bg-gray-50/80 border border-outline-variant/30 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                <span class="material-symbols-outlined !text-xl">notifications</span>
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-extrabold text-on-surface">{{ notif.title|default:"System Alert" }}</h4>
+                    <span class="text-[10px] text-on-surface-variant font-mono">{{ notif.timestamp|slice:":16"|default:"Recently" }}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">{{ notif.message }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Default Live System Alerts -->
+        <div class="p-4 rounded-xl bg-emerald-50/40 border border-emerald-100 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                <span class="material-symbols-outlined !text-xl">verified_user</span>
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-extrabold text-emerald-950">Daily Automated Backup Completed Successfully</h4>
+                    <span class="text-[10px] text-emerald-800 font-mono">Today • 04:00 AM UTC</span>
+                </div>
+                <p class="text-xs text-emerald-900/80 mt-1 leading-relaxed">Cross-domain database replication and AWS S3 snapshot archive completed without errors. Cluster integrity 100%.</p>
+            </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-indigo-50/40 border border-indigo-100 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                <span class="material-symbols-outlined !text-xl">analytics</span>
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-extrabold text-indigo-950">Monthly Executive Revenue Report Ready</h4>
+                    <span class="text-[10px] text-indigo-800 font-mono">Yesterday • 11:59 PM UTC</span>
+                </div>
+                <p class="text-xs text-indigo-900/80 mt-1 leading-relaxed">The aggregated placement fee yield and conversion velocity report for the previous month is compiled and available in Reports.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Candidate Marketplace | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if marketplace_page %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <h1 class="rcd-section-head__title">Candidate Marketplace</h1>
+        <p class="mb-0 text-muted">Discover IT talent eligible for your open roles.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'recruiter_candidates' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Applicants</a>
+        <a href="{% url 'recruiter_saved_candidates' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--outline rcd-btn--sm">Saved</a>
+    </div>
+</header>
+
+<section class="rcd-stats mb-4">
+    <article class="rcd-bento rcd-stat">
+        <p class="rcd-stat__label">Matching candidates</p>
+        <p class="rcd-stat__value">{{ marketplace_page.stats.total }}</p>
+    </article>
+    <article class="rcd-bento rcd-stat">
+        <p class="rcd-stat__label">Showing</p>
+        <p class="rcd-stat__value">{{ marketplace_page.stats.shown }}</p>
+    </article>
+</section>
+
+<form class="rcd-filters mb-4 rcd-marketplace-filters" method="get" action="{{ marketplace_page.urls.marketplace }}">
+    <label class="rcd-filters__search">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input type="search" name="q" value="{{ marketplace_page.filters.q }}" placeholder="Name, skills, job title, technologies">
+    </label>
+    <input type="text" name="skills" class="rcd-filters__select" value="{{ marketplace_page.filters.skills }}" placeholder="Skills (comma-separated)" aria-label="Skills filter">
+    <input type="text" name="education" class="rcd-filters__select" value="{{ marketplace_page.filters.education }}" placeholder="Education" aria-label="Education filter">
+    <input type="text" name="location" class="rcd-filters__select" value="{{ marketplace_page.filters.location }}" placeholder="Preferred location" aria-label="Location filter">
+    <input type="number" name="experience_min" class="rcd-filters__select" value="{{ marketplace_page.filters.experience_min }}" placeholder="Min exp" min="0" aria-label="Minimum experience">
+    <input type="number" name="experience_max" class="rcd-filters__select" value="{{ marketplace_page.filters.experience_max }}" placeholder="Max exp" min="0" aria-label="Maximum experience">
+    <input type="number" name="salary_min" class="rcd-filters__select" value="{{ marketplace_page.filters.salary_min }}" placeholder="Min salary (LPA)" min="0" step="0.1" aria-label="Minimum salary">
+    <input type="number" name="salary_max" class="rcd-filters__select" value="{{ marketplace_page.filters.salary_max }}" placeholder="Max salary (LPA)" min="0" step="0.1" aria-label="Maximum salary">
+    <select name="work_mode" class="rcd-filters__select" aria-label="Work mode">
+        <option value="">Any work mode</option>
+        {% for value, label in marketplace_page.filter_options.work_modes %}
+        <option value="{{ value }}"{% if marketplace_page.filters.work_mode == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="employment_type" class="rcd-filters__select" aria-label="Employment type">
+        <option value="">Any employment type</option>
+        {% for value, label in marketplace_page.filter_options.employment_types %}
+        <option value="{{ value }}"{% if marketplace_page.filters.employment_type == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <input type="number" name="notice_period" class="rcd-filters__select" value="{{ marketplace_page.filters.notice_period }}" placeholder="Max notice (days)" min="0" aria-label="Notice period">
+    <select name="availability" class="rcd-filters__select" aria-label="Availability">
+        {% for value, label in marketplace_page.filter_options.availability_options %}
+        <option value="{{ value }}"{% if marketplace_page.filters.availability == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <input type="number" name="completion_min" class="rcd-filters__select" value="{{ marketplace_page.filters.completion_min }}" placeholder="Min profile %" min="0" max="100" aria-label="Profile completion">
+    <select name="has_resume" class="rcd-filters__select" aria-label="Resume available">
+        <option value="">Resume: any</option>
+        <option value="1"{% if marketplace_page.filters.has_resume == '1' %} selected{% endif %}>Resume available</option>
+    </select>
+    <select name="recently_active" class="rcd-filters__select" aria-label="Recently active">
+        <option value="">Activity: any</option>
+        <option value="1"{% if marketplace_page.filters.recently_active == '1' %} selected{% endif %}>Active in last 30 days</option>
+    </select>
+    <select name="sort" class="rcd-filters__select" aria-label="Sort by">
+        {% for value, label in marketplace_page.filter_options.sort_options %}
+        <option value="{{ value }}"{% if marketplace_page.filters.sort == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Apply Filters</button>
+    <a href="{{ marketplace_page.urls.marketplace }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Reset</a>
+</form>
+
+<div id="recMarketplacePage">
+    {% if marketplace_page.candidates %}
+    <div class="rcd-stack">
+        {% for candidate in marketplace_page.candidates %}
+        {% include "it/recruiter/partials/marketplace_candidate_card.html" with candidate=candidate %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="rcd-bento rcd-empty">
+        <span class="material-symbols-outlined d-block">person_search</span>
+        <h2>No candidates match your filters</h2>
+        <p>Try broadening your search or reset filters to explore the talent pool.</p>
+        <a href="{{ marketplace_page.urls.marketplace }}" class="rcd-btn rcd-btn--primary mt-2">Reset Filters</a>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="rcd-bento rcd-empty"><p>Marketplace could not be loaded.</p></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.REC_PORTAL = { csrfToken: "{{ csrf_token|escapejs }}" };</script>
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+{% endblock %}

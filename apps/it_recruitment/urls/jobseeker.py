@@ -1,0 +1,378 @@
+"""Clean URL routes for Job Seeker portal pages."""
+
+from django.urls import path
+
+from apps.it_recruitment.views.dashboard_api import (
+    JobSeekerDashboardInsightsAPIView,
+    JobSeekerProfileCompletionAnimationAPIView,
+)
+from apps.it_recruitment.views.recommendations_api import (
+    JobSeekerRecommendationsAPIView,
+)
+from apps.it_recruitment.views.profile_api import (
+    JobSeekerProfileAPIView,
+    JobSeekerProfileCertificationDetailAPIView,
+    JobSeekerProfileCertificationsAPIView,
+    JobSeekerProfileEducationAPIView,
+    JobSeekerProfileEducationDetailAPIView,
+    JobSeekerProfileExperienceDetailAPIView,
+    JobSeekerProfileExperiencesAPIView,
+    JobSeekerProfilePhotoAPIView,
+    JobSeekerProfileProjectDetailAPIView,
+    JobSeekerProfileProjectsAPIView,
+    JobSeekerProfileResumeAPIView,
+    JobSeekerProfileResumeDownloadView,
+    JobSeekerProfileResumePreviewView,
+    JobSeekerProfileSectionAPIView,
+)
+from apps.it_recruitment.views.interviews_api import (
+    JobSeekerInterviewConfirmAPIView,
+    JobSeekerInterviewRescheduleAPIView,
+    JobSeekerInterviewsAPIView,
+)
+from apps.it_recruitment.views.resume_api import (
+    JobSeekerResumeAutofillAPIView,
+    JobSeekerResumePortalAPIView,
+)
+from apps.it_recruitment.views.settings_api import (
+    JobSeekerSettingsAccountAPIView,
+    JobSeekerSettingsAuditAPIView,
+    JobSeekerSettingsConnectedAPIView,
+    JobSeekerSettingsDeleteAccountAPIView,
+    JobSeekerSettingsNotificationsAPIView,
+    JobSeekerSettingsPasswordAPIView,
+    JobSeekerSettingsPrivacyAPIView,
+    JobSeekerSettingsRevokeSessionsAPIView,
+    JobSeekerSettingsSessionDetailAPIView,
+    JobSeekerSettingsSessionsAPIView,
+)
+from apps.it_recruitment.views.certificates_api import (
+    JobSeekerCertificateDetailAPIView,
+    JobSeekerCertificateDownloadView,
+    JobSeekerCertificatePreviewView,
+    JobSeekerCertificatesAPIView,
+)
+from apps.it_recruitment.views.tracker_api import (
+    JobSeekerTrackerAPIView,
+    JobSeekerTrackerExportView,
+)
+from apps.it_recruitment.views.applications_api import (
+    JobSeekerApplicationOfferAPIView,
+    JobSeekerApplicationsAPIView,
+    JobSeekerApplicationWithdrawAPIView,
+)
+from apps.it_recruitment.views.saved_jobs_api import (
+    JobSeekerSavedJobsAPIView,
+    JobSeekerSavedJobStatusAPIView,
+    JobSeekerSavedJobToggleAPIView,
+)
+from apps.it_recruitment.views.jobseeker_portal import (
+    JobSeekerApplicationsView,
+    JobSeekerApplyJobView,
+    JobSeekerApplicationDetailView,
+    JobSeekerBrowseJobsView,
+    JobSeekerCertificatesView,
+    JobSeekerDashboardView,
+    JobSeekerInterviewsView,
+    JobSeekerInterviewDetailView,
+    JobSeekerInterviewPrintView,
+    JobSeekerJobDetailView,
+    JobSeekerMessagesView,
+    JobSeekerNotificationReadView,
+    JobSeekerNotificationsMarkAllReadView,
+    JobSeekerNotificationsView,
+    JobSeekerProfileView,
+    JobSeekerResumeView,
+    JobSeekerSaveJobView,
+    JobSeekerSavedJobsView,
+    JobSeekerSettingsView,
+    JobSeekerTrackerView,
+)
+
+urlpatterns = [
+    path("dashboard/", JobSeekerDashboardView.as_view(), name="jobseeker_dashboard"),
+    path("profile/", JobSeekerProfileView.as_view(), name="jobseeker_profile"),
+    path("settings/", JobSeekerSettingsView.as_view(), name="jobseeker_settings"),
+    path("jobs/", JobSeekerBrowseJobsView.as_view(), name="jobseeker_browse_jobs"),
+    path(
+        "jobs/<uuid:job_id>/",
+        JobSeekerJobDetailView.as_view(),
+        name="jobseeker_job_detail",
+    ),
+    path(
+        "jobs/<uuid:job_id>/apply/",
+        JobSeekerApplyJobView.as_view(),
+        name="jobseeker_job_apply",
+    ),
+    path(
+        "jobs/<uuid:job_id>/save/",
+        JobSeekerSaveJobView.as_view(),
+        name="jobseeker_save_job",
+    ),
+    path(
+        "applications/",
+        JobSeekerApplicationsView.as_view(),
+        name="jobseeker_applications",
+    ),
+    path(
+        "applications/<uuid:application_id>/",
+        JobSeekerApplicationDetailView.as_view(),
+        name="jobseeker_application_detail",
+    ),
+    path(
+        "api/applications/",
+        JobSeekerApplicationsAPIView.as_view(),
+        name="jobseeker_applications_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/withdraw/",
+        JobSeekerApplicationWithdrawAPIView.as_view(),
+        name="jobseeker_application_withdraw_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/offer/",
+        JobSeekerApplicationOfferAPIView.as_view(),
+        name="jobseeker_application_offer_api",
+    ),
+    path("saved-jobs/", JobSeekerSavedJobsView.as_view(), name="jobseeker_saved_jobs"),
+    path(
+        "api/saved-jobs/",
+        JobSeekerSavedJobsAPIView.as_view(),
+        name="jobseeker_saved_jobs_api",
+    ),
+    path(
+        "api/saved-jobs/toggle/",
+        JobSeekerSavedJobToggleAPIView.as_view(),
+        name="jobseeker_saved_job_toggle_api",
+    ),
+    path(
+        "api/saved-jobs/status/",
+        JobSeekerSavedJobStatusAPIView.as_view(),
+        name="jobseeker_saved_job_status_api",
+    ),
+    path("tracker/", JobSeekerTrackerView.as_view(), name="jobseeker_tracker"),
+    path(
+        "api/tracker/", JobSeekerTrackerAPIView.as_view(), name="jobseeker_tracker_api"
+    ),
+    path(
+        "api/tracker/export/",
+        JobSeekerTrackerExportView.as_view(),
+        name="jobseeker_tracker_export",
+    ),
+    path("interviews/", JobSeekerInterviewsView.as_view(), name="jobseeker_interviews"),
+    path(
+        "interviews/<uuid:application_id>/",
+        JobSeekerInterviewDetailView.as_view(),
+        name="jobseeker_interview_detail",
+    ),
+    path(
+        "interviews/<uuid:application_id>/print/",
+        JobSeekerInterviewPrintView.as_view(),
+        name="jobseeker_interview_print",
+    ),
+    path(
+        "api/interviews/",
+        JobSeekerInterviewsAPIView.as_view(),
+        name="jobseeker_interviews_api",
+    ),
+    path(
+        "api/interviews/<uuid:application_id>/confirm/",
+        JobSeekerInterviewConfirmAPIView.as_view(),
+        name="jobseeker_interview_confirm_api",
+    ),
+    path(
+        "api/interviews/<uuid:application_id>/reschedule/",
+        JobSeekerInterviewRescheduleAPIView.as_view(),
+        name="jobseeker_interview_reschedule_api",
+    ),
+    path("resume/", JobSeekerResumeView.as_view(), name="jobseeker_resume"),
+    path(
+        "certificates/",
+        JobSeekerCertificatesView.as_view(),
+        name="jobseeker_certificates",
+    ),
+    path(
+        "api/certificates/",
+        JobSeekerCertificatesAPIView.as_view(),
+        name="jobseeker_certificates_api",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/",
+        JobSeekerCertificateDetailAPIView.as_view(),
+        name="jobseeker_certificate_detail_api",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/download/",
+        JobSeekerCertificateDownloadView.as_view(),
+        name="jobseeker_certificate_download",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/preview/",
+        JobSeekerCertificatePreviewView.as_view(),
+        name="jobseeker_certificate_preview",
+    ),
+    path(
+        "api/settings/account/",
+        JobSeekerSettingsAccountAPIView.as_view(),
+        name="jobseeker_settings_account_api",
+    ),
+    path(
+        "api/settings/password/",
+        JobSeekerSettingsPasswordAPIView.as_view(),
+        name="jobseeker_settings_password_api",
+    ),
+    path(
+        "api/settings/notifications/",
+        JobSeekerSettingsNotificationsAPIView.as_view(),
+        name="jobseeker_settings_notifications_api",
+    ),
+    path(
+        "api/settings/privacy/",
+        JobSeekerSettingsPrivacyAPIView.as_view(),
+        name="jobseeker_settings_privacy_api",
+    ),
+    path(
+        "api/settings/sessions/",
+        JobSeekerSettingsSessionsAPIView.as_view(),
+        name="jobseeker_settings_sessions_api",
+    ),
+    path(
+        "api/settings/sessions/<uuid:session_id>/",
+        JobSeekerSettingsSessionDetailAPIView.as_view(),
+        name="jobseeker_settings_session_detail_api",
+    ),
+    path(
+        "api/settings/sessions/revoke-others/",
+        JobSeekerSettingsRevokeSessionsAPIView.as_view(),
+        name="jobseeker_settings_revoke_sessions_api",
+    ),
+    path(
+        "api/settings/connected/<str:provider>/",
+        JobSeekerSettingsConnectedAPIView.as_view(),
+        name="jobseeker_settings_connected_detail_api",
+    ),
+    path(
+        "api/settings/connected/",
+        JobSeekerSettingsConnectedAPIView.as_view(),
+        name="jobseeker_settings_connected_api",
+    ),
+    path(
+        "api/settings/delete/",
+        JobSeekerSettingsDeleteAccountAPIView.as_view(),
+        name="jobseeker_settings_delete_api",
+    ),
+    path(
+        "api/settings/audit/",
+        JobSeekerSettingsAuditAPIView.as_view(),
+        name="jobseeker_settings_audit_api",
+    ),
+    path("messages/", JobSeekerMessagesView.as_view(), name="jobseeker_messages"),
+    path(
+        "notifications/",
+        JobSeekerNotificationsView.as_view(),
+        name="jobseeker_notifications",
+    ),
+    path(
+        "notifications/<uuid:notification_id>/read/",
+        JobSeekerNotificationReadView.as_view(),
+        name="jobseeker_notification_read",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        JobSeekerNotificationsMarkAllReadView.as_view(),
+        name="jobseeker_notifications_mark_all_read",
+    ),
+    path(
+        "api/dashboard-insights/",
+        JobSeekerDashboardInsightsAPIView.as_view(),
+        name="jobseeker_dashboard_insights_api",
+    ),
+    path(
+        "api/profile-completion/animation-shown/",
+        JobSeekerProfileCompletionAnimationAPIView.as_view(),
+        name="jobseeker_profile_completion_animation_api",
+    ),
+    path(
+        "api/recommendations/",
+        JobSeekerRecommendationsAPIView.as_view(),
+        name="jobseeker_recommendations_api",
+    ),
+    path(
+        "api/profile/", JobSeekerProfileAPIView.as_view(), name="jobseeker_profile_api"
+    ),
+    path(
+        "api/profile/sections/<str:section>/",
+        JobSeekerProfileSectionAPIView.as_view(),
+        name="jobseeker_profile_section_api",
+    ),
+    path(
+        "api/profile/experiences/",
+        JobSeekerProfileExperiencesAPIView.as_view(),
+        name="jobseeker_profile_experiences_api",
+    ),
+    path(
+        "api/profile/experiences/<uuid:experience_id>/",
+        JobSeekerProfileExperienceDetailAPIView.as_view(),
+        name="jobseeker_profile_experience_detail_api",
+    ),
+    path(
+        "api/profile/education/",
+        JobSeekerProfileEducationAPIView.as_view(),
+        name="jobseeker_profile_education_api",
+    ),
+    path(
+        "api/profile/education/<uuid:education_id>/",
+        JobSeekerProfileEducationDetailAPIView.as_view(),
+        name="jobseeker_profile_education_detail_api",
+    ),
+    path(
+        "api/profile/projects/",
+        JobSeekerProfileProjectsAPIView.as_view(),
+        name="jobseeker_profile_projects_api",
+    ),
+    path(
+        "api/profile/projects/<uuid:project_id>/",
+        JobSeekerProfileProjectDetailAPIView.as_view(),
+        name="jobseeker_profile_project_detail_api",
+    ),
+    path(
+        "api/profile/certifications/",
+        JobSeekerProfileCertificationsAPIView.as_view(),
+        name="jobseeker_profile_certifications_api",
+    ),
+    path(
+        "api/profile/certifications/<uuid:certification_id>/",
+        JobSeekerProfileCertificationDetailAPIView.as_view(),
+        name="jobseeker_profile_certification_detail_api",
+    ),
+    path(
+        "api/resume/",
+        JobSeekerResumePortalAPIView.as_view(),
+        name="jobseeker_resume_api",
+    ),
+    path(
+        "api/resume/autofill/",
+        JobSeekerResumeAutofillAPIView.as_view(),
+        name="jobseeker_resume_autofill_api",
+    ),
+    path(
+        "api/profile/resume/",
+        JobSeekerProfileResumeAPIView.as_view(),
+        name="jobseeker_profile_resume_api",
+    ),
+    path(
+        "api/profile/resume/download/",
+        JobSeekerProfileResumeDownloadView.as_view(),
+        name="jobseeker_profile_resume_download",
+    ),
+    path(
+        "api/profile/resume/preview/",
+        JobSeekerProfileResumePreviewView.as_view(),
+        name="jobseeker_profile_resume_preview",
+    ),
+    path(
+        "api/profile/photo/",
+        JobSeekerProfilePhotoAPIView.as_view(),
+        name="jobseeker_profile_photo_api",
+    ),
+]

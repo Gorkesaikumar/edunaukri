@@ -1,0 +1,88 @@
+<article class="jsd-tracker-pipeline jsd-tracker-pipeline--premium">
+    <header class="jsd-tracker-pipeline__head">
+        <div class="jsd-tracker-pipeline__brand">
+            <div class="jsd-job-card__logo">
+                {% if pipe.logo_url %}<img src="{{ pipe.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+            </div>
+            <div>
+                <p class="jsd-tracker-pipeline__institution">{{ pipe.company_name }}</p>
+                <h3 class="jsd-tracker-pipeline__title">{{ pipe.job_title }}</h3>
+                <p class="jsd-tracker-pipeline__meta">{{ pipe.department|default:"General Application" }} · Applied {{ pipe.applied_date }}</p>
+            </div>
+        </div>
+        <div class="jsd-tracker-pipeline__head-side">
+            <span class="jsd-app-badge jsd-app-badge--{{ pipe.status_tone|default:'review' }}">{{ pipe.status_label }}</span>
+            <p class="jsd-tracker-pipeline__id">Application ID: {{ pipe.application_id }}</p>
+        </div>
+    </header>
+
+    <div class="jsd-tracker-pipeline__summary">
+        <span><i class="bi bi-person-badge"></i> {{ pipe.recruiter_name|default:"Recruiting Team" }}</span>
+        <span><i class="bi bi-signpost-2"></i> Next: {{ pipe.expected_next_step|default:"Await recruiter update" }}</span>
+    </div>
+
+    <ol class="jsd-pipeline-ats">
+        {% for stage in pipe.stages %}
+        <li class="jsd-pipeline-ats__item jsd-pipeline-ats__item--{{ stage.state }}">
+            <div class="jsd-pipeline-ats__icon" title="{{ stage.state|title }}">
+                <i class="bi {{ stage.icon }}"></i>
+            </div>
+            <div class="jsd-pipeline-ats__content">
+                <div class="jsd-pipeline-ats__line">
+                    <p class="jsd-pipeline-ats__label">{{ stage.label }}</p>
+                    <span class="jsd-pipeline-ats__chip">{{ stage.state_label }}</span>
+                </div>
+                {% if stage.timestamp %}<p class="jsd-pipeline-ats__time">{{ stage.timestamp }}</p>{% endif %}
+                {% if stage.recruiter_name %}<p class="jsd-pipeline-ats__meta">Updated by {{ stage.recruiter_name }}</p>{% endif %}
+                {% if stage.description %}<p class="jsd-pipeline-ats__desc">{{ stage.description }}</p>{% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+
+    <details class="jsd-pipeline-history" {% if pipe.history and pipe.history|length < 3 %}open{% endif %}>
+        <summary>Status History</summary>
+        {% if pipe.history %}
+        <div class="jsd-pipeline-history__table-wrap">
+            <table class="jsd-pipeline-history__table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Updated By</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in pipe.history %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.time }}</td>
+                        <td>{{ entry.status_label }}</td>
+                        <td>{{ entry.updated_by }}</td>
+                        <td>{{ entry.remarks|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No timeline events available yet.</p>
+        {% endif %}
+    </details>
+
+    <div class="jsd-tracker-pipeline__actions">
+        <a href="{{ pipe.detail_url }}" class="jsd-btn jsd-btn--outline jsd-btn--sm">View Application</a>
+        {% if pipe.job_url %}<a href="{{ pipe.job_url }}" class="jsd-btn jsd-btn--outline jsd-btn--sm">View Job</a>{% endif %}
+        {% if pipe.interview_url %}<a href="{{ pipe.interview_url }}" class="jsd-btn jsd-btn--outline jsd-btn--sm">Interview Details</a>{% endif %}
+        {% if pipe.offer_letter_url %}<a href="{{ pipe.offer_letter_url }}" class="jsd-btn jsd-btn--outline jsd-btn--sm" target="_blank" rel="noopener">Offer Letter</a>{% endif %}
+        {% if pipe.can_withdraw and pipe.withdraw_url %}
+        <form method="post" action="{{ pipe.withdraw_url }}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="jsd-btn jsd-btn--soft-danger jsd-btn--sm">Withdraw</button>
+        </form>
+        {% endif %}
+        {% if pipe.contact_email %}<a href="mailto:{{ pipe.contact_email }}" class="jsd-btn jsd-btn--outline jsd-btn--sm">Contact Recruiting Team</a>{% endif %}
+    </div>
+</article>

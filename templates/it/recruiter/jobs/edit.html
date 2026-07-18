@@ -1,0 +1,286 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Edit Job | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if not edit_page %}
+<div class="rcd-bento rcd-empty"><p>Unable to load job editing form.</p></div>
+{% else %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-soft-primary text-primary px-2 py-1 fw-semibold">Editing Draft</span>
+            {% if form_data.job_code %}<span class="text-muted small">REF: {{ form_data.job_code }}</span>{% endif %}
+        </div>
+        <h1 class="rcd-section-head__title">{{ form_data.title|default:"Edit Job Posting" }}</h1>
+        <p class="mb-0 text-muted">Update your job details, skills, and compensation parameters.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ edit_page.urls.manage_jobs }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Cancel & Return</a>
+    </div>
+</header>
+
+{% if form_errors %}
+<div class="alert alert-danger mb-4" role="alert">
+    <ul class="mb-0 ps-3">
+        {% for err in form_errors %}
+        <li>{{ err }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="rcd-bento rcd-bento--press p-4 p-md-5">
+    <form method="post" action="" id="recJobEditForm" data-job-id="{{ job_id }}" novalidate>
+        {% csrf_token %}
+        <div class="row g-4">
+            <!-- Section: Core Identity -->
+            <div class="col-12 border-bottom pb-2 mb-2">
+                <h5 class="fw-bold mb-1"><span class="material-symbols-outlined align-middle me-2">work</span>Role Overview</h5>
+                <p class="text-muted small mb-0">Fundamental identity and classification of the job position.</p>
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label fw-semibold" for="jobTitle">Job Title *</label>
+                <input type="text" class="form-control" id="jobTitle" name="title" required maxlength="200"
+                       value="{{ form_data.title|default:'' }}" placeholder="e.g. Senior Full Stack Engineer">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobCode">Job Code / SKU</label>
+                <input type="text" class="form-control" id="jobCode" name="job_code" maxlength="50"
+                       value="{{ form_data.job_code|default:'' }}" placeholder="e.g. ENG-2026-SR">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobCategory">Category / Function</label>
+                <input type="text" class="form-control" id="jobCategory" name="category" maxlength="100"
+                       value="{{ form_data.category|default:'' }}" placeholder="e.g. Software Engineering, DevOps">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobDepartment">Department</label>
+                <input type="text" class="form-control" id="jobDepartment" name="department" maxlength="100"
+                       value="{{ form_data.department|default:'' }}" placeholder="e.g. Core Platform, Cloud Infrastructure">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobEmployment">Employment Type</label>
+                <select class="form-select" id="jobEmployment" name="employment_type">
+                    <option value="full_time"{% if form_data.employment_type == 'full_time' or form_data.employment_type == 'Full-time' %} selected{% endif %}>Full-time</option>
+                    <option value="part_time"{% if form_data.employment_type == 'part_time' or form_data.employment_type == 'Part-time' %} selected{% endif %}>Part-time</option>
+                    <option value="contract"{% if form_data.employment_type == 'contract' or form_data.employment_type == 'Contract' %} selected{% endif %}>Contract / Consultant</option>
+                    <option value="internship"{% if form_data.employment_type == 'internship' or form_data.employment_type == 'Internship' %} selected{% endif %}>Internship</option>
+                    <option value="freelance"{% if form_data.employment_type == 'freelance' or form_data.employment_type == 'Freelance' %} selected{% endif %}>Freelance</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobWorkMode">Work Mode</label>
+                <select class="form-select" id="jobWorkMode" name="work_mode">
+                    <option value="onsite"{% if form_data.work_mode == 'onsite' %} selected{% endif %}>Onsite</option>
+                    <option value="hybrid"{% if form_data.work_mode == 'hybrid' %} selected{% endif %}>Hybrid</option>
+                    <option value="remote"{% if form_data.work_mode == 'remote' or form_data.is_remote %} selected{% endif %}>Remote</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobVacancies">Vacancies / Openings</label>
+                <input type="number" class="form-control" id="jobVacancies" name="vacancies" min="1" max="500"
+                       value="{{ form_data.vacancies|default:1 }}">
+            </div>
+
+            <!-- Section: Location & Timeline -->
+            <div class="col-12 border-bottom pb-2 mt-5 mb-2">
+                <h5 class="fw-bold mb-1"><span class="material-symbols-outlined align-middle me-2">location_on</span>Location & Timeline</h5>
+                <p class="text-muted small mb-0">Physical work location and candidate onboarding timeline.</p>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobLocation">Primary Display Location</label>
+                <input type="text" class="form-control" id="jobLocation" name="location"
+                       value="{{ form_data.location|default:'' }}" placeholder="e.g. Bengaluru, Karnataka">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="jobRemote" name="is_remote"
+                           {% if form_data.is_remote or form_data.work_mode == 'remote' %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold" for="jobRemote">100% Remote Role</label>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobCity">City</label>
+                <input type="text" class="form-control" id="jobCity" name="city"
+                       value="{{ form_data.city|default:'' }}" placeholder="e.g. Bengaluru">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobState">State / Province</label>
+                <input type="text" class="form-control" id="jobState" name="state"
+                       value="{{ form_data.state|default:'' }}" placeholder="e.g. Karnataka">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold" for="jobCountry">Country</label>
+                <input type="text" class="form-control" id="jobCountry" name="country"
+                       value="{{ form_data.country|default:'India' }}" placeholder="e.g. India">
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobOfficeAddress">Office Address / Landmark</label>
+                <input type="text" class="form-control" id="jobOfficeAddress" name="office_address"
+                       value="{{ form_data.office_address|default:'' }}" placeholder="e.g. Tower B, Tech Park, Outer Ring Road">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobJoiningTimeline">Joining Timeline</label>
+                <select class="form-select" id="jobJoiningTimeline" name="joining_timeline">
+                    <option value=""{% if not form_data.joining_timeline %} selected{% endif %}>Any Timeline / Standard</option>
+                    <option value="immediate"{% if form_data.joining_timeline == 'immediate' %} selected{% endif %}>Immediate Joiner (0-15 days)</option>
+                    <option value="30_days"{% if form_data.joining_timeline == '30_days' %} selected{% endif %}>Within 30 days</option>
+                    <option value="60_days"{% if form_data.joining_timeline == '60_days' %} selected{% endif %}>Within 60 days</option>
+                    <option value="90_days"{% if form_data.joining_timeline == '90_days' %} selected{% endif %}>Within 90 days</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobDeadline">Application Deadline</label>
+                <input type="date" class="form-control" id="jobDeadline" name="application_deadline"
+                       value="{{ form_data.application_deadline|default:'' }}">
+            </div>
+
+            <!-- Section: Compensation & Experience -->
+            <div class="col-12 border-bottom pb-2 mt-5 mb-2">
+                <h5 class="fw-bold mb-1"><span class="material-symbols-outlined align-middle me-2">payments</span>Compensation & Experience</h5>
+                <p class="text-muted small mb-0">Experience brackets and salary parameters.</p>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobExpMin">Min Experience (years)</label>
+                <input type="number" class="form-control" id="jobExpMin" name="experience_min" min="0" max="40" step="0.5"
+                       value="{{ form_data.experience_min|default:'' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobExpMax">Max Experience (years)</label>
+                <input type="number" class="form-control" id="jobExpMax" name="experience_max" min="0" max="40" step="0.5"
+                       value="{{ form_data.experience_max|default:'' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="jobSalCurrency">Currency</label>
+                <select class="form-select" id="jobSalCurrency" name="salary_currency">
+                    <option value="INR"{% if form_data.salary_currency == 'INR' or not form_data.salary_currency %} selected{% endif %}>INR (₹)</option>
+                    <option value="USD"{% if form_data.salary_currency == 'USD' %} selected{% endif %}>USD ($)</option>
+                    <option value="EUR"{% if form_data.salary_currency == 'EUR' %} selected{% endif %}>EUR (€)</option>
+                    <option value="GBP"{% if form_data.salary_currency == 'GBP' %} selected{% endif %}>GBP (£)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="jobSalVisibility">Salary Visibility</label>
+                <select class="form-select" id="jobSalVisibility" name="salary_visibility">
+                    <option value="visible"{% if form_data.salary_visibility == 'visible' or not form_data.salary_visibility %} selected{% endif %}>Visible to Applicants</option>
+                    <option value="hidden"{% if form_data.salary_visibility == 'hidden' %} selected{% endif %}>Hidden (Undisclosed)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="jobSalMin">Salary Min (LPA / Annual)</label>
+                <input type="number" class="form-control" id="jobSalMin" name="salary_min" min="0" step="0.1"
+                       value="{{ form_data.salary_min|default:'' }}" placeholder="e.g. 12">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold" for="jobSalMax">Salary Max (LPA / Annual)</label>
+                <input type="number" class="form-control" id="jobSalMax" name="salary_max" min="0" step="0.1"
+                       value="{{ form_data.salary_max|default:'' }}" placeholder="e.g. 24">
+            </div>
+
+            <!-- Section: Skills & Competencies -->
+            <div class="col-12 border-bottom pb-2 mt-5 mb-2">
+                <h5 class="fw-bold mb-1"><span class="material-symbols-outlined align-middle me-2">psychology</span>Skills & Competencies</h5>
+                <p class="text-muted small mb-0">Separate required (must-have) and preferred (nice-to-have) skills. Use comma to add.</p>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobReqSkillsInput">Required Skills *</label>
+                <div class="rcd-skill-tag-container border rounded p-2 d-flex flex-wrap gap-2 align-items-center bg-white" id="reqSkillsContainer">
+                    {% for skill in form_data.required_skills %}
+                    <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 py-2 px-3 rounded-pill" data-skill="{{ skill }}">
+                        {{ skill }} <span class="material-symbols-outlined small cursor-pointer remove-skill" style="font-size:14px;">close</span>
+                    </span>
+                    {% endfor %}
+                    <input type="text" class="form-control border-0 shadow-none flex-grow-1 p-1" id="jobReqSkillsInput"
+                           placeholder="Type skill & press Enter or Comma..." autocomplete="off">
+                </div>
+                <input type="hidden" name="required_skills" id="jobReqSkillsHidden" value="{{ form_data.required_skills|join:',' }}">
+                <div class="list-group position-absolute shadow-sm mt-1 d-none" id="reqSkillsSuggest" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold" for="jobPrefSkillsInput">Preferred Skills (Optional)</label>
+                <div class="rcd-skill-tag-container border rounded p-2 d-flex flex-wrap gap-2 align-items-center bg-white" id="prefSkillsContainer">
+                    {% for skill in form_data.preferred_skills %}
+                    <span class="badge bg-soft-secondary text-dark d-inline-flex align-items-center gap-1 py-2 px-3 rounded-pill border" data-skill="{{ skill }}">
+                        {{ skill }} <span class="material-symbols-outlined small cursor-pointer remove-skill" style="font-size:14px;">close</span>
+                    </span>
+                    {% endfor %}
+                    <input type="text" class="form-control border-0 shadow-none flex-grow-1 p-1" id="jobPrefSkillsInput"
+                           placeholder="Type skill & press Enter or Comma..." autocomplete="off">
+                </div>
+                <input type="hidden" name="preferred_skills" id="jobPrefSkillsHidden" value="{{ form_data.preferred_skills|join:',' }}">
+                <div class="list-group position-absolute shadow-sm mt-1 d-none" id="prefSkillsSuggest" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobEduReq">Education Requirement</label>
+                <input type="text" class="form-control" id="jobEduReq" name="education_requirement"
+                       value="{{ form_data.education_requirement|default:'' }}" placeholder="e.g. B.Tech / B.E. in Computer Science or equivalent experience">
+            </div>
+
+            <!-- Section: Detailed Specifications -->
+            <div class="col-12 border-bottom pb-2 mt-5 mb-2">
+                <h5 class="fw-bold mb-1"><span class="material-symbols-outlined align-middle me-2">article</span>Detailed Description & Expectations</h5>
+                <p class="text-muted small mb-0">Provide rich context about responsibilities, team structure, and perks.</p>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobDesc">Job Description *</label>
+                <textarea class="form-control font-monospace" id="jobDesc" name="description" rows="6" required
+                          placeholder="Describe the role's primary objective, team dynamics, and day-to-day work.">{{ form_data.description|default:'' }}</textarea>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobRoles">Roles & Responsibilities</label>
+                <textarea class="form-control" id="jobRoles" name="roles_responsibilities" rows="5"
+                          placeholder="List specific deliverables and responsibilities (bullet points recommended).">{{ form_data.roles_responsibilities|default:'' }}</textarea>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobReq">Requirements & Qualifications</label>
+                <textarea class="form-control" id="jobReq" name="requirements" rows="5"
+                          placeholder="Detail technical requirements, domain expertise, and behavioral competencies.">{{ form_data.requirements|default:'' }}</textarea>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold" for="jobBenefits">Benefits & Perks</label>
+                <textarea class="form-control" id="jobBenefits" name="benefits" rows="4"
+                          placeholder="Health insurance, wellness stipends, remote equipment allowance, learning budgets, etc.">{{ form_data.benefits|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-5 pt-4 border-top">
+            <div class="d-flex gap-2">
+                <button type="submit" class="rcd-btn rcd-btn--primary px-4 py-2" id="recJobEditSubmit">
+                    <span class="material-symbols-outlined me-1" aria-hidden="true">check_circle</span>
+                    Save Job Updates
+                </button>
+                <a href="{{ edit_page.urls.manage_jobs }}" class="rcd-btn rcd-btn--soft px-4 py-2">Cancel</a>
+            </div>
+            <span class="text-muted small">Changes will update the draft or live posting immediately.</span>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window.REC_PORTAL = window.REC_PORTAL || {};
+window.REC_PORTAL.csrfToken = "{{ csrf_token|escapejs }}";
+window.REC_PORTAL.skillSuggestUrl = "{% url 'recruiter_skill_suggest_api' user_uuid=portal_user_uuid %}";
+</script>
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+{% endblock %}

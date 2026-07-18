@@ -1,0 +1,141 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="?type=it" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_type == 'it' %}bg-primary text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %} flex items-center gap-1.5">
+        <span class="material-symbols-outlined !text-sm">developer_board</span> IT Tech Postings
+    </a>
+    <a href="?type=faculty" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_type == 'faculty' %}bg-amber-600 text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %} flex items-center gap-1.5">
+        <span class="material-symbols-outlined !text-sm">school</span> Faculty Vacancies
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Domain Stats KPI Bar -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Total Domain Postings</p>
+        <span class="text-xl font-extrabold text-on-surface mt-1 block">{% if current_type == 'faculty' %}{{ faculty_stats.total_vacancies|default:"0" }}{% else %}{{ it_stats.total_jobs|default:"0" }}{% endif %}</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Active & Published</p>
+        <span class="text-xl font-extrabold text-emerald-600 mt-1 block">{% if current_type == 'faculty' %}{{ faculty_stats.published|default:"0" }}{% else %}{{ it_stats.published|default:"0" }}{% endif %}</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Pending Approval</p>
+        <span class="text-xl font-extrabold text-amber-600 mt-1 block">{% if current_type == 'faculty' %}{{ faculty_stats.pending_approval|default:"0" }}{% else %}{{ it_stats.pending_approval|default:"0" }}{% endif %}</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Closed / Archived</p>
+        <span class="text-xl font-extrabold text-on-surface-variant mt-1 block">{% if current_type == 'faculty' %}{{ faculty_stats.closed|default:"0" }}{% else %}{{ it_stats.closed|default:"0" }}{% endif %}</span>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <form method="get" class="flex items-center gap-3 w-full md:w-auto flex-1">
+        <input type="hidden" name="type" value="{{ current_type }}">
+        {% if current_org_id %}
+        <input type="hidden" name="org_id" value="{{ current_org_id }}">
+        {% endif %}
+        <div class="relative w-full max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant/50 !text-lg">search</span>
+            <input type="text" name="q" value="{{ current_search }}" placeholder="Search by posting title or organization..." class="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Search</button>
+    </form>
+    
+    <div class="text-xs text-on-surface-variant font-medium">
+        <span>Showing <strong class="text-on-surface">{{ postings|length }}</strong> postings</span>
+    </div>
+</div>
+
+<!-- Moderation Queue Table -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Posting Title & Organization</th>
+                    <th class="p-3.5">Domain / Type</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5">Featured Status</th>
+                    <th class="p-3.5">Created Date</th>
+                    <th class="p-3.5 text-right">Moderation Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for item in postings %}
+                <tr class="hover:bg-gray-50/80 transition-colors">
+                    <td class="p-3.5">
+                        <div>
+                            <a href="{% url 'super_admin_job_detail' user_uuid=header_user.user_uuid job_id=item.id %}?type={{ current_type }}" class="font-extrabold text-on-surface hover:text-primary transition-colors text-sm">{{ item.title }}</a>
+                            <p class="text-[11px] text-on-surface-variant/70 mt-0.5">
+                                {% if current_type == 'faculty' %}
+                                <span class="font-semibold text-on-surface">{{ item.college.name|default:"University Institution" }}</span> • {{ item.department|default:"Department" }}
+                                {% else %}
+                                <span class="font-semibold text-on-surface">{{ item.company.name|default:"IT Company" }}</span> • {{ item.location|default:"Remote / Hybrid" }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if current_type == 'faculty' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ current_type }}</span>
+                    </td>
+                    <td class="p-3.5">
+                        {% if item.status == 'published' or item.status == 'open' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">Published</span>
+                        {% elif item.status == 'pending_approval' or item.status == 'draft' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">Pending Review</span>
+                        {% elif item.status == 'rejected' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase">Rejected</span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase">{{ item.status|default:"Closed" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5">
+                        {% if item.is_featured %}
+                        <span class="inline-flex items-center gap-1 text-amber-600 font-extrabold text-[11px]">
+                            <span class="material-symbols-outlined !text-sm">star</span> Featured
+                        </span>
+                        {% else %}
+                        <span class="text-on-surface-variant/40 text-[11px]">Standard</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[11px]">{{ item.created_at|slice:":10" }}</td>
+                    <td class="p-3.5 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                            <a href="{% url 'super_admin_job_detail' user_uuid=header_user.user_uuid job_id=item.id %}?type={{ current_type }}" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-on-surface-variant transition-colors" title="Audit Posting">
+                                <span class="material-symbols-outlined !text-base">visibility</span>
+                            </a>
+                            {% if item.status == 'pending_approval' or item.status == 'draft' or item.status == 'rejected' %}
+                            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=item.id %}', {action: 'approve', type: '{{ current_type }}'}, 'Approve and publish this posting?')" class="p-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 text-emerald-600 transition-colors" title="Approve & Publish">
+                                <span class="material-symbols-outlined !text-base">check_circle</span>
+                            </button>
+                            {% endif %}
+                            {% if item.status != 'rejected' and item.status != 'closed' %}
+                            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=item.id %}', {action: 'reject', type: '{{ current_type }}', remarks: 'Admin quality review rejection'}, 'Reject this posting?')" class="p-1.5 rounded-lg border border-red-200 hover:bg-red-50 text-red-600 transition-colors" title="Reject Posting">
+                                <span class="material-symbols-outlined !text-base">cancel</span>
+                            </button>
+                            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=item.id %}', {action: 'close', type: '{{ current_type }}'}, 'Close this posting?')" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-on-surface-variant transition-colors" title="Close Posting">
+                                <span class="material-symbols-outlined !text-base">lock</span>
+                            </button>
+                            {% endif %}
+                            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=item.id %}', {action: 'featured', type: '{{ current_type }}', value: {% if item.is_featured %}false{% else %}true{% endif %}}, 'Toggle featured status?')" class="p-1.5 rounded-lg border border-amber-200 hover:bg-amber-50 text-amber-600 transition-colors" title="Toggle Featured">
+                                <span class="material-symbols-outlined !text-base">star</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs">No postings found matching the selected domain or filter criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

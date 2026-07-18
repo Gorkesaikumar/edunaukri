@@ -1,0 +1,46 @@
+{% if col.cards %}
+<div class="rcd-pipeline__cards" data-pipeline-cards>
+    {% for card in col.cards %}
+    <article class="rcd-pipeline-card{% if card.can_drag %} rcd-pipeline-card--draggable{% endif %}"
+             {% if card.can_drag %}draggable="true"{% endif %}
+             data-application-id="{{ card.id }}"
+             data-detail="{{ card.detail_json|escape }}"
+             data-applied="{{ card.applied_label }}"
+             data-profile-url="{{ card.url }}"
+             tabindex="0"
+             role="button"
+             aria-label="View {{ card.name }}">
+        <div class="rcd-pipeline-card__row">
+            <div class="rcd-pipeline-card__avatar">
+                {% if card.photo_url %}
+                <img src="{{ card.photo_url }}" alt="">
+                {% else %}
+                <span>{{ card.initials }}</span>
+                {% endif %}
+            </div>
+            <div class="rcd-pipeline-card__info">
+                <p class="rcd-pipeline-card__name">{{ card.name }}</p>
+                <p class="rcd-pipeline-card__role">{{ card.job_title }}</p>
+            </div>
+        </div>
+        <div class="rcd-pipeline-card__meta">
+            <span class="rcd-pipeline-card__badge rcd-pipeline-card__badge--{{ col.accent }}">{{ card.experience }}</span>
+            <span class="rcd-pipeline-card__time">{{ card.time_label }}</span>
+        </div>
+        {% if card.skills %}
+        <div class="rcd-pipeline-card__skills">
+            {% for skill in card.skills|slice:":3" %}
+            <span class="rcd-pipeline-card__skill">{{ skill }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="rcd-pipeline__empty">
+    <span class="material-symbols-outlined" aria-hidden="true">person_search</span>
+    <p>No candidates in this stage</p>
+    <span class="rcd-pipeline__empty-hint">Candidates will appear here as they progress.</span>
+</div>
+{% endif %}

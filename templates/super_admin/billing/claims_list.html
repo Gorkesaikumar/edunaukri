@@ -1,0 +1,438 @@
+{% extends "super_admin/base_portal.html" %}
+{% load static %}
+
+{% block title %}{{ PLATFORM_NAME }} Super Admin | Guarantee Claims{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    {% csrf_token %}
+
+    <!-- Page header -->
+    <div class="sm:flex sm:justify-between sm:items-center mb-8">
+        <div class="mb-4 sm:mb-0">
+            <h1 class="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">Guarantee Claims &amp; Refunds 🛡️</h1>
+            <div class="text-sm text-slate-500 mt-1">Manage 90-day guarantee claims from recruiters and approve refunds.</div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+            <form method="GET" class="flex gap-2 items-center">
+                <select name="domain" class="form-select text-sm border-slate-200" onchange="this.form.submit()">
+                    <option value="">All Domains</option>
+                    <option value="it" {% if current_domain == 'it' %}selected{% endif %}>IT</option>
+                    <option value="faculty" {% if current_domain == 'faculty' %}selected{% endif %}>Faculty</option>
+                </select>
+                <select name="status" class="form-select text-sm border-slate-200" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="submitted" {% if current_status == 'submitted' %}selected{% endif %}>New / Submitted</option>
+                    <option value="under_review" {% if current_status == 'under_review' %}selected{% endif %}>Under Review</option>
+                    <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="refund_processing" {% if current_status == 'refund_processing' %}selected{% endif %}>Refund Processing</option>
+                    <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                {% if current_domain or current_status %}
+                    <a href="?_clear=1" class="text-sm text-indigo-500 hover:text-indigo-600 font-medium">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <!-- Counters -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white dark:bg-slate-800 shadow-sm rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Total Claims</div>
+            <div class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ stats.total|default:"0" }}</div>
+        </div>
+        <div class="bg-amber-50 dark:bg-amber-900/20 shadow-sm rounded-lg p-4 border border-amber-200 dark:border-amber-800/50">
+            <div class="text-sm font-semibold text-amber-600 dark:text-amber-500 mb-1">Pending Review</div>
+            <div class="text-2xl font-bold text-amber-700 dark:text-amber-400">{{ stats.pending|default:"0" }}</div>
+        </div>
+        <div class="bg-emerald-50 dark:bg-emerald-900/20 shadow-sm rounded-lg p-4 border border-emerald-200 dark:border-emerald-800/50">
+            <div class="text-sm font-semibold text-emerald-600 dark:text-emerald-500 mb-1">Approved</div>
+            <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{{ stats.approved|default:"0" }}</div>
+        </div>
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 shadow-sm rounded-lg p-4 border border-indigo-200 dark:border-indigo-800/50">
+            <div class="text-sm font-semibold text-indigo-600 dark:text-indigo-500 mb-1">Refund Processing</div>
+            <div class="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{{ stats.refund_processing|default:"0" }}</div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-900/20 shadow-sm rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Resolved</div>
+            <div class="text-2xl font-bold text-slate-700 dark:text-slate-300">{{ stats.resolved|default:"0" }}</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 mb-8">
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full dark:text-slate-300 relative" style="overflow: visible;">
+                <thead class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/20 border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Claim #</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Domain</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Candidate / Placement</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Recruiter / Institution</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Exit Date</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-left">Status</div></th>
+                        <th class="px-4 py-4 whitespace-nowrap"><div class="font-semibold text-center">Actions</div></th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-slate-200 dark:divide-slate-700" style="overflow: visible;">
+                    {% for claim in claims %}
+                    <tr>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="font-bold text-indigo-600">{{ claim.claim_number }}</div>
+                            <div class="text-xs text-slate-500">{{ claim.submitted_at|date:"M d, Y" }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="inline-flex font-medium rounded-full text-center px-2 py-0.5 bg-slate-100 text-slate-600 text-xs uppercase">{{ claim.domain }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="font-bold text-slate-800 dark:text-slate-100">{{ claim.candidate_name }}</div>
+                            <div class="text-xs text-slate-500">{{ claim.job_title }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="font-medium text-slate-800 dark:text-slate-100">{{ claim.recruiter_name }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div>{{ claim.exit_date|date:"M d, Y"|default:"-" }}</div>
+                            <div class="text-xs text-slate-500">{{ claim.get_resolution_display|default:"-" }}</div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            {% if claim.status == 'submitted' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-sky-100 text-sky-600">New</div>
+                            {% elif claim.status == 'under_review' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-amber-100 text-amber-600">Reviewing</div>
+                            {% elif claim.status == 'approved' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-emerald-100 text-emerald-600">Approved</div>
+                            {% elif claim.status == 'refund_processing' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-indigo-100 text-indigo-600">Refund Processing</div>
+                            {% elif claim.status == 'resolved' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-slate-100 text-slate-500">Resolved</div>
+                            {% elif claim.status == 'rejected' %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-rose-100 text-rose-600">Rejected</div>
+                            {% else %}
+                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-slate-100 text-slate-600">{{ claim.get_status_display }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-center">
+                            <div class="inline-flex items-center gap-1.5 justify-center w-full">
+                                {% if 'VIEW_CANDIDATE' in claim.available_actions or 'VIEW_RECRUITER' in claim.available_actions %}
+                                <button onclick="openCandidateModal('{{ claim.id }}')" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-colors" title="View Application Details">
+                                    <span class="material-symbols-outlined !text-[18px]">assignment_ind</span>
+                                </button>
+                                {% endif %}
+
+                                {% if 'VIEW_CLAIM' in claim.available_actions %}
+                                <button onclick="claimAction('{{ claim.id }}', 'review')" class="p-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 transition-colors" title="Review Claim">
+                                    <span class="material-symbols-outlined !text-[18px]">plagiarism</span>
+                                </button>
+                                {% endif %}
+                                
+                                {% if 'VIEW_INVOICE' in claim.available_actions %}
+                                <div class="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                <a href="{% url 'super_admin_invoice_view' user_uuid=request.resolver_match.kwargs.user_uuid invoice_id=claim.invoice_id %}" target="_blank" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-colors" title="View Invoice">
+                                    <span class="material-symbols-outlined !text-[18px]">receipt_long</span>
+                                </a>
+                                {% endif %}
+
+                                {% if 'DOWNLOAD_INVOICE' in claim.available_actions %}
+                                <a href="{% url 'super_admin_invoice_download' user_uuid=request.resolver_match.kwargs.user_uuid invoice_id=claim.invoice_id %}" target="_blank" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-colors" title="Download Invoice">
+                                    <span class="material-symbols-outlined !text-[18px]">download</span>
+                                </a>
+                                {% endif %}
+
+                                {% if 'PROCESS_REFUND' in claim.available_actions %}
+                                <div class="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                <button onclick="openClaimModal('{{ claim.id }}', 'approve_refund')" class="p-1.5 rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 transition-colors" title="Process Refund">
+                                    <span class="material-symbols-outlined !text-[18px]">account_balance_wallet</span>
+                                </button>
+                                {% endif %}
+                                
+                                {% if 'VIEW_REFUND' in claim.available_actions %}
+                                <div class="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                <button onclick="openClaimModal('{{ claim.id }}', 'mark_refunded')" class="p-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-colors" title="Mark Refunded">
+                                    <span class="material-symbols-outlined !text-[18px]">check_circle</span>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-12 text-center text-slate-500">
+                            No guarantee claims found matching the criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="claimModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style="display:none !important;">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 shadow-xl rounded-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <div id="claimModalTitle" class="font-bold text-slate-800 text-lg">Confirm Action</div>
+                <button type="button" onclick="closeClaimModal()" class="text-slate-400 hover:text-slate-600 transition-colors">&times;</button>
+            </div>
+            <div class="p-6">
+                <p id="claimModalDesc" class="text-sm text-slate-600 mb-5"></p>
+                
+                <div id="claimModalInputContainer" class="mb-5 hidden">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Transaction Reference</label>
+                    <input type="text" id="claimModalInput" class="form-input w-full text-sm rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="e.g. TXN-123456789">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Admin Notes</label>
+                    <textarea id="claimModalNotes" rows="3" class="form-textarea w-full text-sm rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Internal notes for this action..."></textarea>
+                </div>
+                
+                <div class="flex items-center gap-3 justify-end">
+                    <button type="button" onclick="closeClaimModal()" class="px-4 py-2.5 text-sm font-bold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="button" id="claimModalConfirmBtn" onclick="confirmClaimAction()" class="px-4 py-2.5 text-sm font-bold rounded-lg text-white shadow-sm transition-colors">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Profile Modal -->
+    <div id="candidateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style="display:none !important;">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 shadow-xl rounded-xl w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center shrink-0">
+                <div class="font-bold text-slate-800 dark:text-white text-lg">Candidate Profile</div>
+                <button type="button" onclick="closeCandidateModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">&times;</button>
+            </div>
+            <div id="candidateModalBody" class="p-0 overflow-y-auto grow">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="px-5 py-4 border-t border-slate-200 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 shrink-0">
+                <button type="button" onclick="closeCandidateModal()" class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors">
+                    Close
+                </button>
+                <a id="candidateModalFullBtn" href="#" class="px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors hidden">
+                    View Full Application
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var _activeclaimId = null;
+    var _activeClaimAction = null;
+
+    var CLAIM_CONFIGS = {
+        approve_refund: {
+            title: 'Process Guarantee Refund',
+            desc: 'This will initiate the refund for the approved claim. Since no automatic payment gateway is configured, you will need to process the manual bank transfer and record the transaction reference later.',
+            btnLabel: 'Initiate Refund',
+            btnClass: 'bg-emerald-500 hover:bg-emerald-600',
+            needsInput: false
+        },
+        mark_refunded: {
+            title: 'Record Manual Refund',
+            desc: 'Mark this refund as successfully processed manually. Please provide the transaction reference ID.',
+            btnLabel: 'Mark Completed',
+            btnClass: 'bg-indigo-500 hover:bg-indigo-600',
+            needsInput: true
+        }
+    };
+
+    function openClaimModal(claimId, action) {
+        var cfg = CLAIM_CONFIGS[action];
+        if (!cfg) return;
+
+        _activeclaimId = claimId;
+        _activeClaimAction = action;
+
+        document.getElementById('claimModalTitle').textContent = cfg.title;
+        document.getElementById('claimModalDesc').textContent = cfg.desc;
+        document.getElementById('claimModalNotes').value = '';
+        
+        var inputContainer = document.getElementById('claimModalInputContainer');
+        var input = document.getElementById('claimModalInput');
+        if (cfg.needsInput) {
+            inputContainer.classList.remove('hidden');
+            input.value = '';
+        } else {
+            inputContainer.classList.add('hidden');
+        }
+
+        var btn = document.getElementById('claimModalConfirmBtn');
+        btn.textContent = cfg.btnLabel;
+        btn.className = 'px-4 py-2.5 text-sm font-bold rounded-lg text-white shadow-sm transition-colors ' + cfg.btnClass;
+
+        document.getElementById('claimModal').style.removeProperty('display');
+    }
+
+    function closeClaimModal() {
+        document.getElementById('claimModal').style.display = 'none';
+        _activeclaimId = null;
+        _activeClaimAction = null;
+    }
+
+    function confirmClaimAction() {
+        var claimId = _activeclaimId;
+        var action = _activeClaimAction;
+        
+        var payload = {
+            action: action,
+            notes: document.getElementById('claimModalNotes').value
+        };
+        
+        if (CLAIM_CONFIGS[action] && CLAIM_CONFIGS[action].needsInput) {
+            payload.transaction_ref = document.getElementById('claimModalInput').value;
+            if (!payload.transaction_ref) {
+                EduNotify.error('Transaction reference is required.');
+                return;
+            }
+        }
+        
+        closeClaimModal();
+        claimAction(claimId, action, payload);
+    }
+
+    async function claimAction(claimId, action, extraPayload = null) {
+        if (!claimId || !action) return;
+
+        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        var payload = extraPayload || { action: action };
+
+        try {
+            var actionUrl = window.location.pathname.replace(/\/$/, '') + '/' + claimId + '/action/';
+            var response = await fetch(actionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            var result = await response.json();
+            if (result.success) {
+                EduNotify.success(result.message || 'Claim updated successfully.');
+                setTimeout(function() { window.location.reload(); }, 1500);
+            } else {
+                EduNotify.error(result.error || 'Failed to update claim.');
+            }
+        } catch (err) {
+            EduNotify.error('A network error occurred. Please try again.');
+        }
+    }
+    async function openCandidateModal(claimId) {
+        if (!claimId) return;
+        
+        var modal = document.getElementById('candidateModal');
+        var body = document.getElementById('candidateModalBody');
+        var fullBtn = document.getElementById('candidateModalFullBtn');
+        
+        modal.style.removeProperty('display');
+        fullBtn.classList.add('hidden');
+        
+        body.innerHTML = '<div class="p-12 text-center text-slate-500"><span class="material-symbols-outlined animate-spin text-4xl mb-4 text-indigo-500">autorenew</span><p>Loading candidate profile...</p></div>';
+        
+        try {
+            var url = '/super-admin/billing/claims/' + claimId + '/candidate-summary/';
+            var response = await fetch(url);
+            var result = await response.json();
+            
+            if (result.success) {
+                var c = result.candidate;
+                var a = result.application;
+                var p = result.placement;
+                var g = result.guarantee;
+                var claim = result.claim;
+                
+                var adminUuid = window.location.pathname.split('/')[2];
+                fullBtn.href = '/super-admin/users/' + adminUuid + '/applications/' + a.reference + '/detail/?domain=' + c.domain.toLowerCase();
+                fullBtn.classList.remove('hidden');
+                
+                var photoHtml = c.profile_photo ? '<img src="' + c.profile_photo + '" class="w-16 h-16 rounded-full object-cover">' : '<div class="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl">' + c.name.charAt(0) + '</div>';
+                
+                var domainBadgeHtml = c.domain === 'IT' ? '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700">IT</span>' : '<span class="px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">FACULTY</span>';
+                
+                body.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex items-center gap-4 mb-8">
+                            ${photoHtml}
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">${c.name} ${domainBadgeHtml}</h3>
+                                <p class="text-sm text-slate-500">ID: ${c.id}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Profile Info -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Profile Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="text-slate-500 w-24 inline-block">Email:</span> <span class="font-medium dark:text-slate-300">${c.email || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-24 inline-block">Phone:</span> <span class="font-medium dark:text-slate-300">${c.phone || 'N/A'}</span></p>
+                                </div>
+                            </div>
+                            
+                            <!-- App Info -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Application Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="text-slate-500 w-28 inline-block">Title:</span> <span class="font-medium dark:text-slate-300">${a.job_title || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Department:</span> <span class="font-medium dark:text-slate-300">${a.department || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Applied:</span> <span class="font-medium dark:text-slate-300">${a.applied_at || 'N/A'}</span></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Placement Info -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Placement Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="text-slate-500 w-28 inline-block">Recruiter:</span> <span class="font-medium dark:text-slate-300">${p.recruiter_name || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Status:</span> <span class="font-medium dark:text-slate-300">${p.joining_status || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Joining Date:</span> <span class="font-medium dark:text-slate-300">${p.joining_date || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Annual CTC:</span> <span class="font-medium dark:text-slate-300">${p.annual_ctc !== 'N/A' ? '₹' + p.annual_ctc : 'N/A'}</span></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Guarantee Info -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Guarantee Information</h4>
+                                <div class="space-y-2 text-sm">
+                                    <p><span class="text-slate-500 w-28 inline-block">Start Date:</span> <span class="font-medium dark:text-slate-300">${g.start_date || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">End Date:</span> <span class="font-medium dark:text-slate-300">${g.end_date || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Exit Date:</span> <span class="font-medium text-rose-600">${g.exit_date || 'N/A'}</span></p>
+                                    <p><span class="text-slate-500 w-28 inline-block">Employed:</span> <span class="font-medium dark:text-slate-300">${g.days_employed} days</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700/50">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Claim Information</h4>
+                            <div class="grid grid-cols-2 gap-y-2 text-sm">
+                                <p><span class="text-slate-500 w-28 inline-block">Claim Number:</span> <span class="font-medium dark:text-slate-300">${claim.claim_number}</span></p>
+                                <p><span class="text-slate-500 w-28 inline-block">Resolution:</span> <span class="font-medium dark:text-slate-300">${claim.requested_resolution}</span></p>
+                                <p><span class="text-slate-500 w-28 inline-block">Exit Reason:</span> <span class="font-medium dark:text-slate-300">${claim.exit_reason}</span></p>
+                                <p><span class="text-slate-500 w-28 inline-block">Status:</span> <span class="font-medium text-indigo-600 dark:text-indigo-400">${claim.status}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                body.innerHTML = '<div class="p-12 text-center text-rose-500"><span class="material-symbols-outlined text-4xl mb-4">error</span><p>' + (result.error || 'Unable to load candidate profile.') + '</p></div>';
+            }
+        } catch (err) {
+            body.innerHTML = '<div class="p-12 text-center text-rose-500"><span class="material-symbols-outlined text-4xl mb-4">error</span><p>A network error occurred while loading candidate profile.</p></div>';
+        }
+    }
+    
+    function closeCandidateModal() {
+        document.getElementById('candidateModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

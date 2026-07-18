@@ -1,0 +1,131 @@
+{% load static %}
+{# Site Footer — link columns, contact, social, bottom bar #}
+<footer class="ed-footer">
+
+    {# Main footer content #}
+    <div class="ed-container" style="padding-block: var(--ed-space-2xl);">
+        <div class="row g-5">
+
+            {# Brand column #}
+            <div class="col-12 col-lg-4">
+                <a class="d-inline-block mb-4" href="{% url 'home' %}" aria-label="{{ PLATFORM_NAME }} home">
+                    <img class="ed-brand__logo" style="height:6rem;" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
+                         onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLtuLCVpL1N1oSPKLcPHJRmyivmb4A1iI35dPnvur1lnoyD2XaihcDYTQ6HiiWw5Zas7PI5OXBoUp97qg3il_RkUaLKLx7XYr2pmsQTQOfS0X7yXtgYD4Ss4l5u6H2OojavLVKMQLPJYC29fBSBswXy7EElwgL8UqiIi8I5FtdobJbCwsatU62Q57DWJwiyNQp8HFd-c8YxrcxnO8MzCbfEZch8AhcAcQqkofRxIkxkGovmD8EO5bg87CQg';">
+                </a>
+                <p class="ed-body-md ed-text-variant mb-4">India's trusted recruitment platform connecting exceptional educators with leading educational institutions.</p>
+
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="ed-trust-chip">15,000+ Active Jobs</span>
+                    <span class="ed-trust-chip">3,500+ Institutions</span>
+                    <span class="ed-trust-chip">60,000+ Candidates</span>
+                    <span class="ed-trust-chip">98% Verified Employers</span>
+                </div>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <div class="ed-contact-row">
+                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                        <a href="mailto:support@edunaukri.com">support@edunaukri.com</a>
+                    </div>
+                    <div class="ed-contact-row">
+                        <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+                        <span>+91-XXXXXXXXXX</span>
+                    </div>
+                    <div class="ed-contact-row">
+                        <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                        <span>Hyderabad, Telangana, India</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="ed-social ed-social--linkedin" href="#" aria-label="LinkedIn"><i class="bi bi-linkedin" aria-hidden="true"></i></a>
+                    <a class="ed-social ed-social--facebook" href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
+                    <a class="ed-social ed-social--instagram" href="#" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>
+                    <a class="ed-social ed-social--youtube" href="#" aria-label="YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></a>
+                    <a class="ed-social ed-social--x" href="#" aria-label="X"><i class="bi bi-twitter-x" aria-hidden="true"></i></a>
+                    <a class="ed-social ed-social--whatsapp" href="#" aria-label="WhatsApp"><i class="bi bi-whatsapp" aria-hidden="true"></i></a>
+                </div>
+            </div>
+
+            {# Link columns #}
+            <div class="col-12 col-lg-8">
+                <div class="row g-5">
+                    <div class="col-6 col-md-3">
+                        <h4 class="ed-footer__col-title">For Candidates</h4>
+                        <ul class="ed-footer__links">
+                            <li><a href="{% url 'marketplace_browse_jobs' %}">Browse Jobs</a></li>
+                            <li><a href="#">Teacher Jobs</a></li>
+                            <li><a href="#">Lecturer Jobs</a></li>
+                            <li><a href="#">Professor Jobs</a></li>
+                            <li><a href="#">Principal Jobs</a></li>
+                            <li><a href="#">My Applications</a></li>
+                            <li><a href="#">Saved Jobs</a></li>
+                            <li><a href="#">Career Advice</a></li>
+                            <li><a href="#">Resume Builder</a></li>
+                            <li><a href="#">Job Alerts</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <h4 class="ed-footer__col-title">For Institutions</h4>
+                        <ul class="ed-footer__links">
+                            <li><a href="#">Post a Job</a></li>
+                            <li><a href="#">Browse Candidates</a></li>
+                            <li><a href="#">Institution Dashboard</a></li>
+                            <li><a href="#">Hiring Solutions</a></li>
+                            <li><a href="#">Premium Recruitment</a></li>
+                            <li><a href="#">Institution Verification</a></li>
+                            <li><a href="#">Employer Login</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <h4 class="ed-footer__col-title">Job Categories</h4>
+                        <ul class="ed-footer__links">
+                            <li><a href="#">Teaching Jobs</a></li>
+                            <li><a href="#">School Jobs</a></li>
+                            <li><a href="#">College Jobs</a></li>
+                            <li><a href="#">University Jobs</a></li>
+                            <li><a href="#">Administrative Jobs</a></li>
+                            <li><a href="#">Librarian Jobs</a></li>
+                            <li><a href="#">Lab Assistant Jobs</a></li>
+                            <li><a href="#">Office Staff Jobs</a></li>
+                            <li><a href="#">Remote Teaching Jobs</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <h4 class="ed-footer__col-title">Company</h4>
+                        <ul class="ed-footer__links">
+                            <li><a href="#">About {{ PLATFORM_NAME }}</a></li>
+                            <li><a href="#">Contact Us</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">FAQs</a></li>
+                            <li><a href="#">Success Stories</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms &amp; Conditions</a></li>
+                            <li><a href="#">Cookie Policy</a></li>
+                            <li><a href="#">Sitemap</a></li>
+                            <li><a href="{% url 'super_admin_login' %}">Super Admin Login</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Bottom bar #}
+    <div class="ed-footer__bottom">
+        <div class="ed-container ed-footer__bottom-inner">
+            <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                <p class="mb-0">&copy; {% now "Y" %} {{ PLATFORM_NAME }}. All Rights Reserved.</p>
+                <div class="ed-divider-v d-none d-md-block"></div>
+                <div class="ed-footer__legal">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 fw-medium" style="color: var(--ed-slate-600);">
+                Design and Developed by Nextora creations Software Agency
+            </div>
+        </div>
+    </div>
+</footer>

@@ -1,0 +1,35 @@
+# ==========================================
+# EduNaukri Fail2Ban Master Jail Configuration
+# ==========================================
+
+[DEFAULT]
+# Ban hosts for 24 hours after 5 failures within 15 minutes
+bantime  = 1d
+findtime = 15m
+maxretry = 5
+banaction = ufw
+backend  = auto
+ignoreip = 127.0.0.1/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = 3
+bantime  = 2d
+
+[nginx-http-auth]
+enabled  = true
+port     = http,https
+filter   = nginx-http-auth
+logpath  = /var/log/nginx/error.log
+maxretry = 3
+
+[nginx-botsearch]
+enabled  = true
+port     = http,https
+filter   = nginx-botsearch
+logpath  = /var/log/nginx/error.log
+maxretry = 2
+bantime  = 7d

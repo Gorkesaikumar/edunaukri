@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About {{ PLATFORM_NAME }} | Where Classrooms Meet Careers{% endblock %}
+
+{% block meta_description %}{{ PLATFORM_NAME }} is India's dedicated dual-track hiring platform, connecting educational institutions with qualified faculty and IT companies with tech professionals.{% endblock %}
+
+{% block content %}
+
+{# HERO SECTION #}
+<section class="ed-hero" aria-labelledby="about-hero-heading">
+    <span class="ed-hero__blob ed-hero__blob--primary" aria-hidden="true"></span>
+    <span class="ed-hero__blob ed-hero__blob--secondary" aria-hidden="true"></span>
+
+    <div class="ed-container position-relative" style="z-index:1;">
+        <div class="text-center mx-auto ed-mb-xl ed-reveal" style="max-width: 56rem;">
+            <span class="ed-eyebrow ed-mb-md d-inline-block">About {{ PLATFORM_NAME }}</span>
+            <h1 class="ed-display-xl ed-text-on-surface ed-mb-md" id="about-hero-heading">
+                Where Classrooms Meet <span class="ed-text-primary">Careers</span>
+            </h1>
+            <p class="ed-body-lg ed-text-variant mx-auto" style="max-width: 48rem;">
+                {{ PLATFORM_NAME }} is India's dedicated dual-track hiring platform, built to serve two communities that shape the future of technology: educators and IT professionals.
+            </p>
+        </div>
+    </div>
+</section>
+
+{# DUAL-TRACK PLATFORM SECTION #}
+<section class="ed-section ed-bg-container-low" aria-labelledby="dual-track-heading">
+    <div class="ed-container ed-reveal">
+        <div class="row g-4 justify-content-center">
+            {# Card 1: For Academia #}
+            <div class="col-12 col-md-6">
+                <div class="ed-bento-card ed-bento-card--pad h-100 d-flex flex-column">
+                    <div class="ed-feature-icon ed-feature-icon--lg ed-tint-secondary ed-mb-md">
+                        <i class="bi bi-bank" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="ed-headline-lg ed-text-on-surface mb-3">For Academia</h2>
+                    <p class="ed-body-md ed-text-variant mb-0 flex-grow-1">
+                        We connect engineering colleges and universities with qualified faculty &mdash; from Assistant Professors to Deans and HoDs &mdash; across all engineering disciplines.<br><br>
+                        Institutions find AICTE/UGC-compliant candidates faster, and educators find roles where their expertise truly matters.
+                    </p>
+                </div>
+            </div>
+
+            {# Card 2: For IT Careers #}
+            <div class="col-12 col-md-6">
+                <div class="ed-bento-card ed-bento-card--pad h-100 d-flex flex-column">
+                    <div class="ed-feature-icon ed-feature-icon--lg ed-tint-primary ed-mb-md">
+                        <i class="bi bi-laptop" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="ed-headline-lg ed-text-on-surface mb-3">For IT Careers</h2>
+                    <p class="ed-body-md ed-text-variant mb-0 flex-grow-1">
+                        From freshers taking their first step into tech to experienced leads seeking their next challenge, we bring curated IT opportunities across software development, data, cloud, and emerging technologies.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# WHY EDUNAUKRI SECTION #}
+<section class="ed-section" aria-labelledby="why-heading">
+    <div class="ed-container ed-reveal">
+        <div class="text-center ed-mb-xl">
+            <h2 class="ed-display-lg ed-text-on-surface mb-0" id="why-heading">Why {{ PLATFORM_NAME }}?</h2>
+        </div>
+
+        <div class="row g-4">
+            {# Feature 1 #}
+            <div class="col-12 col-md-4">
+                <div class="ed-bento-card ed-bento-card--pad h-100">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-primary ed-mb-md">
+                        <i class="bi bi-bullseye" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-headline-md ed-text-on-surface mb-2">Focused, not crowded</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">No irrelevant listings; only teaching and IT roles.</p>
+                </div>
+            </div>
+
+            {# Feature 2 #}
+            <div class="col-12 col-md-4">
+                <div class="ed-bento-card ed-bento-card--pad h-100">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-secondary ed-mb-md">
+                        <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-headline-md ed-text-on-surface mb-2">Bridging two worlds</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Industry professionals can transition into academia, and faculty can stay connected to industry trends.</p>
+                </div>
+            </div>
+
+            {# Feature 3 #}
+            <div class="col-12 col-md-4">
+                <div class="ed-bento-card ed-bento-card--pad h-100">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-tertiary ed-mb-md">
+                        <i class="bi bi-gear-wide-connected" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-headline-md ed-text-on-surface mb-2">Built for India's engineering ecosystem</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Designed around the real hiring needs of engineering colleges and IT employers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# PLATFORM MESSAGE SECTION #}
+<section class="ed-section ed-bg-container-low" aria-labelledby="message-heading">
+    <div class="ed-container ed-reveal">
+        <div class="ed-glass-card ed-shadow-premium ed-bento-card--pad text-center py-5">
+            <h2 class="ed-headline-lg ed-text-on-surface mx-auto" style="max-width: 50rem; line-height: 1.5;" id="message-heading">
+                Whether you're an institution building a world-class faculty, a company hiring tech talent, or a professional planning your next move &mdash; <span class="ed-text-primary">{{ PLATFORM_NAME }}</span> is where your search ends and your career begins.
+            </h2>
+        </div>
+    </div>
+</section>
+
+{# VISION SECTION #}
+<section class="ed-section" aria-labelledby="vision-heading">
+    <div class="ed-container ed-reveal">
+        <div class="ed-cta position-relative overflow-hidden text-center" style="padding: 4rem 2rem;">
+            <span class="ed-cta__blob ed-cta__blob--tr" aria-hidden="true"></span>
+            <span class="ed-cta__blob ed-cta__blob--bl" aria-hidden="true"></span>
+            <div class="ed-cta__content position-relative" style="z-index: 1;">
+                <h2 class="ed-display-md ed-mb-0" id="vision-heading">
+                    &ldquo;Our vision: to strengthen India's engineering education by making great teaching and tech careers accessible to all.&rdquo;
+                </h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CALL TO ACTION #}
+<section class="ed-section ed-bg-container-low">
+    <div class="ed-container text-center ed-reveal">
+        <h2 class="ed-display-lg ed-mb-md">Find Your Next Opportunity</h2>
+        <p class="ed-body-lg ed-text-variant ed-mb-xl">Join the thousands of professionals and institutions already on {{ PLATFORM_NAME }}.</p>
+        <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+            <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--primary">Explore Jobs</a>
+            <a href="{% url 'signup_domain_selection' %}" class="ed-btn ed-btn--outline-primary">Get Started</a>
+            <a href="{% url 'institutions_browse' %}" class="ed-btn ed-btn--light">For Institutions</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

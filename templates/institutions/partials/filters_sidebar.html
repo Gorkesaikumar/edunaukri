@@ -1,0 +1,42 @@
+<aside class="im-sidebar" id="imFiltersSidebar">
+    <form id="imFilterForm" method="get" action="{% url 'institutions_browse' %}">
+        {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+        {% if filters.location %}<input type="hidden" name="location" value="{{ filters.location }}">{% endif %}
+
+        <div class="im-sidebar__head">
+            <h2>Filters</h2>
+            <a href="{% url 'institutions_browse' %}">Reset</a>
+        </div>
+
+        <div class="im-filter-group">
+            <label for="imDomain">Domain</label>
+            <select class="form-select form-select-sm" id="imDomain" name="domain">
+                {% for opt in marketplace.filter_options.domains %}
+                <option value="{{ opt.value }}" {% if filters.domain == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="im-filter-group">
+            <label for="imIndustry">Industry</label>
+            <input class="form-control form-control-sm" id="imIndustry" type="text" name="industry" value="{{ filters.industry }}">
+        </div>
+
+        <div class="im-filter-group">
+            <label for="imSize">Company Size</label>
+            <select class="form-select form-select-sm" id="imSize" name="company_size">
+                <option value="">Any size</option>
+                {% for opt in marketplace.filter_options.company_sizes %}
+                <option value="{{ opt.value }}" {% if filters.company_size == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="im-filter-checks">
+            <label class="im-check"><input type="checkbox" name="hiring_only" value="1" {% if filters.hiring_only %}checked{% endif %}> Currently hiring</label>
+            <label class="im-check"><input type="checkbox" name="verified_only" value="1" {% if filters.verified_only %}checked{% endif %}> Verified only</label>
+        </div>
+
+        <button type="submit" class="ed-btn ed-btn--gradient w-100 mt-2">Apply Filters</button>
+    </form>
+</aside>

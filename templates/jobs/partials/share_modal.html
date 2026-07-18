@@ -1,0 +1,45 @@
+<div class="jm-apply-modal" id="jmShareModal" hidden>
+    <div class="jm-apply-modal__dialog" role="dialog" aria-labelledby="jmShareModalTitle" style="max-width: 420px; text-align: left; padding: 1.5rem;">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h3 id="jmShareModalTitle" class="mb-0" style="font-size: 1.125rem; font-weight: 800;">Share this job</h3>
+            <button type="button" class="btn-close" aria-label="Close" onclick="document.getElementById('jmShareModal').hidden = true;"></button>
+        </div>
+
+        <div class="d-flex gap-3 mb-4 align-items-center" style="background: var(--ed-surface-container-low); padding: 0.75rem; border-radius: 12px;">
+            <div class="ed-logo-tile" style="width: 48px; height: 48px; flex-shrink: 0;" id="jmShareLogoContainer">
+                <img id="jmShareLogoImg" src="" alt="Company logo" style="display: none;">
+                <span id="jmShareLogoInitial" class="ed-logo-monogram" style="display: none;"></span>
+            </div>
+            <div style="min-width: 0;">
+                <h4 id="jmShareJobTitle" style="font-size: 1rem; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Job Title</h4>
+                <p id="jmShareCompany" style="font-size: 0.8125rem; color: var(--ed-on-surface-variant); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Company Name</p>
+                <div style="display: flex; gap: 0.35rem; margin-top: 0.25rem;">
+                    <span id="jmShareLocation" style="font-size: 0.75rem; color: var(--ed-on-surface-variant);"><i class="bi bi-geo-alt"></i> Location</span>
+                    <span style="color: var(--ed-on-surface-variant); font-size: 0.75rem;">&bull;</span>
+                    <span id="jmShareType" style="font-size: 0.75rem; color: var(--ed-on-surface-variant);">Type</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="jm-share-options">
+            <button type="button" id="jmShareWhatsApp" class="jm-share-btn-action whatsapp">
+                <i class="bi bi-whatsapp"></i> WhatsApp
+            </button>
+            <button type="button" id="jmShareCopy" class="jm-share-btn-action">
+                <i class="bi bi-link-45deg"></i> Copy Link
+            </button>
+            <a href="#" id="jmShareLinkedIn" class="jm-share-btn-action linkedin" target="_blank" rel="noopener">
+                <i class="bi bi-linkedin"></i> LinkedIn
+            </a>
+            <a href="#" id="jmShareTwitter" class="jm-share-btn-action twitter" target="_blank" rel="noopener">
+                <i class="bi bi-twitter-x"></i> Twitter/X
+            </a>
+            <a href="#" id="jmShareFacebook" class="jm-share-btn-action facebook" target="_blank" rel="noopener">
+                <i class="bi bi-facebook"></i> Facebook
+            </a>
+            <a href="#" id="jmShareTelegram" class="jm-share-btn-action telegram" target="_blank" rel="noopener">
+                <i class="bi bi-telegram"></i> Telegram
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+<nav class="fjd-sidebar__nav" aria-label="Faculty job seeker dashboard">
+    {% for item in sidebar.primary %}
+    <a class="fjd-sidebar__link{% if item.active %} fjd-sidebar__link--active{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+        {% if item.key == 'saved_jobs' %}
+        <span class="fjd-sidebar__badge{% if not saved_jobs_count %} d-none{% endif %}" data-saved-jobs-count>{{ saved_jobs_count }}</span>
+        {% endif %}
+        {% if item.key == 'tracker' %}
+        <span class="fjd-sidebar__badge fjd-sidebar__badge--tracker{% if not unread_tracker_count %} d-none{% endif %}" data-tracker-count>{{ unread_tracker_count }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+
+    <div class="fjd-sidebar__sep" aria-hidden="true"></div>
+
+    {% for item in sidebar.secondary %}
+    <a class="fjd-sidebar__link{% if item.active %} fjd-sidebar__link--active{% endif %}{% if item.key == 'settings' %} fjd-sidebar__link--settings{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+    </a>
+    {% endfor %}
+</nav>

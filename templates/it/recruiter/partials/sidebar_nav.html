@@ -1,0 +1,29 @@
+<nav class="jsd-sidebar__nav" aria-label="Recruiter dashboard">
+    {% for item in sidebar.primary %}
+    <a class="jsd-sidebar__link{% if item.active %} jsd-sidebar__link--active{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+        {% if item.unread_count and item.unread_count > 0 %}
+            <span class="badge rounded-pill bg-danger ms-auto" id="sidebar-{{ item.key }}-badge" style="margin-left: auto;">{{ item.unread_count }}</span>
+        {% else %}
+            <span class="badge rounded-pill bg-danger ms-auto d-none" id="sidebar-{{ item.key }}-badge" style="margin-left: auto;">0</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+
+    <div class="jsd-sidebar__sep" aria-hidden="true"></div>
+
+    {% for item in sidebar.secondary %}
+    <a class="jsd-sidebar__link{% if item.active %} jsd-sidebar__link--active{% endif %}{% if item.key == 'settings' %} jsd-sidebar__link--settings{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+    </a>
+    {% endfor %}
+
+    <a class="jsd-sidebar__link jsd-sidebar__link--logout" href="{{ logout_url }}">
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+        <span>Logout</span>
+    </a>
+</nav>

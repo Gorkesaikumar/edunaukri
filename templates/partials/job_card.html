@@ -1,0 +1,61 @@
+{# Reusable Featured Opportunity card. Expects a `job` dict (see FeaturedJobsSelector). #}
+<article class="ed-job-card" tabindex="0">
+    <div class="d-flex justify-content-between align-items-start ed-mb-md">
+        <div class="ed-logo-tile">
+            {% if job.logo_url %}
+                <img src="{{ job.logo_url }}" alt="{{ job.org_name }} logo" loading="lazy">
+            {% else %}
+                <span class="ed-logo-monogram" aria-hidden="true">{{ job.initial }}</span>
+            {% endif %}
+        </div>
+        <div class="d-flex flex-column align-items-end gap-2">
+            {% if job.salary_display %}
+                <span class="ed-salary">{{ job.salary_display }}</span>
+            {% endif %}
+            <span class="ed-domain-badge ed-domain-badge--{{ job.domain }}">
+                <i class="bi {{ job.domain_icon }}" aria-hidden="true"></i> {{ job.domain_label }}
+            </span>
+        </div>
+    </div>
+
+    <div class="ed-mb-md">
+        <div class="d-flex align-items-center gap-1 mb-1">
+            <p class="ed-job-card__company mb-0 text-truncate">{{ job.org_name }}</p>
+            {% if job.org_verified %}
+                <i class="bi bi-patch-check-fill ed-verified" aria-hidden="true" title="Verified employer"></i>
+            {% endif %}
+        </div>
+        <h3 class="ed-job-card__title">{{ job.title }}</h3>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            {% if job.work_label %}<span class="ed-chip ed-chip--blue">{{ job.work_label }}</span>{% endif %}
+            {% if job.experience_label %}<span class="ed-chip ed-chip--purple">{{ job.experience_label }}</span>{% endif %}
+            {% if job.category_label %}<span class="ed-chip ed-chip--amber">{{ job.category_label }}</span>{% endif %}
+            {% if job.location %}<span class="ed-chip ed-chip--slate">{{ job.location }}</span>{% endif %}
+        </div>
+        <div class="ed-job-meta">
+            <span><i class="bi bi-clock" aria-hidden="true"></i> {{ job.posted_display }}</span>
+            <span><i class="bi bi-people" aria-hidden="true"></i> {{ job.applicant_count }} Applicant{{ job.applicant_count|pluralize }}</span>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 pt-2">
+        {% if job.domain == 'it' and job.job_id %}
+            {% if nav.is_authenticated and nav.role == 'job_seeker' %}
+            <button class="ed-icon-btn ed-icon-btn--lg flex-shrink-0 jsd-save-btn" type="button"
+                    aria-label="Save {{ job.title }}"
+                    data-save-job-toggle
+                    data-job-id="{{ job.job_id }}"
+                    aria-pressed="false">
+                <i class="bi bi-bookmark" aria-hidden="true"></i>
+            </button>
+            {% else %}
+            <a href="{% url 'it_login_job_seeker' %}?next={{ job.detail_url|urlencode }}&save_job={{ job.job_id }}"
+               class="ed-icon-btn ed-icon-btn--lg flex-shrink-0"
+               aria-label="Sign in to save {{ job.title }}">
+                <i class="bi bi-bookmark" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        {% endif %}
+        <a href="{{ job.detail_url }}" class="ed-btn ed-btn--gradient">Apply Now <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</article>

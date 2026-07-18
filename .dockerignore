@@ -1,0 +1,44 @@
+# Git & CI
+.git
+.gitignore
+.github
+.agents
+.cursor
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+wheels/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Local databases & logs
+*.sqlite3
+db.sqlite3
+logs/
+*.log
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Local storage & user assets (will be mounted via Docker volumes)
+media/
+staticfiles/
+scratch/
+
+# IDE & documentation
+DESIGN.md
+README.md
+antigravity.md
+docs/
+schema_log.txt

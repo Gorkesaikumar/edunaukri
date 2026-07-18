@@ -1,0 +1,222 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+{% load static %}
+
+{% block title %}Career Tracker | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-tracker.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Career Tracker</h1>
+            <p class="jsd-page-head__desc">Track your applications and see what needs your attention next.</p>
+        </div>
+        <div class="jsd-tracker-head__actions">
+            <span class="jsd-tracker-updated" id="jsdTrackerUpdated"><i class="bi bi-clock"></i> Updated {{ tracker.updated_at }}</span>
+            <a href="{% portal_url 'professor_tracker_export' %}?format=csv" class="jsd-btn jsd-btn--outline jsd-btn--sm"><i class="bi bi-download"></i> Export CSV</a>
+        </div>
+    </div>
+</header>
+
+{% if tracker %}
+<div id="jsdTrackerPage" data-api-url="{% portal_url 'professor_tracker_api' %}">
+
+    <section class="jsd-tracker-summary">
+        {% for card in tracker.summary %}
+        {% if card.key in 'applications,active,interviews,offers' %}
+        <article class="jsd-tracker-stat jsd-tracker-stat--{{ card.tone }}" data-tracker-stat="{{ card.key }}">
+            <i class="bi {{ card.icon }}"></i>
+            <div>
+                <p class="jsd-tracker-stat__value">{{ card.value }}</p>
+                <p class="jsd-tracker-stat__label">{{ card.label }}</p>
+            </div>
+        </article>
+        {% endif %}
+        {% endfor %}
+    </section>
+
+    <div class="jsd-tracker-status-chips">
+        {% for card in tracker.summary %}
+        {% if card.key in 'review,shortlisted,rejected,saved' and card.raw_value > 0 %}
+        <span class="jsd-tracker-status-chip">
+            {{ card.label }}: {{ card.value }}
+        </span>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if tracker.interviews %}
+    <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-calendar-event fs-4 me-3"></i>
+        <div>
+            <strong>Upcoming Interview!</strong> You have an interview scheduled for <strong>{{ tracker.interviews.0.job_title }}</strong> at {{ tracker.interviews.0.company_name }}.
+            <br><span class="small">{{ tracker.interviews.0.date_label }} at {{ tracker.interviews.0.time_label }}</span>
+        </div>
+        {% if tracker.interviews.0.meet_url %}
+        <a href="{{ tracker.interviews.0.meet_url }}" class="btn btn-sm btn-info ms-auto" target="_blank">Join Meeting</a>
+        {% endif %}
+    </div>
+    {% elif tracker.profile_insights and tracker.profile_insights.0.tone != 'success' %}
+    <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle fs-4 me-3"></i>
+        <div>
+            <strong>Action Needed:</strong> {{ tracker.profile_insights.0.message }}
+        </div>
+        <a href="{{ tracker.profile_insights.0.action_url }}" class="btn btn-sm btn-warning ms-auto">{{ tracker.profile_insights.0.action_label }}</a>
+    </div>
+    {% endif %}
+
+    <form class="jsd-tracker-filters" method="get">
+        <label class="jsd-tracker-filters__search">
+            <i class="bi bi-search"></i>
+            <input type="search" name="q" value="{{ tracker.filters.q }}" placeholder="Search roles...">
+        </label>
+        <input type="text" name="company" value="{{ tracker.filters.company }}" placeholder="Institution" class="jsd-tracker-filters__input">
+        <select name="status" class="jsd-tracker-filters__select">
+            <option value="">All statuses</option>
+            <option value="applied"{% if tracker.filters.status == 'applied' %} selected{% endif %}>Applied</option>
+            <option value="under_review"{% if tracker.filters.status == 'under_review' %} selected{% endif %}>Under Review</option>
+            <option value="shortlisted"{% if tracker.filters.status == 'shortlisted' %} selected{% endif %}>Shortlisted</option>
+            <option value="interview_scheduled"{% if tracker.filters.status == 'interview_scheduled' %} selected{% endif %}>Interview</option>
+            <option value="offer_released"{% if tracker.filters.status == 'offer_released' %} selected{% endif %}>Offer</option>
+        </select>
+        <button type="submit" class="jsd-btn jsd-btn--primary jsd-btn--sm">Filter</button>
+        {% if tracker.filters.q or tracker.filters.company or tracker.filters.status %}
+        <a href="?" class="jsd-btn jsd-btn--outline jsd-btn--sm">Clear</a>
+        {% endif %}
+    </form>
+
+    <div class="jsd-tracker-grid">
+        <div class="jsd-tracker-main">
+            <section class="jsd-card jsd-tracker-panel">
+                <div class="jsd-card__body">
+                    <div class="jsd-tracker-panel__head">
+                        <h2><i class="bi bi-diagram-3"></i> Application Pipeline</h2>
+                        <a href="{% portal_url 'professor_applications' %}" class="jsd-link">View all applications</a>
+                    </div>
+                    {% if tracker.pipelines %}
+                    <div class="jsd-tracker-pipelines" id="jsdTrackerPipelines">
+                        {% for pipe in tracker.pipelines %}
+                        {% include "academic/professor/tracker/partials/pipeline_card.html" with pipe=pipe %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="jsd-tracker-empty">
+                        <div class="jsd-tracker-empty__icon"><i class="bi bi-briefcase"></i></div>
+                        <h3 class="jsd-tracker-empty__title">You haven't applied for any faculty jobs yet.</h3>
+                        <p class="jsd-tracker-empty__desc">Start exploring institutions and track every stage of your hiring journey here.</p>
+                        <a href="{% portal_url 'professor_browse_jobs' %}" class="jsd-btn jsd-btn--primary">Browse Faculty Jobs</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-tracker-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-activity"></i> Activity Timeline</h2>
+                    <ol class="jsd-tracker-feed" id="jsdTrackerFeed">
+                        {% for item in tracker.activities %}
+                        <li class="jsd-tracker-feed__item jsd-tracker-feed__item--{{ item.tone }}">
+                            <div class="jsd-tracker-feed__icon"><i class="bi {{ item.icon }}"></i></div>
+                            <div class="jsd-tracker-feed__body">
+                                <p class="jsd-tracker-feed__title">{{ item.title }}</p>
+                                <p class="jsd-tracker-feed__sub">{{ item.subtitle }}</p>
+                                <p class="jsd-tracker-feed__meta">
+                                    {% if item.company %}{{ item.company }}{% endif %}
+                                    {% if item.job_title %} · {{ item.job_title }}{% endif %}
+                                    · {{ item.recruiter_name }}
+                                    · {{ item.occurred_date }} {{ item.occurred_time }}
+                                </p>
+                                {% if item.detail_url %}
+                                <a href="{{ item.detail_url }}" class="jsd-link small">View application</a>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">Activity from applications and recruiters will appear here.</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </section>
+        </div>
+
+        <aside class="jsd-tracker-side">
+            <section class="jsd-card jsd-tracker-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-lightbulb"></i> Career Insights</h2>
+                    <dl class="jsd-tracker-dl jsd-tracker-dl--compact">
+                        <div><dt>Profile Completion</dt><dd class="text-success">{{ tracker.profile_analytics.profile_completion }}%</dd></div>
+                        <div><dt>Average Match Score</dt><dd class="text-primary">{{ tracker.match_score }}%</dd></div>
+                        <div><dt>Applications Submitted</dt><dd>{{ tracker.profile_analytics.applications_submitted }}</dd></div>
+                        <div><dt>Interview Success</dt><dd>{{ tracker.application_charts.interview_success_rate }}%</dd></div>
+                        <div><dt>Offer Conversion</dt><dd>{{ tracker.application_charts.offer_conversion_rate }}%</dd></div>
+                    </dl>
+                    
+                    {% if tracker.match_jobs %}
+                    <hr class="my-3">
+                    <p class="small fw-bold text-muted mb-2 text-uppercase">Top Recommended Jobs</p>
+                    <ul class="jsd-tracker-match-list">
+                        {% for job in tracker.match_jobs|slice:":3" %}
+                        <li>
+                            <a href="{{ job.detail_url }}" class="text-decoration-none fw-medium text-dark">{{ job.title }}</a>
+                            <span class="badge bg-light text-primary">{{ job.match_percent }}%</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </section>
+
+            {% if tracker.interviews %}
+            <section class="jsd-card jsd-tracker-panel">
+                <div class="jsd-card__body">
+                    <h2>Interview Tracker</h2>
+                    {% for inv in tracker.interviews %}
+                    <article class="jsd-tracker-mini-card">
+                        <p class="fw-semibold mb-1">{{ inv.job_title }}</p>
+                        <p class="small text-muted mb-1">{{ inv.company_name }} · {{ inv.interview_type }}</p>
+                        <p class="small mb-1">{{ inv.date_label }} · {{ inv.time_label }}</p>
+                        {% if inv.countdown_label %}<span class="jsd-tracker-countdown">{{ inv.countdown_label }}</span>{% endif %}
+                        {% if inv.meet_url %}<a href="{{ inv.meet_url }}" class="jsd-link small" target="_blank" rel="noopener">Join meeting</a>{% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if tracker.offers %}
+            <section class="jsd-card jsd-tracker-panel">
+                <div class="jsd-card__body">
+                    <h2>Offer Tracker</h2>
+                    {% for off in tracker.offers %}
+                    <article class="jsd-tracker-mini-card">
+                        <p class="fw-semibold mb-1">{{ off.job_title }}</p>
+                        <p class="small text-muted mb-1">{{ off.company_name }} · {{ off.salary_display }}</p>
+                        <p class="small mb-0">Joining: {{ off.joining_date }}</p>
+                        <a href="{{ off.detail_url }}" class="jsd-link small">Manage offer</a>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+{% else %}
+<div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to use the career tracker.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.FJD_TRACKER = {
+    apiUrl: "{% portal_url 'professor_tracker_api' %}",
+    csrfToken: "{{ csrf_token|escapejs }}"
+  };
+</script>
+<script src="{% static 'js/jobseeker-tracker.js' %}"></script>
+{% endblock %}

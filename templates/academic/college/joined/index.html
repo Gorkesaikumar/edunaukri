@@ -1,0 +1,225 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Joined Candidates | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .guarantee-progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e2e8f0;
+        overflow: hidden;
+    }
+    .guarantee-progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.4s ease;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head icd-page-head--split">
+    <div>
+        <h1 class="icd-page-head__title">Joined Candidates</h1>
+        <p class="icd-page-head__desc">Monitor active 90-day placement guarantee periods and submit refund or replacement claims if required.</p>
+    </div>
+</header>
+
+<form class="icd-filters mb-4" method="get">
+    <label class="icd-filters__search w-100 me-2">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ q }}" placeholder="Search by candidate name, employee ID or designation...">
+    </label>
+    <button type="submit" class="icd-btn icd-btn--primary">Filter</button>
+</form>
+
+{% if candidates %}
+<div class="row g-4">
+    {% for candidate in candidates %}
+    <div class="col-md-12">
+        <article class="icd-card p-4">
+            <div class="row align-items-center g-3">
+                <!-- Candidate Info -->
+                <div class="col-lg-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icd-list-card__avatar-wrap">
+                            {% if candidate.app.candidate_photo_url %}
+                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.app.candidate_photo_url }}" alt="{{ candidate.app.candidate_name }}" style="width: 52px; height: 52px; object-fit: cover;">
+                            {% else %}
+                            <div class="icd-list-card__avatar rounded-circle bg-light d-flex align-items-center justify-content-center fw-semibold text-primary" style="width: 52px; height: 52px; font-size: 1.2rem;">
+                                {{ candidate.app.candidate_initials }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold mb-0">{{ candidate.app.candidate_name }}</h3>
+                            <p class="small text-muted mb-1">{{ candidate.placement.offered_designation|default:"Faculty" }}</p>
+                            <span class="badge bg-success text-white">Joined</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onboarding & Verification -->
+                <div class="col-lg-3 border-start px-4">
+                    <h6 class="fw-bold mb-2 text-primary"><i class="bi bi-check2-circle me-1"></i> Joining Information</h6>
+                    <p class="small mb-1"><strong>Employee ID:</strong> {{ candidate.placement.employee_id|default:"--" }}</p>
+                    <p class="small mb-1"><strong>Joining Date:</strong> {{ candidate.placement.actual_joining_date|default:"--" }}</p>
+                    <p class="small mb-0"><strong>Department:</strong> {{ candidate.placement.department|default:"--" }}</p>
+                </div>
+
+                <!-- 90-Day Guarantee Monitor -->
+                <div class="col-lg-4 border-start border-end px-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 text-secondary"><i class="bi bi-shield-check me-1"></i> 90-Day Guarantee</h6>
+                        {% if candidate.guarantee %}
+                            {% if candidate.guarantee.status == 'claimed' %}
+                                <span class="badge bg-danger">Claimed</span>
+                            {% elif candidate.guarantee.status == 'expired' or candidate.days_since_joining > 90 %}
+                                <span class="badge bg-secondary">Expired</span>
+                            {% else %}
+                                <span class="badge bg-success">Active</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if candidate.days_since_joining is not None %}
+                        {% if candidate.days_since_joining > 90 %}
+                            <p class="small text-muted mb-2">90-day window expired ({{ candidate.days_since_joining }} days since joining).</p>
+                            <div class="guarantee-progress">
+                                <div class="guarantee-progress-bar bg-secondary" style="width: 100%"></div>
+                            </div>
+                        {% else %}
+                            <p class="small mb-2"><strong>Day {{ candidate.days_since_joining }}</strong> of 90 ({{ 90|add:candidate.days_since_joining }} days left)</p>
+                            <div class="guarantee-progress">
+                                <div class="guarantee-progress-bar bg-success" style="width: {% widthratio candidate.days_since_joining 90 100 %}%"></div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="small text-muted mb-0">Guarantee window pending joining confirmation.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Actions / Claim Submission -->
+                <div class="col-lg-2 text-end">
+                    {% if candidate.active_claim %}
+                        <span class="badge bg-warning text-dark p-2 w-100"><i class="bi bi-hourglass-split me-1"></i> Claim Under Review</span>
+                    {% elif candidate.claim_eligible %}
+                        <button type="button" class="icd-btn icd-btn--soft-danger icd-btn--sm w-100 btn-raise-claim"
+                                data-app-id="{{ candidate.app.id }}"
+                                data-name="{{ candidate.app.candidate_name }}">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Raise Claim
+                        </button>
+                    {% else %}
+                        <button type="button" class="icd-btn icd-btn--soft icd-btn--sm w-100" disabled title="Ineligible for claims">
+                            Ineligible
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+
+{% if pagination.total_pages > 1 %}
+<nav class="icd-pagination mt-4" aria-label="Joined candidates pagination">
+    {% if pagination.page > 1 %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'-1' }}">Previous</a>
+    {% endif %}
+    <span>Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
+    {% if pagination.page < pagination.total_pages %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'1' }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-person-badge text-muted" style="font-size: 3rem;"></i>
+    <h3 class="mt-3">No joined candidates</h3>
+    <p class="text-muted">Once selected candidates' joining details are verified and confirmed, they will appear here to monitor placement protection.</p>
+</div>
+{% endif %}
+
+{# ── Claim Submission Modal ── #}
+<div class="modal fade" id="claimModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-shield-exclamation me-1"></i> File Placement Claim</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger small fw-semibold"><i class="bi bi-info-circle me-1"></i> Claims can only be filed within 90 days of the candidate's actual joining date.</p>
+                <p>Submit a replacement or refund request for candidate: <strong id="claim-candidate-name">--</strong></p>
+                
+                <form id="claimForm" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="application_id" id="claim-application-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="claimType">Claim Request Type <span class="text-danger">*</span></label>
+                        <select class="form-select" name="claim_type" id="claimType" required>
+                            <option value="refund">Refund Placement Fee</option>
+                            <option value="replacement">Free Candidate Replacement</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="incidentDate">Candidate Last Working Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="incident_date" id="incidentDate" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="claimReason">Reason for Exit <span class="text-danger">*</span></label>
+                        <select class="form-select" name="claim_reason" id="claimReason" required>
+                            <option value="">-- Select reason --</option>
+                            <option value="absconded">Candidate Absconded</option>
+                            <option value="resigned">Candidate Resigned voluntarily</option>
+                            <option value="terminated_performance">Terminated due to Performance</option>
+                            <option value="terminated_conduct">Terminated due to Misconduct</option>
+                            <option value="other">Other reason</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="claimDescription">Exit Details / Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="claim_description" id="claimDescription" rows="3" required placeholder="Please provide specific details regarding candidate performance, resignation, or reason for termination..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="icd-btn icd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="claimForm" class="icd-btn icd-btn--danger">Submit Claim</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const claimModal = new bootstrap.Modal(document.getElementById("claimModal"));
+
+    // Raise Claim Click
+    document.querySelectorAll(".btn-raise-claim").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.getElementById("claim-application-id").value = this.dataset.appId;
+            document.getElementById("claim-candidate-name").textContent = this.dataset.name;
+            
+            // Set max date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("incidentDate").setAttribute("max", today);
+
+            claimModal.show();
+        });
+    });
+});
+</script>
+{% endblock %}

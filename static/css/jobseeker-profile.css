@@ -1,0 +1,778 @@
+/* Job Seeker Profile page */
+
+.jsp-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jsd-space-md);
+  padding-bottom: var(--jsd-space-lg);
+}
+
+.jsp-header-card {
+  overflow: hidden;
+}
+
+.jsp-header-card__banner {
+  height: 5.5rem;
+  background: linear-gradient(135deg, var(--jsd-primary) 0%, var(--jsd-secondary) 55%, #5b6cf0 100%);
+}
+
+.jsp-header-card__body {
+  position: relative;
+  padding: 0 var(--jsd-space-lg) var(--jsd-space-lg);
+}
+
+.jsp-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--jsd-space-md);
+  margin-top: -3.25rem;
+  margin-bottom: 0.875rem;
+}
+
+.jsp-header-identity {
+  padding-top: 0.125rem;
+}
+
+.jsp-name {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--jsd-on-surface);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.jsp-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--jsd-radius-full);
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+  flex-shrink: 0;
+}
+
+.jsp-avatar-wrap {
+  position: relative;
+  width: 7rem;
+  height: 7rem;
+  flex-shrink: 0;
+}
+
+.jsp-avatar {
+  width: 7rem;
+  height: 7rem;
+  border-radius: var(--jsd-radius-full);
+  border: 4px solid #fff;
+  object-fit: cover;
+  background: var(--jsd-surface-container-high);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--jsd-primary);
+  box-shadow: var(--jsd-shadow-premium);
+}
+
+.jsp-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--jsd-radius-full);
+  object-fit: cover;
+}
+
+.jsp-avatar-edit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--jsd-radius-full);
+  border: 2px solid #fff;
+  background: var(--jsd-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.jsp-headline {
+  margin: 0.35rem 0 0;
+  font-size: 1.0625rem;
+  color: var(--jsd-on-surface-variant);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.jsp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsp-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.jsp-completion-mini {
+  min-width: 11.5rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid rgba(199, 196, 216, 0.35);
+  border-radius: var(--jsd-radius-xl);
+  box-shadow: 0 4px 16px rgba(29, 27, 32, 0.08);
+}
+
+.jsp-completion-mini__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--jsd-on-surface);
+}
+
+.jsp-completion-mini__pct {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--jsd-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.jsp-completion-mini--complete .jsp-completion-mini__pct {
+  color: #0d9488;
+}
+
+.jsp-completion-mini__verified {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(13, 148, 136, 0.1);
+  border-radius: var(--jsd-radius-md);
+}
+
+.jsp-progress {
+  position: relative;
+  height: 0.5rem;
+  width: 100%;
+  background: var(--jsd-surface-container);
+  border-radius: var(--jsd-radius-full);
+  overflow: hidden;
+}
+
+.jsp-progress__bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--jsd-primary), var(--jsd-secondary));
+  border-radius: var(--jsd-radius-full);
+  transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.jsp-completion-mini--complete .jsp-progress__bar {
+  background: linear-gradient(to right, #0d9488, #2dd4bf);
+}
+
+.jsp-section {
+  background: #fff;
+  border-radius: var(--jsd-radius-lg);
+  box-shadow: var(--jsd-shadow-premium);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.jsp-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--jsd-outline-variant);
+}
+
+.jsp-section__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.jsp-section__title i {
+  color: var(--jsd-primary);
+}
+
+.jsp-section__body {
+  padding: 1.25rem 1.5rem;
+}
+
+.jsp-section__empty {
+  color: var(--jsd-on-surface-variant);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.jsp-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .jsp-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.jsp-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--jsd-on-surface-variant);
+  margin-bottom: 0.25rem;
+}
+
+.jsp-field p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.jsp-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.jsp-skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--jsd-radius-full);
+  background: var(--jsd-surface-container-low);
+  color: var(--jsd-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid rgba(53, 37, 205, 0.12);
+}
+
+.jsp-list-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--jsd-outline-variant);
+}
+
+.jsp-list-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.jsp-list-item:first-child {
+  padding-top: 0;
+}
+
+.jsp-list-item__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.jsp-list-item__sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsp-list-item__meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--jsd-outline);
+}
+
+.jsp-list-item__desc {
+  margin: 0.65rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.jsp-list-item__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.jsp-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--jsd-radius-md);
+  background: var(--jsd-surface-container-low);
+  color: var(--jsd-on-surface-variant);
+  cursor: pointer;
+}
+
+.jsp-btn-text {
+  border: none;
+  background: none;
+  color: var(--jsd-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.jsp-btn-text--danger {
+  color: var(--jsd-error);
+}
+
+.jsp-summary {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.jsp-resume-box {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--jsd-radius-md);
+  background: var(--jsd-surface-container-low);
+  border: 1px dashed var(--jsd-outline-variant);
+}
+
+.jsp-resume-box__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.jsp-resume-box__label {
+  margin: 0 0 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsp-resume-box__actions {
+  flex-shrink: 0;
+}
+
+.jsp-resume-box__selected {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--jsd-primary);
+}
+
+.jsp-resume-box__error {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--jsd-error);
+}
+
+.jsp-resume-progress {
+  margin-top: 0.65rem;
+}
+
+.jsp-resume-progress__track {
+  height: 0.35rem;
+  border-radius: var(--jsd-radius-full);
+  background: var(--jsd-surface-container-high);
+  overflow: hidden;
+}
+
+.jsp-resume-progress__bar {
+  height: 100%;
+  width: 0;
+  border-radius: var(--jsd-radius-full);
+  background: linear-gradient(90deg, var(--jsd-primary), var(--jsd-secondary));
+  transition: width 0.2s ease;
+}
+
+.jsp-resume-progress__text {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+/* Off-screen file input — avoids label/focus white-screen bug with native picker */
+.jsp-file-input-offscreen {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.jsp-resume-box__name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.jsp-resume-box__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsp-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--jsd-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-right: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.jsp-edit-form .form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.jsp-toast-wrap {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.jsp-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 16rem;
+  max-width: 22rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--jsd-radius-md);
+  background: #fff;
+  color: var(--jsd-on-surface);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--jsd-shadow-lg);
+  border: 1px solid var(--jsd-outline-variant);
+  pointer-events: auto;
+  animation: jspToastIn 0.28s ease;
+}
+
+.jsp-toast--success {
+  border-color: rgba(22, 163, 74, 0.35);
+}
+
+.jsp-toast--success .jsp-toast__icon {
+  color: var(--jsd-success);
+}
+
+.jsp-toast--error {
+  border-color: rgba(186, 26, 26, 0.35);
+}
+
+.jsp-toast--error .jsp-toast__icon {
+  color: var(--jsd-error);
+}
+
+.jsp-toast--hide {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.jsp-toast__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.jsp-toast__text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.jsp-toast__close {
+  border: none;
+  background: none;
+  color: var(--jsd-on-surface-variant);
+  font-size: 1.125rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jsp-btn-spinner {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: 0.35rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  animation: jspSpin 0.65s linear infinite;
+}
+
+@keyframes jspToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes jspSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.jsp-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Education module */
+.jsp-edu-add-dropdown .dropdown-toggle::after {
+  margin-left: 0.35rem;
+}
+
+.jsp-edu-add-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+.jsp-edu-add-menu .dropdown-item i {
+  color: var(--jsd-primary);
+  width: 1.1rem;
+}
+
+.jsp-edu-card {
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--jsd-outline-variant);
+  border-radius: var(--jsd-radius-lg);
+  background: var(--jsd-surface);
+  margin-bottom: 0.75rem;
+  transition: box-shadow var(--jsd-transition-fast), border-color var(--jsd-transition-fast);
+}
+
+.jsp-edu-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: var(--jsd-shadow-sm);
+}
+
+.jsp-edu-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.jsp-edu-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--jsd-radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--jsd-surface-container-high);
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsp-edu-card__badge--school { background: rgba(34, 197, 94, 0.12); color: #15803d; }
+.jsp-edu-card__badge--intermediate { background: rgba(14, 165, 233, 0.12); color: #0369a1; }
+.jsp-edu-card__badge--degree { background: rgba(99, 102, 241, 0.12); color: var(--jsd-primary); }
+.jsp-edu-card__badge--post_graduation { background: rgba(139, 92, 246, 0.12); color: #6d28d9; }
+
+.jsp-edu-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--jsd-on-surface);
+}
+
+.jsp-edu-card__institution {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--jsd-on-surface-variant);
+  font-weight: 500;
+}
+
+.jsp-edu-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--jsd-on-surface-variant);
+  margin-bottom: 0.5rem;
+}
+
+.jsp-edu-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.jsp-edu-modal .modal-content {
+  border: none;
+  border-radius: var(--jsd-radius-xl);
+  box-shadow: var(--jsd-shadow-premium);
+  overflow: hidden;
+}
+
+.jsp-edu-modal .modal-body {
+  padding-top: 0.5rem;
+  max-height: min(70vh, 34rem);
+  overflow-y: auto;
+}
+
+.jsp-edu-level-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 576px) {
+  .jsp-edu-level-tabs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.jsp-edu-level-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.65rem 0.35rem;
+  border: 1px solid var(--jsd-outline-variant);
+  border-radius: var(--jsd-radius-md);
+  background: var(--jsd-surface);
+  color: var(--jsd-on-surface-variant);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--jsd-transition-fast);
+}
+
+.jsp-edu-level-tab i {
+  font-size: 1rem;
+  color: var(--jsd-primary);
+}
+
+.jsp-edu-level-tab.is-active,
+.jsp-edu-level-tab:hover {
+  border-color: var(--jsd-primary);
+  background: rgba(99, 102, 241, 0.06);
+  color: var(--jsd-primary);
+}
+
+.jsp-edu-section-head {
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--jsd-outline-variant);
+}
+
+.jsp-edu-section-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--jsd-on-surface);
+}
+
+.jsp-edu-score-wrap {
+  padding: 0.85rem;
+  border-radius: var(--jsd-radius-md);
+  background: var(--jsd-surface-container-low);
+  margin-bottom: 0.5rem;
+}
+
+.jsp-field-wrap .invalid-feedback,
+.jsp-edu-modal .jsp-field-error {
+  display: none;
+  font-size: 0.8125rem;
+}
+
+.jsp-field-wrap .is-invalid ~ .jsp-field-error,
+.jsp-edu-modal .is-invalid ~ .jsp-field-error {
+  display: block;
+  color: var(--bs-danger, #dc3545);
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 575px) {
+  .jsp-header-top {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: -2.75rem;
+  }
+
+  .jsp-completion-mini {
+    width: 100%;
+  }
+
+  .jsp-name {
+    font-size: 1.5rem;
+  }
+}
+
+.jsp-edu-modal.fade .modal-dialog {
+  transition: transform 0.28s ease-out, opacity 0.28s ease-out;
+}

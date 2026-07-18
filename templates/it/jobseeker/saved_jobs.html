@@ -1,0 +1,51 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Saved Jobs | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Saved Jobs</h1>
+            <p class="jsd-page-head__desc">Jobs you bookmarked for later — apply when you are ready.</p>
+        </div>
+        <span class="jsd-saved-count-badge" id="jsdSavedCountBadge">{{ saved_jobs_page.total_count }} saved</span>
+    </div>
+</header>
+
+<div id="jsdSavedJobsPage"
+     data-saved-jobs-api="{% url 'jobseeker_saved_jobs_api' user_uuid=portal_user_uuid %}"
+     data-toggle-url="{% url 'jobseeker_saved_job_toggle_api' user_uuid=portal_user_uuid %}">
+
+    {% if saved_jobs_page.jobs %}
+    <div class="jsd-saved-grid" id="jsdSavedJobsGrid">
+        {% for job in saved_jobs_page.jobs %}
+        {% include "it/jobseeker/partials/saved_job_card.html" with job=job %}
+        {% endfor %}
+    </div>
+
+    {% if saved_jobs_page.total_pages > 1 %}
+    <nav class="jsd-pagination" aria-label="Saved jobs pages">
+        {% if saved_jobs_page.page > 1 %}
+        <a class="jsd-page-btn" href="?page={{ saved_jobs_page.page|add:'-1' }}">Previous</a>
+        {% endif %}
+        <span>Page {{ saved_jobs_page.page }} of {{ saved_jobs_page.total_pages }}</span>
+        {% if saved_jobs_page.page < saved_jobs_page.total_pages %}
+        <a class="jsd-page-btn" href="?page={{ saved_jobs_page.page|add:'1' }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="jsd-card">
+        <div class="jsd-card__body jsd-empty" id="jsdSavedJobsEmpty">
+            <i class="bi bi-bookmark"></i>
+            <h2>No saved jobs yet</h2>
+            <p>Save roles from the job marketplace to review and apply later.</p>
+            <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--primary mt-2">Browse Jobs</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

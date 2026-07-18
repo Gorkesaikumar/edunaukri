@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load static portal_urls %}
+
+{% block title %}Browse Jobs | {{ PLATFORM_NAME }}{% endblock %}
+{% block meta_description %}Discover curated job opportunities on {{ PLATFORM_NAME }}. Search by role, skills, location, salary, and work mode.{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/job-marketplace.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="jm-hero">
+    <div class="container-xl">
+        <div class="jm-hero__inner">
+            <div>
+                <span class="jm-hero__badge"><i class="bi bi-stars"></i> Job Marketplace</span>
+                <h1 class="jm-hero__title">
+                    {% if is_job_seeker and marketplace.is_personalized %}
+                    Jobs matched to your profile
+                    {% else %}
+                    Discover your next opportunity
+                    {% endif %}
+                </h1>
+                <p class="jm-hero__subtitle">
+                    {% if is_job_seeker %}
+                    AI-ranked roles based on your skills, preferences, and career goals.
+                    {% else %}
+                    Browse live openings from verified employers. Sign in to apply and unlock personalized matches.
+                    {% endif %}
+                </p>
+            </div>
+            <form class="jm-search" id="jmSearchForm" method="get" action="{% url 'marketplace_browse_jobs' %}" role="search">
+                <div class="jm-search__row">
+                    <label class="jm-search__field">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <input type="search" name="q" value="{{ filters.q }}" placeholder="Job title, skills, company, keywords..." autocomplete="off" id="jmSearchInput" list="jmSuggestList">
+                        <datalist id="jmSuggestList"></datalist>
+                    </label>
+                    <label class="jm-search__field">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                        <input type="text" name="location" value="{{ filters.location }}" placeholder="City, state, or remote">
+                    </label>
+                    <button type="submit" class="ed-btn ed-btn--gradient">Search Jobs</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="jm-body">
+    <div class="container-xl">
+        <div class="jm-layout">
+            {% include "jobs/partials/filters_sidebar.html" %}
+
+            <div class="jm-main">
+                <div class="jm-toolbar">
+                    <div class="jm-toolbar__left">
+                        <p class="jm-results-count" id="jmResultsCount">
+                            <strong>{{ marketplace.total_count }}</strong> job{{ marketplace.total_count|pluralize }} found
+                        </p>
+                        {% if marketplace.is_personalized %}
+                        <span class="jm-personalized-badge"><i class="bi bi-magic"></i> Personalized</span>
+                        {% endif %}
+                    </div>
+                    <div class="jm-toolbar__right">
+                        <label class="jm-sort">
+                            <span class="visually-hidden">Sort jobs</span>
+                            <select name="sort" form="jmFilterForm" class="form-select form-select-sm">
+                                {% if is_job_seeker %}
+                                {% for opt in marketplace.filter_options.sort_options_seeker %}
+                                <option value="{{ opt.value }}" {% if filters.sort == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                                {% endfor %}
+                                {% else %}
+                                {% for opt in marketplace.filter_options.sort_options_guest %}
+                                <option value="{{ opt.value }}" {% if filters.sort == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                        </label>
+                        <button type="button" class="jm-filter-toggle d-lg-none" id="jmFilterToggle" aria-expanded="false" aria-controls="jmFiltersSidebar">
+                            <i class="bi bi-sliders"></i> Filters
+                        </button>
+                    </div>
+                </div>
+
+                {% if marketplace.active_filters %}
+                <div class="jm-chips" id="jmFilterChips">
+                    {% for chip in marketplace.active_filters %}
+                    <span class="jm-chip">{{ chip.label }}: {{ chip.value }}</span>
+                    {% endfor %}
+                    <a href="{% url 'marketplace_browse_jobs' %}" class="jm-chip jm-chip--clear">Clear all</a>
+                </div>
+                {% endif %}
+
+                <div class="jm-jobs" id="jmJobsGrid">
+                    {% for job in marketplace.jobs %}
+                    {% include "jobs/partials/job_card.html" with job=job %}
+                    {% empty %}
+                    <div class="jm-empty">
+                        <i class="bi bi-briefcase"></i>
+                        <h2>No jobs match your search</h2>
+                        <p>Try adjusting filters or broadening your keywords.</p>
+                        <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--outline">Reset filters</a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if marketplace.total_pages > 1 %}
+                <nav class="jm-pagination" aria-label="Job results pages">
+                    {% if marketplace.page > 1 %}
+                    <a class="jm-page-btn" href="?page={{ marketplace.page|add:'-1' }}{% if filters.q %}&amp;q={{ filters.q|urlencode }}{% endif %}{% if filters.location %}&amp;location={{ filters.location|urlencode }}{% endif %}">Previous</a>
+                    {% endif %}
+                    <span class="jm-page-info">Page {{ marketplace.page }} of {{ marketplace.total_pages }}</span>
+                    {% if marketplace.page < marketplace.total_pages %}
+                    <a class="jm-page-btn" href="?page={{ marketplace.page|add:'1' }}{% if filters.q %}&amp;q={{ filters.q|urlencode }}{% endif %}{% if filters.location %}&amp;location={{ filters.location|urlencode }}{% endif %}">Next</a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include "jobs/partials/share_modal.html" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JM_CONFIG = {
+    searchApiUrl: "{{ search_api_url|escapejs }}",
+    suggestApiUrl: "{{ suggest_api_url|escapejs }}",
+    csrfToken: "{{ csrf_token|escapejs }}",
+    isJobSeeker: {{ is_job_seeker|yesno:"true,false" }},
+    resumeUrl: "{% if is_job_seeker %}{% portal_url 'jobseeker_resume' %}{% else %}#{% endif %}"
+  };
+</script>
+<script src="{% static 'js/job-marketplace.js' %}"></script>
+{% endblock %}

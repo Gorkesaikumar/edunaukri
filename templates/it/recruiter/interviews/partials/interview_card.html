@@ -1,0 +1,101 @@
+<article class="rcd-interview-card{% if item.is_live %} rcd-interview-card--live{% endif %}{% if item.is_upcoming %} rcd-interview-card--upcoming{% endif %}"
+         id="interview-{{ item.id }}"
+         data-interview-id="{{ item.id }}">
+    <div class="rcd-interview-card__head">
+        <div class="rcd-interview-card__when">
+            <span class="rcd-interview-card__date">{{ item.date_label }}</span>
+            <span class="rcd-interview-card__time">{{ item.time_label }}</span>
+            {% if item.is_live %}<span class="rcd-interview-item__live" aria-label="In progress"></span>{% endif %}
+        </div>
+        <span class="rcd-status-pill rcd-status-pill--{{ item.status_tone }}">{{ item.status_label }}</span>
+    </div>
+
+    <div class="rcd-interview-card__body">
+        <div class="rcd-interview-card__candidate">
+            {% if item.photo_url %}
+            <img src="{{ item.photo_url }}" alt="" class="rcd-applicants-table__photo">
+            {% else %}
+            <span class="rcd-pipeline-card__avatar"><span>{{ item.initials }}</span></span>
+            {% endif %}
+            <div class="rcd-interview-card__meta">
+                <strong class="rcd-interview-card__name">{{ item.candidate_name }}</strong>
+                <span class="text-muted small d-block">{{ item.job_title }}</span>
+                <span class="rcd-interview-card__round">{{ item.round_label }} · {{ item.mode_label }}</span>
+            </div>
+        </div>
+
+        <dl class="rcd-interview-card__details">
+            <div><dt>Interviewer</dt><dd>{{ item.interviewer }}</dd></div>
+            <div><dt>Stage</dt><dd>{{ item.stage_label }}</dd></div>
+            {% if item.meet_url %}
+            <div class="rcd-interview-card__link-col"><dt>Meeting</dt><dd><a href="{{ item.meet_url }}" target="_blank" rel="noopener" class="rcd-interview-card__meet-link">Join link</a></dd></div>
+            {% elif item.location %}
+            <div><dt>Location</dt><dd>{{ item.location }}</dd></div>
+            {% endif %}
+        </dl>
+    </div>
+
+    <div class="rcd-interview-card__pipeline" aria-label="Hiring pipeline progress">
+        <div class="rcd-interview-card__pipeline-track">
+            <span class="rcd-interview-card__pipeline-fill" style="width:{% widthratio item.pipeline_index|add:1 item.pipeline_total 100 %}%"></span>
+        </div>
+        <span class="rcd-interview-card__pipeline-label">{{ item.stage_label }}</span>
+    </div>
+
+    <div class="rcd-interview-card__foot">
+        <div class="dropdown rcd-interview-actions">
+            <button type="button"
+                    class="rcd-btn rcd-btn--soft rcd-btn--xs dropdown-toggle rec-interview-actions-btn"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="true"
+                    aria-expanded="false"
+                    data-interview-id="{{ item.id }}"
+                    data-app-id="{{ item.application_id }}"
+                    data-name="{{ item.candidate_name }}"
+                    data-job="{{ item.job_title }}"
+                    data-company="{{ item.company_name }}"
+                    data-email="{{ item.email }}"
+                    data-phone="{{ item.phone }}"
+                    data-has-resume="{% if item.has_resume %}1{% else %}0{% endif %}"
+                    data-resume-url="{{ item.resume_url }}"
+                    data-resume-preview-url="{{ item.resume_preview_url }}"
+                    data-detail-url="{{ item.detail_url }}"
+                    data-meet-url="{{ item.meet_url }}"
+                    data-location="{{ item.location }}"
+                    data-cancel-url="{{ item.cancel_url }}"
+                    data-reschedule-url="{{ item.reschedule_url }}"
+                    data-feedback-url="{{ item.feedback_url }}"
+                    data-status-url="{{ item.status_url }}"
+                    data-app-status-url="{{ item.application_status_url }}"
+                    data-date="{{ item.date_label }}"
+                    data-time="{{ item.time_label }}"
+                    data-round="{{ item.round_label }}"
+                    data-mode="{{ item.mode_label }}"
+                    data-interviewer="{{ item.interviewer }}"
+                    data-can-cancel="{% if item.can_cancel %}1{% else %}0{% endif %}"
+                    data-can-reschedule="{% if item.can_reschedule %}1{% else %}0{% endif %}"
+                    data-can-complete="{% if item.can_complete %}1{% else %}0{% endif %}">
+                Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end rcd-applicant-actions__menu">
+                <li><button type="button" class="dropdown-item rec-int-action-profile"><span class="material-symbols-outlined">person</span>View Candidate</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-resume"{% if not item.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">visibility</span>View Resume</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-download"{% if not item.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">download</span>Download Resume</button></li>
+                {% if item.meet_url %}
+                <li><a class="dropdown-item" href="{{ item.meet_url }}" target="_blank" rel="noopener"><span class="material-symbols-outlined">videocam</span>Join Meeting</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item rec-int-action-edit"{% if not item.can_reschedule %} disabled{% endif %}><span class="material-symbols-outlined">edit_calendar</span>Reschedule</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-cancel"{% if not item.can_cancel %} disabled{% endif %}><span class="material-symbols-outlined">cancel</span>Cancel Interview</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-complete"{% if not item.can_complete %} disabled{% endif %}><span class="material-symbols-outlined">check_circle</span>Mark Completed</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-feedback"><span class="material-symbols-outlined">rate_review</span>Add Feedback</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item rec-int-action-whatsapp"><span class="material-symbols-outlined">chat</span>Send WhatsApp</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-email"><span class="material-symbols-outlined">mail</span>Send Email</button></li>
+                <li><button type="button" class="dropdown-item rec-int-action-reminder"><span class="material-symbols-outlined">notifications</span>Send Reminder</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item rec-int-action-next"><span class="material-symbols-outlined">trending_flat</span>Move to Next Stage</button></li>
+            </ul>
+        </div>
+    </div>
+</article>

@@ -1,0 +1,7 @@
+<header class="rcd-section-head{% if class %} {{ class }}{% endif %}">
+    <div>
+        <h1 class="rcd-section-head__title">{{ title }}</h1>
+        {% if description %}<p class="mb-0 text-muted">{{ description }}</p>{% endif %}
+    </div>
+    {% if actions %}{{ actions }}{% endif %}
+</header>

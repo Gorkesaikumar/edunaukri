@@ -1,0 +1,288 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Settings | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/professor-settings.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Account Settings</h1>
+            <p class="fjd-page-head__desc">Manage your account, password, notifications, privacy, sessions, and security activity.</p>
+        </div>
+    </div>
+</header>
+
+{% if settings_page %}
+<div class="fjd-set-layout" id="fjdSettingsPage"
+     data-api-account="{{ settings_page.api_urls.account }}"
+     data-api-password="{{ settings_page.api_urls.password }}"
+     data-api-notifications="{{ settings_page.api_urls.notifications }}"
+     data-api-privacy="{{ settings_page.api_urls.privacy }}"
+     data-api-sessions="{{ settings_page.api_urls.sessions }}"
+     data-api-revoke-others="{{ settings_page.api_urls.revoke_others }}"
+     data-api-audit="{{ settings_page.api_urls.audit }}"
+     data-api-delete="{{ settings_page.api_urls.delete_account }}"
+     data-api-connected="{{ settings_page.api_urls.connected }}">
+
+    <nav class="fjd-set-nav" aria-label="Settings sections">
+        <a href="#account" class="fjd-set-nav__link is-active"><i class="bi bi-person"></i> Account</a>
+        <a href="#password" class="fjd-set-nav__link"><i class="bi bi-shield-lock"></i> Password</a>
+        <a href="#notifications" class="fjd-set-nav__link"><i class="bi bi-bell"></i> Notifications</a>
+        <a href="#privacy" class="fjd-set-nav__link"><i class="bi bi-eye"></i> Privacy</a>
+        <a href="#connected" class="fjd-set-nav__link"><i class="bi bi-link-45deg"></i> Connected</a>
+        <a href="#sessions" class="fjd-set-nav__link"><i class="bi bi-laptop"></i> Sessions</a>
+        <a href="#activity" class="fjd-set-nav__link"><i class="bi bi-shield-check"></i> Activity</a>
+    </nav>
+
+    <div class="fjd-set-main">
+        <section class="fjd-card fjd-set-section" id="account">
+            <div class="fjd-card__body">
+                <h2><i class="bi bi-person-badge"></i> Account Information</h2>
+                <div class="fjd-set-info-grid">
+                    <div><span>Full Name</span><strong id="fjdSetFullName">{{ settings_page.account.full_name }}</strong></div>
+                    <div><span>Email</span><strong>{{ settings_page.account.email }}</strong></div>
+                    <div><span>Mobile</span><strong id="fjdSetPhoneDisplay">{{ settings_page.account.phone|default:"—" }}</strong></div>
+                    <div><span>Username</span><strong>{{ settings_page.account.username }}</strong></div>
+                    <div><span>Registered</span><strong>{{ settings_page.account.registered_label }}</strong></div>
+                    <div><span>Last Login</span><strong>{{ settings_page.account.last_login_label }}</strong></div>
+                    <div><span>Account Status</span><strong>{{ settings_page.account.account_status_label }}</strong></div>
+                    <div><span>Email Verified</span><strong>{% if settings_page.account.email_verified %}<span class="fjd-set-badge fjd-set-badge--ok">Verified</span>{% else %}<span class="fjd-set-badge fjd-set-badge--warn">Pending</span>{% endif %}</strong></div>
+                    <div><span>Mobile Verified</span><strong>{% if settings_page.account.phone_verified %}<span class="fjd-set-badge fjd-set-badge--ok">Verified</span>{% else %}<span class="fjd-set-badge fjd-set-badge--warn">Not verified</span>{% endif %}</strong></div>
+                </div>
+                {% if settings_page.security.recommendations %}
+                <ul class="fjd-set-recs">
+                    {% for rec in settings_page.security.recommendations %}
+                    <li><i class="bi bi-info-circle"></i> {{ rec }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                <hr>
+                <form id="fjdSetAccountForm" class="fjd-set-form row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="fjdSetFirstName">First Name</label>
+                        <input type="text" class="form-control" id="fjdSetFirstName" value="{{ settings_page.account.first_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="fjdSetLastName">Last Name</label>
+                        <input type="text" class="form-control" id="fjdSetLastName" value="{{ settings_page.account.last_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="fjdSetPhone">Mobile Number</label>
+                        <input type="tel" class="form-control" id="fjdSetPhone" value="{{ settings_page.account.phone }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="fjd-btn fjd-btn--primary btn-sm">Save Account Info</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="password">
+            <div class="fjd-card__body">
+                <h2><i class="bi bi-shield-lock"></i> Change Password</h2>
+                <p class="fjd-set-hint">Last changed: <span data-password-changed-label>{{ settings_page.security.password_changed_label }}</span></p>
+                <form id="fjdSetPasswordForm" class="fjd-set-form" novalidate>
+                    <div class="fjd-set-form-error" id="fjdSetPasswordError" hidden role="alert"></div>
+                    <div class="fjd-set-pass-field">
+                        <label class="form-label" for="fjdSetCurrentPass">Current Password</label>
+                        <div class="fjd-set-pass-wrap">
+                            <input type="password" class="form-control" id="fjdSetCurrentPass" autocomplete="current-password" required>
+                            <button type="button" class="fjd-set-pass-toggle" data-target="fjdSetCurrentPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="fjd-set-pass-field">
+                        <label class="form-label" for="fjdSetNewPass">New Password</label>
+                        <div class="fjd-set-pass-wrap">
+                            <input type="password" class="form-control" id="fjdSetNewPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="fjd-set-pass-toggle" data-target="fjdSetNewPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <div class="fjd-set-strength"><div class="fjd-set-strength__bar" id="fjdSetStrengthBar"></div></div>
+                        <p class="fjd-set-strength__label" id="fjdSetStrengthLabel">Password strength</p>
+                    </div>
+                    <div class="fjd-set-pass-field">
+                        <label class="form-label" for="fjdSetConfirmPass">Confirm New Password</label>
+                        <div class="fjd-set-pass-wrap">
+                            <input type="password" class="form-control" id="fjdSetConfirmPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="fjd-set-pass-toggle" data-target="fjdSetConfirmPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                    </div>
+                    <button type="submit" class="fjd-btn fjd-btn--primary btn-sm" id="fjdSetPasswordBtn">Update Password</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="notifications">
+            <div class="fjd-card__body">
+                <h2><i class="bi bi-bell"></i> Notification Preferences</h2>
+                <div class="fjd-set-toggles">
+                    {% for item in notification_toggles %}
+                    <label class="fjd-set-toggle" data-toggle-row="{{ item.key }}">
+                        <span class="fjd-set-toggle__label">{{ item.label }}</span>
+                        <span class="fjd-set-toggle__controls">
+                            <span class="fjd-set-toggle__status" aria-live="polite"></span>
+                            <input type="checkbox" class="fjd-set-toggle__input" id="notify-{{ item.key }}" data-notify-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                            <span class="fjd-set-toggle__switch" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="privacy">
+            <div class="fjd-card__body">
+                <h2><i class="bi bi-eye"></i> Privacy Settings</h2>
+                <div class="mb-3">
+                    <label class="form-label" for="fjdSetVisibility">Profile Visibility</label>
+                    <select class="form-select" id="fjdSetVisibility">
+                        {% for value, label in settings_page.privacy.visibility_options %}
+                        <option value="{{ value }}"{% if settings_page.privacy.profile_visibility == value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fjd-set-toggles">
+                    {% for item in privacy_toggles %}
+                    <label class="fjd-set-toggle" data-toggle-row="{{ item.key }}">
+                        <span class="fjd-set-toggle__label">{{ item.label }}</span>
+                        <span class="fjd-set-toggle__controls">
+                            <span class="fjd-set-toggle__status" aria-live="polite"></span>
+                            <input type="checkbox" class="fjd-set-toggle__input" id="privacy-{{ item.key }}" data-privacy-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                            <span class="fjd-set-toggle__switch" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="connected">
+            <div class="fjd-card__body">
+                <h2><i class="bi bi-link-45deg"></i> Connected Accounts</h2>
+                <p class="fjd-set-hint">Link Google or LinkedIn for faster sign-in. The social account email must match your {{ PLATFORM_NAME }} email.</p>
+                <div class="fjd-set-connected" id="fjdSetConnectedList">
+                    {% for account in settings_page.connected_accounts %}
+                    <article class="fjd-set-connected__item" data-provider="{{ account.provider }}">
+                        <div>
+                            <strong>
+                                {% if account.provider == "google" %}<i class="bi bi-google"></i>{% else %}<i class="bi bi-linkedin"></i>{% endif %}
+                                {{ account.label }}
+                            </strong>
+                            {% if account.connected %}
+                            <p class="mb-0 text-muted small">{{ account.provider_email|default:settings_page.account.email }}</p>
+                            <p class="mb-0 text-muted small">Connected {{ account.connected_label }}</p>
+                            {% elif not account.configured %}
+                            <p class="mb-0 text-muted small">Not available — OAuth is not configured.</p>
+                            {% else %}
+                            <p class="mb-0 text-muted small">Not connected</p>
+                            {% endif %}
+                        </div>
+                        {% if account.connected %}
+                        <button type="button" class="fjd-btn fjd-btn--danger-outline btn-sm fjd-set-disconnect" data-provider="{{ account.provider }}">Disconnect</button>
+                        {% elif account.configured %}
+                        <a href="{{ account.connect_url }}" class="fjd-btn fjd-btn--outline btn-sm">Connect</a>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="sessions">
+            <div class="fjd-card__body">
+                <div class="fjd-set-section-head">
+                    <h2><i class="bi bi-laptop"></i> Active Login Sessions</h2>
+                    <button type="button" class="fjd-btn fjd-btn--outline btn-sm" id="fjdSetRevokeOthers">Sign Out Other Devices</button>
+                </div>
+                <p class="fjd-set-hint">Each sign-in creates a unique session. Sign out devices you no longer use.</p>
+                <div class="fjd-set-sessions" id="fjdSetSessionsList">
+                    {% for session in settings_page.sessions %}
+                    <article class="fjd-set-session{% if session.is_current %} is-current{% endif %}">
+                        <div>
+                            <strong>{{ session.device_label }}</strong>
+                            {% if session.is_current %}<span class="fjd-set-badge fjd-set-badge--ok">Current session</span>{% endif %}
+                            <p class="mb-0 text-muted small">{{ session.browser }} · {{ session.os_name }} · {{ session.ip_address }}</p>
+                            <p class="mb-0 text-muted small">Logged in {{ session.login_label }} · Last active {{ session.last_active_label }}</p>
+                        </div>
+                        {% if not session.is_current %}
+                        <button type="button" class="fjd-btn fjd-btn--danger-outline btn-sm fjd-set-revoke-session" data-session-id="{{ session.id }}">Sign Out</button>
+                        {% endif %}
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0">No active sessions recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section" id="activity">
+            <div class="fjd-card__body">
+                <div class="fjd-set-section-head">
+                    <h2><i class="bi bi-shield-check"></i> Security Activity</h2>
+                    <button type="button" class="fjd-btn fjd-btn--outline btn-sm" id="fjdSetRefreshActivity">Refresh</button>
+                </div>
+                <p class="fjd-set-hint">Recent sign-ins, password changes, and session actions.</p>
+                <div class="fjd-set-audit" id="fjdSetActivityList">
+                    {% for event in settings_page.audit_log %}
+                    <article class="fjd-set-audit__item">
+                        <div>
+                            <strong>{{ event.title }}</strong>
+                            {% if event.description %}<p class="mb-0 text-muted small">{{ event.description }}</p>{% endif %}
+                            <p class="mb-0 text-muted small">{{ event.occurred_label }}{% if event.ip_address %} · {{ event.ip_address }}{% endif %}</p>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0">No security activity recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="fjd-card fjd-set-section fjd-set-danger" id="delete">
+            <div class="fjd-card__body">
+                <h2 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Account</h2>
+                <p class="fjd-set-hint">Permanently deactivate your account. This action cannot be undone.</p>
+                <button type="button" class="fjd-btn fjd-btn--danger btn-sm" id="fjdSetDeleteOpen">Delete My Account</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade" id="fjdSetDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This will permanently deactivate your faculty job seeker account and sign you out of all devices.</p>
+                <label class="form-label" for="fjdSetDeletePass">Confirm your password</label>
+                <input type="password" class="form-control" id="fjdSetDeletePass">
+                <p class="fjd-set-error mt-2" id="fjdSetDeleteError" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="fjd-btn fjd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="fjd-btn fjd-btn--danger" id="fjdSetDeleteConfirm">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="fjd-card fjd-empty"><p>Sign in to manage your account settings.</p></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.FJD_SETTINGS = {
+    csrfToken: "{{ csrf_token|escapejs }}",
+    loginUrl: "/faculty/login/professor/"
+  };
+</script>
+<script src="{% static 'js/professor-settings.js' %}"></script>
+{% endblock %}

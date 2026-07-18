@@ -1,0 +1,24 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">{{ page_title }}</h1>
+            {% if page_description %}
+            <p class="jsd-page-head__desc">{{ page_description }}</p>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<section class="jsd-card">
+    <div class="jsd-card__body text-center py-5">
+        <i class="bi bi-tools display-4 text-muted mb-3" aria-hidden="true"></i>
+        <p class="text-muted mb-3">This section is being prepared. Check back soon.</p>
+        <a href="{% url 'recruiter_dashboard' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary mt-2">Back to Dashboard</a>
+    </div>
+</section>
+{% endblock %}

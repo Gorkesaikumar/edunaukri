@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Login | EduNaukri - Modern IT Recruitment</title>
+<!-- External Dependencies: Bootstrap 5, Plus Jakarta Sans, Material Symbols -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #3730a3;
+            --bg-gradient-start: #f8fafc;
+            --bg-gradient-end: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #fcf8ff 0%, #f0ecf9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        /* Abstract Blurred Background Shapes */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+        .shape-1 {
+            width: 400px; height: 400px;
+            background: #dad7ff;
+            top: -100px; right: -100px;
+        }
+        .shape-2 {
+            width: 300px; height: 300px;
+            background: #eaddff;
+            bottom: -50px; left: -50px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            border: none;
+        }
+
+        .logo-img {
+            height: 48px;
+            width: auto;
+            margin-bottom: 12px;
+        }
+
+        .platform-name {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .card-header-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .card-header-text p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        /* Segmented Control */
+        .segmented-control {
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            display: flex;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .segmented-control button {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .segmented-control button.active {
+            background: #ffffff;
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Form Styling */
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            padding: 0 16px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-check-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .forgot-link {
+            font-size: 13px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Button Styling */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            height: 44px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0;
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .divider:not(:empty)::before { margin-right: 12px; }
+        .divider:not(:empty)::after { margin-left: 12px; }
+
+        .btn-social {
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-social:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-social img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Utility */
+        .material-symbols-outlined {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="bg-shapes">
+<div class="shape shape-1"></div>
+<div class="shape shape-2"></div>
+</div>
+<div class="login-container min-vh-100 d-flex flex-column align-items-center justify-content-center">
+<div class="login-card" style="padding: 24px; width: 520px; max-width: 90vw;">
+<div class="text-center mb-3">
+<img alt="EduNaukri Logo" class="logo-img" src="https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY">
+<div class="platform-name">EduNaukri</div>
+<div class="card-header-text">
+<h1>Welcome Back</h1>
+<p>Sign in to your IT Recruitment account</p>
+</div>
+</div>
+<!-- Role Switcher -->
+<div class="segmented-control" style="margin-bottom: 16px;">
+<button class="active" id="seeker-btn" onclick="setRole('seeker')" type="button">Job Seeker</button>
+<button id="recruiter-btn" onclick="setRole('recruiter')" type="button">Recruiter</button>
+</div>
+<!-- Form -->
+<form id="loginForm">
+<div class="mb-2">
+<label class="form-label" for="email">Email Address</label>
+<input class="form-control" id="email" placeholder="name@company.com" required="" type="email">
+</div>
+<div class="mb-2">
+<div class="d-flex justify-content-between">
+<label class="form-label" for="password">Password</label>
+<a class="forgot-link" href="#">Forgot Password?</a>
+</div>
+<div class="password-container">
+<input class="form-control" id="password" placeholder="••••••••" required="" type="password">
+<button class="toggle-password" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="eyeIcon">visibility</span>
+</button>
+</div>
+</div>
+<div class="form-check mb-3">
+<input class="form-check-input" id="remember" type="checkbox">
+<label class="form-check-label" for="remember">Remember Me</label>
+</div>
+<button class="btn btn-primary w-100" id="submitBtn" type="submit">Sign In</button>
+<div class="divider">OR</div>
+<button class="btn-social" type="button">
+<img alt="Google" onerror="this.src='https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png'; this.style.width='18px'" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgcng9IjgiIGZpbGw9IiNlOGVhZWQiLz48cGF0aCBkPSJNMTcwIDEzMCBsMzAgNDAgbDIwLTE1IGw0MCA1NSBIMTQweiIgZmlsbD0iI2JkYzFjNiIvPjxjaXJjbGUgY3g9IjI1MCIgY3k9IjEyMCIgcj0iMTgiIGZpbGw9IiNiZGMxYzYiLz48L3N2Zz4=">
+                    Continue with Google
+                </button>
+<button class="btn-social" type="button">
+<img alt="LinkedIn" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg">
+                    Continue with LinkedIn
+                </button>
+</form>
+</div>
+<p class="footer-text">
+            Don't have an account? <a href="#">Create Account</a>
+</p>
+</div>
+<script>
+        let selectedRole = 'seeker';
+
+        function setRole(role) {
+            selectedRole = role;
+            const seekerBtn = document.getElementById('seeker-btn');
+            const recruiterBtn = document.getElementById('recruiter-btn');
+            
+            if (role === 'seeker') {
+                seekerBtn.classList.add('active');
+                recruiterBtn.classList.remove('active');
+            } else {
+                recruiterBtn.classList.add('active');
+                seekerBtn.classList.remove('active');
+            }
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerText = 'visibility_off';
+            } else {
+                passwordInput.type = 'password';</script></body></html>

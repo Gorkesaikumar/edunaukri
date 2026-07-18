@@ -1,0 +1,93 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Interviews | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-interviews.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Interview Command Center</h1>
+            <p class="jsd-page-head__desc">Manage invitations, join online interviews, and track outcomes.</p>
+        </div>
+    </div>
+</header>
+
+{% if interviews_page %}
+<section class="jsd-int-summary">
+    {% for stat in interviews_page.summary %}
+    <article class="jsd-int-stat jsd-int-stat--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }}"></i>
+        <div>
+            <p class="jsd-int-stat__value">{{ stat.value }}</p>
+            <p class="jsd-int-stat__label">{{ stat.label }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="jsd-int-filters" method="get">
+    <label class="jsd-int-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ interviews_page.filters.q }}" placeholder="Search company, job, recruiter...">
+    </label>
+    <select name="status" class="jsd-int-filters__select">
+        <option value="">All interviews</option>
+        <option value="upcoming"{% if interviews_page.filters.status == 'upcoming' %} selected{% endif %}>Upcoming</option>
+        <option value="today"{% if interviews_page.filters.status == 'today' %} selected{% endif %}>Today</option>
+        <option value="week"{% if interviews_page.filters.status == 'week' %} selected{% endif %}>This Week</option>
+        <option value="completed"{% if interviews_page.filters.status == 'completed' %} selected{% endif %}>Completed</option>
+        <option value="cancelled"{% if interviews_page.filters.status == 'cancelled' %} selected{% endif %}>Cancelled</option>
+    </select>
+    <input type="text" name="company" value="{{ interviews_page.filters.company }}" placeholder="Company" class="jsd-int-filters__input">
+    <button type="submit" class="jsd-btn jsd-btn--primary">Filter</button>
+</form>
+
+<section class="jsd-int-analytics">
+    <article><span>Total</span><strong>{{ interviews_page.analytics.total }}</strong></article>
+    <article><span>Upcoming</span><strong>{{ interviews_page.analytics.upcoming }}</strong></article>
+    <article><span>Completed</span><strong>{{ interviews_page.analytics.completed }}</strong></article>
+    <article><span>Success Rate</span><strong>{{ interviews_page.analytics.interview_success_rate }}%</strong></article>
+</section>
+
+<div id="jsdInterviewsPage" data-api-url="{% url 'jobseeker_interviews_api' user_uuid=portal_user_uuid %}">
+    {% if interviews_page.interviews %}
+    <div class="jsd-int-list">
+        {% for item in interviews_page.interviews %}
+        {% include "it/jobseeker/interviews/partials/interview_card.html" with item=item %}
+        {% endfor %}
+    </div>
+    {% if interviews_page.total_pages > 1 %}
+    <nav class="jsd-pagination" aria-label="Interview pages">
+        {% if interviews_page.page > 1 %}
+        <a class="jsd-page-btn" href="?page={{ interviews_page.page|add:'-1' }}">Previous</a>
+        {% endif %}
+        <span>Page {{ interviews_page.page }} of {{ interviews_page.total_pages }}</span>
+        {% if interviews_page.page < interviews_page.total_pages %}
+        <a class="jsd-page-btn" href="?page={{ interviews_page.page|add:'1' }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="jsd-card">
+        <div class="jsd-card__body jsd-empty">
+            <i class="bi bi-calendar-event"></i>
+            <h2>No interviews yet</h2>
+            <p>When recruiters schedule interviews for your applications, they will appear here.</p>
+            <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary mt-2">View Applications</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to manage interviews.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/jobseeker-interviews.js' %}"></script>
+{% endblock %}

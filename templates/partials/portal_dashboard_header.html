@@ -1,0 +1,120 @@
+{% load static portal_urls %}
+<header class="jsd-header" role="banner">
+    <div class="jsd-header__inner">
+        <div class="jsd-header__brand">
+            <button class="jsd-icon-btn jsd-header__menu-btn d-lg-none" type="button"
+                    data-bs-toggle="offcanvas" data-bs-target="#{{ portal_header.mobile_sidebar_id }}"
+                    aria-controls="{{ portal_header.mobile_sidebar_id }}" aria-label="Open navigation menu">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+
+            <a href="{% portal_url portal_header.dashboard_route %}" class="jsd-header__logo-link" aria-label="{{ PLATFORM_NAME }} dashboard home">
+                <img class="jsd-header__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }}">
+            </a>
+
+            <form class="jsd-header__search d-none d-lg-flex" action="{{ search_url }}" method="get" role="search">
+                <i class="bi bi-search jsd-header__search-icon" aria-hidden="true"></i>
+                <input class="jsd-header__search-input" type="search" name="q" id="jsdSearchInput"
+                       placeholder="{{ portal_header.search_placeholder }}"
+                       value="{{ request.GET.q|default:'' }}" aria-label="{{ portal_header.search_aria_label }}"
+                       autocomplete="off">
+                <kbd class="jsd-header__search-kbd" aria-hidden="true">K</kbd>
+            </form>
+        </div>
+
+        <div class="jsd-header__actions">
+            <button class="jsd-icon-btn jsd-header__search-toggle d-lg-none" type="button"
+                    id="jsdMobileSearchToggle" aria-label="Open search" aria-expanded="false"
+                    aria-controls="jsdMobileSearch">
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+
+            <div class="dropdown">
+                <button class="jsd-icon-btn jsd-icon-btn--notif dropdown-toggle" type="button" id="jsdNotifDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="Notifications{% if unread_notification_count %} ({{ unread_notification_count }} unread){% endif %}">
+                    <i class="bi bi-bell" aria-hidden="true"></i>
+                    {% if unread_notification_count %}
+                    <span class="jsd-icon-btn__badge" aria-hidden="true">
+                        {% if unread_notification_count > 9 %}9+{% else %}{{ unread_notification_count }}{% endif %}
+                    </span>
+                    {% endif %}
+                </button>
+                <div class="dropdown-menu dropdown-menu-end jsd-dropdown-menu" aria-labelledby="jsdNotifDropdown">
+                    <div class="d-flex justify-content-between align-items-center px-2 py-1 mb-1">
+                        <span class="fw-bold small">Notifications</span>
+                        <a href="{{ notifications_url }}" class="jsd-link">View All</a>
+                    </div>
+                    {% if header_notifications %}
+                        {% for item in header_notifications %}
+                        <form method="post" action="{{ item.mark_read_url }}" class="jsd-notif-mark-form">
+                            {% csrf_token %}
+                            <button type="submit" class="jsd-notif-item{% if not item.is_read %} jsd-notif-item--unread{% endif %}">
+                                <p class="jsd-notif-item__title">{{ item.title }}</p>
+                                {% if item.body %}<p class="jsd-notif-item__body">{{ item.body|truncatechars:80 }}</p>{% endif %}
+                                <p class="jsd-notif-item__time">{{ item.created_at }}</p>
+                            </button>
+                        </form>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small px-2 py-2 mb-0">No notifications yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{{ messages_url }}" class="jsd-icon-btn" aria-label="Messages">
+                <i class="bi bi-chat" aria-hidden="true"></i>
+            </a>
+
+            <div class="jsd-header__divider d-none d-md-block" aria-hidden="true"></div>
+
+            <div class="dropdown jsd-header__profile-wrap">
+                <button class="jsd-header__profile dropdown-toggle" type="button" id="jsdProfileDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="Account menu for {{ header_user.display_name }}">
+                    <div class="jsd-header__profile-meta d-none d-md-flex">
+                        <span class="jsd-header__profile-name">{{ header_user.display_name }}</span>
+                        <span class="jsd-header__profile-role">{{ header_user.role_label }}</span>
+                    </div>
+                    <div class="jsd-header__avatar">
+                        {% if header_user.avatar_url %}
+                        <img src="{{ header_user.avatar_url }}" alt="" loading="lazy" decoding="async">
+                        {% else %}
+                        <span class="jsd-header__avatar-initials">{{ header_user.initials }}</span>
+                        {% endif %}
+                    </div>
+                    <i class="bi bi-chevron-down jsd-header__profile-chevron" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end jsd-dropdown-menu jsd-profile-menu" aria-labelledby="jsdProfileDropdown">
+                    <li class="jsd-profile-menu__head d-md-none px-3 py-2">
+                        <span class="jsd-header__profile-name d-block">{{ header_user.display_name }}</span>
+                        <span class="jsd-header__profile-role">{{ header_user.role_label }}</span>
+                    </li>
+                    <li class="d-md-none"><hr class="dropdown-divider my-1"></li>
+                    {% for item in portal_header.profile_menu %}
+                    <li>
+                        <a class="dropdown-item jsd-dropdown-item" href="{% portal_url item.route %}{% if item.hash %}#{{ item.hash }}{% endif %}">
+                            <i class="bi {{ item.icon }}"></i>{{ item.label }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% url 'home' %}"><i class="bi bi-question-circle"></i>Help &amp; Support</a></li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><a class="dropdown-item jsd-dropdown-item jsd-dropdown-item--danger" href="{{ logout_url }}"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="jsd-mobile-search d-lg-none" id="jsdMobileSearch" hidden>
+        <form class="jsd-mobile-search__form" action="{{ search_url }}" method="get" role="search">
+            <i class="bi bi-search jsd-header__search-icon" aria-hidden="true"></i>
+            <input class="jsd-header__search-input" type="search" name="q"
+                   placeholder="{{ portal_header.search_placeholder_mobile }}"
+                   value="{{ request.GET.q|default:'' }}" aria-label="Search">
+            <button type="button" class="jsd-mobile-search__close" id="jsdMobileSearchClose" aria-label="Close search">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </form>
+    </div>
+</header>

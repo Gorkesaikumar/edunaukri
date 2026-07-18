@@ -1,0 +1,411 @@
+/* Job seeker applications / ATS portal */
+
+.jsd-app-analytics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.jsd-app-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--jsd-radius-xl);
+  background: var(--jsd-surface);
+  border: 1px solid rgba(199, 196, 216, 0.16);
+  box-shadow: var(--jsd-shadow-sm);
+}
+
+.jsd-app-stat i {
+  font-size: 1.15rem;
+  opacity: 0.9;
+}
+
+.jsd-app-stat__value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.jsd-app-stat__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--jsd-on-surface-variant);
+  margin: 0.1rem 0 0;
+}
+
+.jsd-app-stat--primary i { color: var(--jsd-primary); }
+.jsd-app-stat--info i { color: #0284c7; }
+.jsd-app-stat--review i { color: #6366f1; }
+.jsd-app-stat--success i { color: #059669; }
+.jsd-app-stat--interview i { color: #7c3aed; }
+.jsd-app-stat--offer i { color: #db2777; }
+.jsd-app-stat--danger i { color: #dc2626; }
+.jsd-app-stat--hired i { color: #ca8a04; }
+.jsd-app-stat--muted i { color: #64748b; }
+
+.jsd-app-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--jsd-radius-xl);
+  background: var(--jsd-surface);
+  border: 1px solid rgba(199, 196, 216, 0.16);
+}
+
+.jsd-app-filters__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 14rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--jsd-radius-lg);
+  background: var(--jsd-surface-container);
+}
+
+.jsd-app-filters__search input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  outline: none;
+  font-size: 0.875rem;
+}
+
+.jsd-app-filters__select {
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--jsd-radius-lg);
+  border: 1px solid rgba(199, 196, 216, 0.25);
+  background: #fff;
+  font-size: 0.875rem;
+}
+
+.jsd-app-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.jsd-app-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.jsd-app-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem 1.25rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--jsd-radius-xl);
+  background: var(--jsd-surface);
+  border: 1px solid rgba(199, 196, 216, 0.16);
+  box-shadow: var(--jsd-shadow-sm);
+}
+
+.jsd-app-card--inactive {
+  opacity: 0.82;
+}
+
+.jsd-app-card__brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  grid-column: 1 / -1;
+}
+
+.jsd-app-card__head {
+  flex: 1;
+  min-width: 0;
+}
+
+.jsd-app-card__company {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.15rem 0 0;
+}
+
+.jsd-app-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.jsd-app-card__title a:hover {
+  color: var(--jsd-primary);
+}
+
+.jsd-app-card__initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 800;
+  color: var(--jsd-primary);
+}
+
+.jsd-app-domain {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(103, 80, 164, 0.1);
+  color: var(--jsd-primary);
+}
+
+.jsd-app-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-card__recruiter {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.jsd-app-card__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--jsd-surface-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--jsd-primary);
+}
+
+.jsd-app-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jsd-app-card__actions {
+  display: flex;
+  align-items: center;
+}
+
+.jsd-app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.jsd-app-badge--lg {
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.85rem;
+}
+
+.jsd-app-badge--applied { background: #f1f5f9; color: #475569; }
+.jsd-app-badge--review { background: #e0e7ff; color: #4338ca; }
+.jsd-app-badge--shortlisted { background: #d1fae5; color: #047857; }
+.jsd-app-badge--interview { background: #ede9fe; color: #6d28d9; }
+.jsd-app-badge--offer { background: #fce7f3; color: #be185d; }
+.jsd-app-badge--hired { background: #fef3c7; color: #b45309; }
+.jsd-app-badge--rejected { background: #fee2e2; color: #b91c1c; }
+.jsd-app-badge--muted { background: #f1f5f9; color: #64748b; }
+
+.jsd-app-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.75rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-breadcrumb a {
+  color: var(--jsd-primary);
+  text-decoration: none;
+}
+
+.jsd-app-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: 1rem;
+  align-items: start;
+}
+
+.jsd-app-panel h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+.jsd-app-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.jsd-app-panel__head h2 {
+  margin-bottom: 0;
+}
+
+.jsd-app-next-step {
+  font-size: 0.9375rem;
+  margin-bottom: 0.35rem;
+}
+
+.jsd-app-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.jsd-app-info-grid span {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-info-grid strong {
+  font-size: 0.875rem;
+}
+
+.jsd-app-description {
+  font-size: 0.875rem;
+  color: var(--jsd-on-surface-variant);
+  max-height: 12rem;
+  overflow: auto;
+  margin-bottom: 0.75rem;
+}
+
+.jsd-app-countdown {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.12);
+  color: #6d28d9;
+}
+
+.jsd-app-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.jsd-app-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jsd-app-timeline__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  padding-bottom: 1.1rem;
+  position: relative;
+}
+
+.jsd-app-timeline__item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 0.95rem;
+  top: 2rem;
+  bottom: 0;
+  width: 2px;
+  background: rgba(199, 196, 216, 0.35);
+}
+
+.jsd-app-timeline__icon {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jsd-surface-container);
+  color: var(--jsd-primary);
+  z-index: 1;
+}
+
+.jsd-app-timeline__title {
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+  font-size: 0.9375rem;
+}
+
+.jsd-app-timeline__desc {
+  margin: 0 0 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-timeline__meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-dl div {
+  margin-bottom: 0.65rem;
+}
+
+.jsd-app-dl dt {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--jsd-on-surface-variant);
+}
+
+.jsd-app-dl dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.875rem;
+}
+
+.jsd-btn--danger-outline {
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fff;
+}
+
+.jsd-btn--danger-outline:hover {
+  background: #fef2f2;
+}
+
+@media (max-width: 991px) {
+  .jsd-app-card {
+    grid-template-columns: 1fr;
+  }
+
+  .jsd-app-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .jsd-app-analytics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

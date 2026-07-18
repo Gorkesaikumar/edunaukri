@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Institution Not Found | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<section class="container-xl py-5 text-center">
+    <h1>Institution not found</h1>
+    <p class="text-muted">This profile may be unavailable or not yet verified.</p>
+    <a href="{% url 'institutions_browse' %}" class="ed-btn ed-btn--gradient mt-3">Browse Institutions</a>
+</section>
+{% endblock %}

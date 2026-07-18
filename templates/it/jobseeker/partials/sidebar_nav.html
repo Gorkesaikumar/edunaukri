@@ -1,0 +1,25 @@
+<nav class="jsd-sidebar__nav" aria-label="Job seeker dashboard">
+    {% for item in sidebar.primary %}
+    <a class="jsd-sidebar__link{% if item.active %} jsd-sidebar__link--active{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+        {% if item.key == 'saved_jobs' %}
+        <span class="jsd-sidebar__badge{% if not saved_jobs_count %} d-none{% endif %}" data-saved-jobs-count>{{ saved_jobs_count }}</span>
+        {% endif %}
+        {% if item.key == 'tracker' %}
+        <span class="jsd-sidebar__badge jsd-sidebar__badge--tracker{% if not unread_tracker_count %} d-none{% endif %}" data-tracker-count>{{ unread_tracker_count }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+
+    <div class="jsd-sidebar__sep" aria-hidden="true"></div>
+
+    {% for item in sidebar.secondary %}
+    <a class="jsd-sidebar__link{% if item.active %} jsd-sidebar__link--active{% endif %}{% if item.key == 'settings' %} jsd-sidebar__link--settings{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+    </a>
+    {% endfor %}
+</nav>

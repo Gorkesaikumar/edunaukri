@@ -1,0 +1,78 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Saved Jobs | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Saved Jobs</h1>
+            <p class="fjd-page-head__desc">Faculty positions you bookmarked — apply when you are ready.</p>
+        </div>
+        {% if saved_jobs_page %}
+        <span class="fjd-count-badge">{{ saved_jobs_page.total_count }} saved</span>
+        {% endif %}
+    </div>
+</header>
+
+{% if saved_jobs_page %}
+{% if saved_jobs_page.vacancies %}
+<div class="fjd-jobs-grid">
+    {% for job in saved_jobs_page.vacancies %}
+    <article class="fjd-card fjd-card--hover fjd-job-card">
+        <div class="fjd-job-card__top">
+            <div class="fjd-job-card__logo">
+                {% if job.logo_url %}<img src="{{ job.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+            </div>
+            <span class="fjd-tag fjd-tag--muted">Saved {{ job.saved_at_display }}</span>
+        </div>
+        <h2 class="fjd-job-card__title">{{ job.title }}</h2>
+        <p class="fjd-job-card__institution">{{ job.institution_name }} • {{ job.location }}</p>
+        <div class="fjd-job-card__tags">
+            {% for tag in job.tags %}<span class="fjd-tag">{{ tag }}</span>{% endfor %}
+        </div>
+        <div class="fjd-job-card__actions">
+            <button type="button" class="fjd-btn fjd-btn--primary fjd-apply-action-btn"{% if not job.is_open %} disabled{% endif %}
+                    data-bs-toggle="modal"
+                    data-bs-target="#fjdApplyModal"
+                    data-job-id="{{ job.id }}"
+                    data-job-title="{{ job.title }}"
+                    data-job-institution="{{ job.institution_name }}"
+                    data-apply-url="{{ job.apply_url }}">
+                Apply Now
+            </button>
+            <a href="{{ job.detail_url }}" class="fjd-btn fjd-btn--outline">Details</a>
+            <form method="post" action="{{ job.save_url }}">
+                {% csrf_token %}
+                <button type="submit" class="fjd-btn fjd-btn--outline">Unsave</button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if saved_jobs_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Saved jobs pages">
+    {% if saved_jobs_page.page > 1 %}
+    <a class="fjd-page-btn" href="?page={{ saved_jobs_page.page|add:'-1' }}">Previous</a>
+    {% endif %}
+    <span>Page {{ saved_jobs_page.page }} of {{ saved_jobs_page.total_pages }}</span>
+    {% if saved_jobs_page.page < saved_jobs_page.total_pages %}
+    <a class="fjd-page-btn" href="?page={{ saved_jobs_page.page|add:'1' }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="fjd-card fjd-empty-state">
+    <div class="fjd-empty-state__icon"><i class="bi bi-bookmark-plus"></i></div>
+    <h2 class="fjd-empty-state__title">No saved jobs yet</h2>
+    <p class="fjd-empty-state__text">Save faculty roles while browsing to review and apply later.</p>
+    <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--primary">Browse Faculty Jobs</a>
+</div>
+{% endif %}
+{% else %}
+<div class="fjd-card fjd-empty"><p>Complete your profile to save jobs.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,448 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Profile | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+{% if not profile_page %}
+<div class="jsd-card">
+    <div class="jsd-card__body jsd-empty">
+        <p>Your profile could not be loaded. Please contact support.</p>
+        <a href="{% url 'jobseeker_dashboard' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary mt-2">Back to Dashboard</a>
+    </div>
+</div>
+{% else %}
+<div class="jsp-profile" id="jspProfileRoot">
+
+    {# Section 1 — Profile Header #}
+    <article class="jsd-card jsd-card--hover jsp-header-card">
+        <div class="jsp-header-card__banner"></div>
+        <div class="jsp-header-card__body">
+            <div class="jsp-header-top">
+                <div class="jsp-avatar-wrap">
+                    <div class="jsp-avatar" id="jspAvatar">
+                        {% if profile_page.avatar_url %}
+                        <img src="{{ profile_page.avatar_url }}" alt="{{ profile_page.full_name }}">
+                        {% else %}
+                        {{ profile_page.initials }}
+                        {% endif %}
+                    </div>
+                    <label class="jsp-avatar-edit" for="jspPhotoInput" title="Change photo">
+                        <i class="bi bi-camera"></i>
+                    </label>
+                    <input type="file" id="jspPhotoInput" class="jsp-hidden-input" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div class="jsp-completion-mini{% if profile_page.is_profile_verified %} jsp-completion-mini--complete{% endif %}" id="jspCompletionMini">
+                    <div class="jsp-completion-mini__label">
+                        <span>Profile Completion</span>
+                        <strong class="jsp-completion-mini__pct" id="jspCompletionPctLabel">{{ profile_page.completion_percentage }}%</strong>
+                    </div>
+                    <div class="jsp-progress" role="progressbar"
+                         aria-valuenow="{{ profile_page.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"
+                         aria-label="Profile completion">
+                        <div class="jsp-progress__bar" id="jspCompletionBar"
+                             style="width: {{ profile_page.completion_percentage }}%;"></div>
+                    </div>
+                    {% if profile_page.is_profile_verified %}
+                    <p class="jsp-completion-mini__verified" id="jspCompletionVerified">
+                        <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified Profile
+                    </p>
+                    {% endif %}
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm mt-2" data-jsp-edit="header">
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+            <div class="jsp-header-identity">
+                <h1 class="jsp-name">
+                    <span id="jspFullName">{{ profile_page.full_name }}</span>
+                    {% if profile_page.is_profile_verified %}
+                    <span class="jsp-verified-badge" id="jspVerifiedBadge" title="Verified profile — 100% complete">
+                        <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+                        <span class="visually-hidden">Verified profile</span>
+                    </span>
+                    {% endif %}
+                </h1>
+                <p class="jsp-headline" id="jspHeadline">{{ profile_page.headline }}</p>
+                <div class="jsp-meta">
+                    {% if profile_page.current_company %}
+                    <span><i class="bi bi-building"></i> {{ profile_page.current_company }}</span>
+                    {% endif %}
+                    <span><i class="bi bi-geo-alt"></i> {{ profile_page.location_display }}</span>
+                    <span><i class="bi bi-briefcase"></i> {{ profile_page.experience_display }}</span>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    {# Section 2 — Basic Information #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-person"></i> Basic Information</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-edit="basic">Edit</button>
+        </div>
+        <div class="jsp-section__body jsp-field-grid">
+            <div class="jsp-field"><label>Full Name</label><p>{{ profile_page.full_name }}</p></div>
+            <div class="jsp-field"><label>Email</label><p>{{ profile_page.user_email }}</p></div>
+            <div class="jsp-field"><label>Mobile</label><p>{{ profile_page.profile.phone|default:"—" }}</p></div>
+            <div class="jsp-field"><label>Gender</label><p>{{ profile_page.gender_display }}</p></div>
+            <div class="jsp-field"><label>Date of Birth</label><p>{{ profile_page.date_of_birth_display }}</p></div>
+            <div class="jsp-field"><label>City</label><p>{{ profile_page.profile.city|default:"—" }}</p></div>
+            <div class="jsp-field"><label>State</label><p>{{ profile_page.profile.state|default:"—" }}</p></div>
+            <div class="jsp-field"><label>Country</label><p>{{ profile_page.profile.country|default:"—" }}</p></div>
+        </div>
+    </section>
+
+    {# Section 3 — Professional Summary #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-file-text"></i> Professional Summary</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-edit="summary">Edit</button>
+        </div>
+        <div class="jsp-section__body">
+            {% if profile_page.summary %}
+            <p class="jsp-summary">{{ profile_page.summary }}</p>
+            {% else %}
+            <p class="jsp-section__empty">Add a summary to help recruiters understand your background and goals.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    {# Section 4 — Skills #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-stars"></i> Skills</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-edit="skills">Edit</button>
+        </div>
+        <div class="jsp-section__body">
+            {% if profile_page.skills %}
+            <div class="jsp-skills">
+                {% for skill in profile_page.skills %}
+                <span class="jsp-skill-tag">{{ skill }}</span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="jsp-section__empty">Add skills to improve job matching.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    {# Section 5 — Experience #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-briefcase"></i> Experience</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-add="experience">+ Add</button>
+        </div>
+        <div class="jsp-section__body">
+            {% for exp in profile_page.experiences %}
+            <div class="jsp-list-item">
+                <h3 class="jsp-list-item__title">{{ exp.title }}</h3>
+                <p class="jsp-list-item__sub">{{ exp.company_name }}{% if exp.location %} · {{ exp.location }}{% endif %}</p>
+                <p class="jsp-list-item__meta">
+                    {{ exp.get_employment_type_display }}
+                    {% if exp.start_date %} · {{ exp.start_date|date:"M Y" }}{% endif %}
+                    {% if exp.is_current %} – Present{% elif exp.end_date %} – {{ exp.end_date|date:"M Y" }}{% endif %}
+                </p>
+                {% if exp.description %}<p class="jsp-list-item__desc">{{ exp.description }}</p>{% endif %}
+                <div class="jsp-list-item__actions">
+                    <button type="button" class="jsp-btn-text" data-jsp-edit-item data-jsp-type="experience" data-jsp-id="{{ exp.id }}">Edit</button>
+                    <button type="button" class="jsp-btn-text jsp-btn-text--danger" data-jsp-delete-item data-jsp-type="experience" data-jsp-id="{{ exp.id }}">Delete</button>
+                </div>
+            </div>
+            {% empty %}
+            <p class="jsp-section__empty">Add your work experience.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Section 6 — Education #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-mortarboard"></i> Education</h2>
+            <div class="dropdown jsp-edu-add-dropdown">
+                <button type="button" class="jsp-btn-text dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    + Add Education
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end jsp-edu-add-menu">
+                    <li><button type="button" class="dropdown-item" data-jsp-add-education="school"><i class="bi bi-book"></i> School (SSC / 10th)</button></li>
+                    <li><button type="button" class="dropdown-item" data-jsp-add-education="intermediate"><i class="bi bi-journal-text"></i> Intermediate (12th / Diploma)</button></li>
+                    <li><button type="button" class="dropdown-item" data-jsp-add-education="degree"><i class="bi bi-mortarboard"></i> Degree / B.Tech</button></li>
+                    <li><button type="button" class="dropdown-item" data-jsp-add-education="post_graduation"><i class="bi bi-award"></i> Post Graduation</button></li>
+                </ul>
+            </div>
+        </div>
+        <div class="jsp-section__body" id="jspEducationList">
+            {% for edu in profile_page.education %}
+            <article class="jsp-edu-card" data-education-id="{{ edu.id }}">
+                <div class="jsp-edu-card__head">
+                    <span class="jsp-edu-card__badge jsp-edu-card__badge--{{ edu.education_level|default:'degree' }}">{{ edu.level_label }}</span>
+                    <h3 class="jsp-edu-card__title">{{ edu.degree }}</h3>
+                </div>
+                <p class="jsp-edu-card__institution">
+                    {% if edu.education_level == 'school' %}
+                    {{ edu.institution }}
+                    {% elif edu.education_level == 'intermediate' %}
+                    {{ edu.college|default:edu.institution }}{% if edu.university %} · {{ edu.university }}{% endif %}
+                    {% elif edu.education_level == 'post_graduation' %}
+                    {{ edu.institution }}
+                    {% else %}
+                    {{ edu.college|default:edu.institution }}{% if edu.university %} · {{ edu.university }}{% endif %}
+                    {% endif %}
+                </p>
+                <div class="jsp-edu-card__meta">
+                    {% if edu.board %}<span><i class="bi bi-building"></i> {{ edu.get_board_display }}</span>{% endif %}
+                    {% if edu.stream %}<span><i class="bi bi-diagram-3"></i> {{ edu.get_stream_display }}</span>{% endif %}
+                    {% if edu.field_of_study %}<span><i class="bi bi-tag"></i> {{ edu.field_of_study }}</span>{% endif %}
+                    {% if edu.year_display %}<span><i class="bi bi-calendar3"></i> {{ edu.year_display }}</span>{% endif %}
+                    {% if edu.score_display %}<span><i class="bi bi-graph-up"></i> {{ edu.score_display }}</span>{% endif %}
+                </div>
+                <div class="jsp-list-item__actions">
+                    <button type="button" class="jsp-btn-text" data-jsp-edit-education data-jsp-id="{{ edu.id }}">Edit</button>
+                    <button type="button" class="jsp-btn-text jsp-btn-text--danger" data-jsp-delete-item data-jsp-type="education" data-jsp-id="{{ edu.id }}">Delete</button>
+                </div>
+            </article>
+            {% empty %}
+            <p class="jsp-section__empty">Add your complete academic journey — from School through Post Graduation.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Section 7 — Projects #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-code-slash"></i> Projects</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-add="project">+ Add</button>
+        </div>
+        <div class="jsp-section__body">
+            {% for project in profile_page.projects %}
+            <div class="jsp-list-item">
+                <h3 class="jsp-list-item__title">{{ project.title }}</h3>
+                {% if project.description %}<p class="jsp-list-item__desc">{{ project.description }}</p>{% endif %}
+                {% if project.technologies %}
+                <div class="jsp-skills mt-2">
+                    {% for tech in project.technologies %}<span class="jsp-skill-tag">{{ tech }}</span>{% endfor %}
+                </div>
+                {% endif %}
+                <div class="jsp-list-item__actions">
+                    <button type="button" class="jsp-btn-text" data-jsp-edit-item data-jsp-type="project" data-jsp-id="{{ project.id }}">Edit</button>
+                    <button type="button" class="jsp-btn-text jsp-btn-text--danger" data-jsp-delete-item data-jsp-type="project" data-jsp-id="{{ project.id }}">Delete</button>
+                </div>
+            </div>
+            {% empty %}
+            <p class="jsp-section__empty">Showcase projects you have built.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Section 8 — Certifications #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-award"></i> Certifications</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-add="certification">+ Add</button>
+        </div>
+        <div class="jsp-section__body">
+            {% for cert in profile_page.certifications %}
+            <div class="jsp-list-item">
+                <h3 class="jsp-list-item__title">{{ cert.name }}</h3>
+                <p class="jsp-list-item__sub">{{ cert.issuing_organization }}</p>
+                <p class="jsp-list-item__meta">
+                    {% if cert.issue_date %}{{ cert.issue_date|date:"M Y" }}{% endif %}
+                    {% if cert.credential_id %} · ID: {{ cert.credential_id }}{% endif %}
+                </p>
+                <div class="jsp-list-item__actions">
+                    <button type="button" class="jsp-btn-text" data-jsp-edit-item data-jsp-type="certification" data-jsp-id="{{ cert.id }}">Edit</button>
+                    <button type="button" class="jsp-btn-text jsp-btn-text--danger" data-jsp-delete-item data-jsp-type="certification" data-jsp-id="{{ cert.id }}">Delete</button>
+                </div>
+            </div>
+            {% empty %}
+            <p class="jsp-section__empty">Add professional certifications.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Section 9 — Resume #}
+    <section class="jsp-section" id="jspResumeSection">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-file-earmark-pdf"></i> Resume</h2>
+        </div>
+        <div class="jsp-section__body">
+            <div class="jsp-resume-box" id="jspResumeBox">
+                <div class="jsp-resume-box__info">
+                    {% if profile_page.has_resume %}
+                    <p class="jsp-resume-box__label">Current Resume</p>
+                    <p class="jsp-resume-box__name" id="jspResumeFileName">
+                        <i class="bi bi-file-earmark-text"></i> {{ profile_page.resume_filename }}
+                    </p>
+                    {% else %}
+                    <p class="jsp-resume-box__name" id="jspResumeFileName">No resume uploaded</p>
+                    {% endif %}
+                    <p class="jsp-resume-box__hint">PDF or DOCX only · Max 5 MB</p>
+                    <p class="jsp-resume-box__selected" id="jspResumeSelected" hidden></p>
+                    <p class="jsp-resume-box__error" id="jspResumeError" role="alert" hidden></p>
+                    <div class="jsp-resume-progress" id="jspResumeProgress" hidden>
+                        <div class="jsp-resume-progress__track">
+                            <div class="jsp-resume-progress__bar" id="jspResumeProgressBar"></div>
+                        </div>
+                        <span class="jsp-resume-progress__text" id="jspResumeProgressText">Uploading…</span>
+                    </div>
+                </div>
+                <div class="jsp-resume-box__actions d-flex gap-2 flex-wrap">
+                    {% if profile_page.has_resume %}
+                    {% if profile_page.resume_preview_url %}
+                    <a href="{{ profile_page.resume_preview_url }}" class="jsd-btn jsd-btn--outline btn-sm" target="_blank" rel="noopener" id="jspResumePreview">Preview</a>
+                    {% endif %}
+                    <a href="{{ profile_page.resume_download_url }}" class="jsd-btn jsd-btn--outline btn-sm" id="jspResumeDownload">Download</a>
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jspResumeUploadBtn">Upload New Resume</button>
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm text-danger" id="jspDeleteResume">Delete</button>
+                    {% else %}
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jspResumeUploadBtn">Upload Resume</button>
+                    {% endif %}
+                </div>
+            </div>
+            <input type="file"
+                   id="jspResumeInput"
+                   class="jsp-file-input-offscreen"
+                   tabindex="-1"
+                   aria-hidden="true"
+                   accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        </div>
+    </section>
+
+    {# Section 10 — Profile Picture (managed in header) #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-image"></i> Profile Picture</h2>
+        </div>
+        <div class="jsp-section__body d-flex align-items-center gap-3 flex-wrap">
+            <div class="jsp-avatar" style="width:4rem;height:4rem;font-size:1.25rem;">
+                {% if profile_page.avatar_url %}<img src="{{ profile_page.avatar_url }}" alt="">{% else %}{{ profile_page.initials }}{% endif %}
+            </div>
+            <div>
+                <label class="jsd-btn jsd-btn--primary btn-sm mb-1" for="jspPhotoInput">Upload Photo</label>
+                {% if profile_page.avatar_url %}
+                <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="jspDeletePhoto">Remove</button>
+                {% endif %}
+                <p class="jsp-resume-box__hint mb-0">JPG, PNG or WebP · Max 2 MB</p>
+            </div>
+        </div>
+    </section>
+
+    {# Section 11 — Career Preferences #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-sliders"></i> Career Preferences</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-edit="career">Edit</button>
+        </div>
+        <div class="jsp-section__body jsp-field-grid">
+            <div class="jsp-field"><label>Preferred Roles</label><p>{{ profile_page.preferred_roles_display }}</p></div>
+            <div class="jsp-field"><label>Preferred Location</label><p>{{ profile_page.preferred_location }}</p></div>
+            <div class="jsp-field"><label>Expected Salary (LPA)</label><p>{{ profile_page.expected_salary_display }}</p></div>
+            <div class="jsp-field"><label>Employment Type</label><p>{{ profile_page.employment_type_display }}</p></div>
+            <div class="jsp-field"><label>Work Mode</label><p>{{ profile_page.work_mode_display }}</p></div>
+            <div class="jsp-field"><label>Notice Period</label><p>{{ profile_page.notice_period_display }}</p></div>
+        </div>
+    </section>
+
+    {# Section 12 — Social Links #}
+    <section class="jsp-section">
+        <div class="jsp-section__head">
+            <h2 class="jsp-section__title"><i class="bi bi-link-45deg"></i> Social Links</h2>
+            <button type="button" class="jsp-btn-text" data-jsp-edit="social">Edit</button>
+        </div>
+        <div class="jsp-section__body">
+            {% if profile_page.linkedin_url or profile_page.github_url or profile_page.portfolio_url or profile_page.personal_website %}
+            <div>
+                {% if profile_page.linkedin_url %}<a class="jsp-social-link" href="{{ profile_page.linkedin_url }}" target="_blank" rel="noopener"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+                {% if profile_page.github_url %}<a class="jsp-social-link" href="{{ profile_page.github_url }}" target="_blank" rel="noopener"><i class="bi bi-github"></i> GitHub</a>{% endif %}
+                {% if profile_page.portfolio_url %}<a class="jsp-social-link" href="{{ profile_page.portfolio_url }}" target="_blank" rel="noopener"><i class="bi bi-globe"></i> Portfolio</a>{% endif %}
+                {% if profile_page.personal_website %}<a class="jsp-social-link" href="{{ profile_page.personal_website }}" target="_blank" rel="noopener"><i class="bi bi-link"></i> Website</a>{% endif %}
+            </div>
+            {% else %}
+            <p class="jsp-section__empty">Add LinkedIn, GitHub, or portfolio links.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+{# Section edit modal #}
+<div class="modal fade" id="jspSectionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="jspSectionForm" class="jsp-edit-form">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jspSectionModalTitle">Edit Section</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="jspSectionFields"></div>
+                <div class="modal-footer">
+                    <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="jsd-btn jsd-btn--primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Nested item modal #}
+<div class="modal fade" id="jspNestedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="jspNestedForm" class="jsp-edit-form">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jspNestedModalTitle">Add Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="jspNestedFields"></div>
+                <div class="modal-footer">
+                    <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="jsd-btn jsd-btn--primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Education modal — structured Indian academic levels #}
+<div class="modal fade jsp-edu-modal" id="jspEducationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="jspEducationForm" class="jsp-edit-form" novalidate>
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="jspEducationModalTitle">Add Education</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="education_level" id="jspEduLevelInput" value="">
+                    <div class="jsp-edu-level-picker" id="jspEduLevelPicker" hidden></div>
+                    <div id="jspEducationFields"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="jsd-btn jsd-btn--primary" id="jspEducationSaveBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if profile_json %}
+{{ profile_json|json_script:"jsp-profile-data" }}
+<script>
+  window.JSP_PROFILE = JSON.parse(document.getElementById("jsp-profile-data").textContent);
+</script>
+{% endif %}
+<script src="{% static 'js/jobseeker-profile.js' %}"></script>
+<script src="{% static 'js/jobseeker-profile-education.js' %}"></script>
+<script src="{% static 'js/jobseeker-profile-resume.js' %}"></script>
+{% endblock %}

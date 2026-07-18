@@ -1,0 +1,33 @@
+{% extends "auth/base.html" %}
+{% load static %}
+
+{% block auth_back_href %}{{ login_url }}{% endblock %}
+
+{% block title %}Verify Email | {{ portal_label }} | {{ PLATFORM_NAME }}{% endblock %}
+{% block meta_description %}Verify your {{ portal_label }} email address on {{ PLATFORM_NAME }}.{% endblock %}
+
+{% block content %}
+<div class="ed-auth-wrap">
+    <div class="ed-auth-card">
+        <header class="ed-auth-card__header text-center">
+            <img class="ed-auth-card__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo">
+            <h1 class="ed-auth-card__title">Email Verification</h1>
+            <p class="ed-auth-card__subtitle">{{ portal_label }} — {{ role_label }}</p>
+        </header>
+
+        <div class="ed-auth-form text-center">
+            {% if verified %}
+            <div class="ed-auth-form-success" role="status">
+                Your email has been verified. You can sign in now.
+            </div>
+            <a class="btn ed-auth-btn ed-auth-btn--primary w-100 mt-3" href="{{ login_url }}">Continue to Sign In</a>
+            {% elif error_message %}
+            <div class="ed-auth-form-error" role="alert">{{ error_message }}</div>
+            <a class="btn ed-auth-btn ed-auth-btn--primary w-100 mt-3" href="{{ login_url }}">Back to Sign In</a>
+            {% else %}
+            <p class="text-secondary mb-0">Verifying your email address…</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

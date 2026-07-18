@@ -1,0 +1,103 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Applications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Applications</h1>
+            <p class="fjd-page-head__desc">Track every faculty application from submission to selection.</p>
+        </div>
+        <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--outline">Browse Jobs</a>
+    </div>
+</header>
+
+{% if applications_page %}
+<section class="fjd-tracker fjd-tracker--page">
+    {% for stat in applications_page.analytics %}
+    <article class="fjd-card fjd-tracker__item fjd-tracker__item--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }} fjd-tracker__icon" aria-hidden="true"></i>
+        <p class="fjd-tracker__value">{{ stat.value }}</p>
+        <p class="fjd-tracker__label">{{ stat.label }}</p>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="fjd-filters" method="get" action="{% portal_url 'professor_applications' %}">
+    <label class="fjd-filters__search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input type="search" name="q" value="{{ applications_page.filters.q }}" placeholder="Search institution or role">
+    </label>
+    <select name="status" class="fjd-filters__select" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="applied"{% if applications_page.filters.status == 'applied' %} selected{% endif %}>Applied</option>
+        <option value="under_review"{% if applications_page.filters.status == 'under_review' %} selected{% endif %}>Under Review</option>
+        <option value="interview_scheduled"{% if applications_page.filters.status == 'interview_scheduled' %} selected{% endif %}>Interview Scheduled</option>
+        <option value="offer_released"{% if applications_page.filters.status == 'offer_released' %} selected{% endif %}>Offer Released</option>
+        <option value="rejected"{% if applications_page.filters.status == 'rejected' %} selected{% endif %}>Rejected</option>
+    </select>
+    <div class="fjd-filters__chips">
+        <label><input type="checkbox" name="active" value="1"{% if applications_page.filters.active_only %} checked{% endif %}> Active</label>
+        <label><input type="checkbox" name="interview" value="1"{% if applications_page.filters.interview_only %} checked{% endif %}> Interviews</label>
+        <label><input type="checkbox" name="offer" value="1"{% if applications_page.filters.offer_only %} checked{% endif %}> Offers</label>
+        <label><input type="checkbox" name="rejected" value="1"{% if applications_page.filters.rejected_only %} checked{% endif %}> Rejected</label>
+    </div>
+    <button type="submit" class="fjd-btn fjd-btn--primary">Apply Filters</button>
+</form>
+
+{% if applications_page.applications %}
+<div class="fjd-list">
+    {% for app in applications_page.applications %}
+    <article class="fjd-card fjd-card--hover fjd-list-card">
+        <div class="fjd-list-card__main">
+            <div class="fjd-list-card__logo">
+                {% if app.logo_url %}<img src="{{ app.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+            </div>
+            <div>
+                <h2 class="fjd-list-card__title">{{ app.job_title }}</h2>
+                <p class="fjd-list-card__meta">{{ app.institution_name }} • {{ app.location }}</p>
+                <p class="fjd-list-card__dates">Applied {{ app.applied_date }} · Updated {{ app.last_updated }}</p>
+            </div>
+        </div>
+        <div class="fjd-list-card__side">
+            <span class="fjd-badge {{ app.status_class }}">{{ app.status_label }}</span>
+            <div class="fjd-list-card__actions mt-3">
+                <a href="{{ app.detail_url }}" class="fjd-btn fjd-btn--primary">
+                    <i class="bi bi-file-earmark-text"></i> View Application
+                </a>
+                <a href="{{ app.job_url }}" class="fjd-btn fjd-btn--outline">
+                    <i class="bi bi-briefcase"></i> View Job
+                </a>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if applications_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Applications pages">
+    {% if applications_page.pagination_prev_query %}
+    <a class="fjd-page-btn" href="{{ applications_page.pagination_prev_query }}">Previous</a>
+    {% endif %}
+    <span>Page {{ applications_page.page }} of {{ applications_page.total_pages }}</span>
+    {% if applications_page.pagination_next_query %}
+    <a class="fjd-page-btn" href="{{ applications_page.pagination_next_query }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="fjd-card fjd-empty">
+    <i class="bi bi-file-earmark-text"></i>
+    <h2>No applications found</h2>
+    <p>Apply to faculty roles from the institutions marketplace to start tracking your pipeline.</p>
+    <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--primary mt-2">Browse Faculty Jobs</a>
+</div>
+{% endif %}
+
+{% else %}
+<div class="fjd-card fjd-empty"><p>Complete your profile to view applications.</p></div>
+{% endif %}
+{% endblock %}

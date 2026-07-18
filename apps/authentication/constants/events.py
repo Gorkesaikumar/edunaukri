@@ -1,0 +1,4 @@
+AUTH_EMAIL_VERIFICATION = "auth.email_verification"
+AUTH_PASSWORD_RESET = "auth.password_reset"
+
+AUTH_EMAIL_EVENT_TYPES = frozenset({AUTH_EMAIL_VERIFICATION, AUTH_PASSWORD_RESET})

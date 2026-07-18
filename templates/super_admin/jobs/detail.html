@@ -1,0 +1,292 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="{% url 'super_admin_jobs' user_uuid=header_user.user_uuid %}?type={{ current_type }}" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant/40 bg-white text-on-surface-variant hover:bg-gray-50 flex items-center gap-1">
+        <span class="material-symbols-outlined !text-sm">arrow_back</span> Back to Postings
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Posting Moderation Header Card -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant/30 shadow-xs">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-outline-variant/20">
+        <div>
+            <div class="flex items-center gap-2.5">
+                <h2 class="text-xl font-extrabold text-on-surface">{{ posting.title }}</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if current_type == 'faculty' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ current_type }}</span>
+                {% if posting.is_featured %}
+                <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-extrabold">
+                    <span class="material-symbols-outlined !text-xs">star</span> Featured
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-on-surface-variant mt-1.5 font-medium">
+                {% if current_type == 'faculty' %}
+                Institution: <strong class="text-on-surface">{{ posting.college.name|default:"University Institution" }}</strong> • Department: <strong class="text-on-surface">{{ posting.department|default:"Academic Dept" }}</strong>
+                {% else %}
+                Employer: <strong class="text-on-surface">{{ posting.company.name|default:"Corporate IT Employer" }}</strong> • Location: <strong class="text-on-surface">{{ posting.location|default:"Remote / On-site" }}</strong>
+                {% endif %}
+            </p>
+            <p class="text-[11px] text-on-surface-variant/60 font-mono mt-1">UUID: {{ posting.id }} • Created: {{ posting.created_at|slice:":16" }}</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            {% if posting.status == 'pending_approval' or posting.status == 'draft' or posting.status == 'rejected' %}
+            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'approve', type: '{{ current_type }}'}, 'Approve and publish this posting?')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-base">check_circle</span> Approve & Publish
+            </button>
+            {% endif %}
+
+            {% if posting.status != 'rejected' and posting.status != 'closed' %}
+            <button data-modal-open="rejectPostingModal" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-base">cancel</span> Reject Posting
+            </button>
+            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'close', type: '{{ current_type }}'}, 'Close this posting immediately?')" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-base">lock</span> Close
+            </button>
+            {% endif %}
+
+            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'archive', type: '{{ current_type }}'}, 'Archive this posting?')" class="px-3 py-2 border border-outline-variant/40 bg-white hover:bg-gray-50 text-on-surface text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-base">archive</span> Archive
+            </button>
+
+            <button onclick="superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'featured', type: '{{ current_type }}', value: {% if posting.is_featured %}false{% else %}true{% endif %}}, 'Toggle featured placement status?')" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-base">star</span> Toggle Featured
+            </button>
+        </div>
+    </div>
+
+    <!-- Posting Metadata Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6">
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Current Status</p>
+            <p class="text-sm font-bold mt-1 capitalize text-on-surface">{{ posting.status|default:"Draft" }}</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Compensation / Package</p>
+            <p class="text-sm font-bold mt-1 text-emerald-700 font-mono">{% if posting.salary_min and posting.salary_max %}{{ posting.salary_currency }} {{ posting.salary_min|floatformat:"0" }} - {{ posting.salary_max|floatformat:"0" }}{% elif posting.salary_min %}{{ posting.salary_currency }} {{ posting.salary_min|floatformat:"0" }}{% else %}Competitive Package{% endif %}</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Vacancies / Capacity</p>
+            <p class="text-sm font-bold mt-1 text-on-surface font-mono">{% if current_type == 'faculty' %}{{ posting.vacancy_count|default:"1" }}{% else %}{{ posting.vacancies|default:"1" }}{% endif %} Positions ({{ posting.application_count|default:"0" }} Applied)</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Published Date</p>
+            <p class="text-sm font-bold mt-1 text-on-surface font-mono">{{ posting.published_at|slice:":16"|default:"Not Yet Published" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Description & Requirements Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="col-span-1 lg:col-span-2 bg-white p-6 rounded-xl border border-outline-variant/30 shadow-xs space-y-6">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface mb-2">Job Description & Responsibilities</h3>
+            <div class="text-xs text-on-surface-variant leading-relaxed whitespace-pre-line bg-gray-50/50 p-4 rounded-xl border border-outline-variant/20">
+                {{ posting.description|default:"No detailed description provided." }}
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface mb-2">Required Skills & Qualifications</h3>
+            <div class="text-xs text-on-surface-variant leading-relaxed whitespace-pre-line bg-gray-50/50 p-4 rounded-xl border border-outline-variant/20">
+                {% if current_type == 'faculty' %}
+                    {{ posting.requirements|default:posting.qualification_required|default:"Standard domain qualifications apply." }}
+                {% else %}
+                    {{ posting.requirements|default:posting.education_requirement|default:"Standard domain qualifications apply." }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Applicant Details & Resumes Section -->
+        <div class="pt-6 border-t border-outline-variant/30">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary !text-xl">group</span>
+                    <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Candidate Applications & Resumes ({{ applications|length|default:"0" }})</h3>
+                </div>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">Live Applications</span>
+            </div>
+
+            {% if applications %}
+            <div class="space-y-4">
+                {% for app in applications %}
+                <div class="bg-gray-50/80 p-4 rounded-xl border border-outline-variant/30 hover:border-primary/30 transition-all shadow-2xs">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <!-- Candidate Profile Info -->
+                        <div class="flex items-start gap-3.5 flex-1">
+                            {% if app.applicant_details.avatar_url %}
+                            <img src="{{ app.applicant_details.avatar_url }}" class="w-12 h-12 rounded-full object-cover border border-outline-variant/40 shadow-xs shrink-0" alt="Avatar">
+                            {% else %}
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold flex items-center justify-center text-base shadow-xs border border-primary/20 shrink-0">
+                                {{ app.applicant_details.first_name|default:app.applicant_name_snapshot|slice:":1"|upper }}{{ app.applicant_details.last_name|slice:":1"|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h4 class="text-sm font-extrabold text-on-surface truncate">{{ app.applicant_details.first_name|default:app.applicant_name_snapshot }} {{ app.applicant_details.last_name }}</h4>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider {% if app.status == 'HIRED' or app.status == 'OFFERED' or app.status == 'JOINED' %}bg-emerald-100 text-emerald-800 border border-emerald-200{% elif app.status == 'REJECTED' %}bg-red-100 text-red-800 border border-red-200{% elif app.status == 'INTERVIEW' or app.status == 'SHORTLISTED' %}bg-amber-100 text-amber-800 border border-amber-200{% else %}bg-indigo-50 text-indigo-800 border border-indigo-100{% endif %}">
+                                        {{ app.status }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-on-surface-variant font-semibold mt-0.5 truncate">
+                                    {{ app.applicant_details.designation|default:"Professional Candidate" }}
+                                    {% if app.applicant_details.company or app.applicant_details.institution %}
+                                    <span class="text-on-surface/70 font-normal">at {{ app.applicant_details.company|default:app.applicant_details.institution }}</span>
+                                    {% endif %}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-y-1 gap-x-3 text-[11px] text-on-surface-variant mt-2 font-medium">
+                                    {% if app.applicant_details.email %}
+                                    <span class="flex items-center gap-1 text-on-surface/80"><span class="material-symbols-outlined !text-xs text-primary">mail</span> {{ app.applicant_details.email }}</span>
+                                    {% endif %}
+                                    {% if app.applicant_details.phone_number %}
+                                    <span class="flex items-center gap-1 text-on-surface/80"><span class="material-symbols-outlined !text-xs text-primary">call</span> {{ app.applicant_details.phone_number }}</span>
+                                    {% endif %}
+                                    {% if app.applicant_details.experience is not None %}
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined !text-xs text-emerald-600">work_history</span> {{ app.applicant_details.experience }} Yrs Exp</span>
+                                    {% endif %}
+                                    {% if app.applicant_details.location %}
+                                    <span class="flex items-center gap-1"><span class="material-symbols-outlined !text-xs text-amber-600">location_on</span> {{ app.applicant_details.location }}</span>
+                                    {% endif %}
+                                    <span class="flex items-center gap-1 text-on-surface-variant/70"><span class="material-symbols-outlined !text-xs">calendar_today</span> Applied: {{ app.applied_at|slice:":10" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resume Actions (View / Download) -->
+                        <div class="flex items-center gap-2 self-end md:self-center shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-outline-variant/20 w-full md:w-auto justify-end">
+                            {% if app.resume_url %}
+                            <button type="button" onclick="openTailwindResumeModal('{{ app.resume_url }}', '{{ app.applicant_details.first_name|default:app.applicant_name_snapshot|escapejs }} {{ app.applicant_details.last_name|escapejs }}')" class="px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 hover:bg-primary hover:text-white text-primary text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs">
+                                <span class="material-symbols-outlined !text-base">visibility</span> View Resume
+                            </button>
+                            <a href="{{ app.resume_url }}" download target="_blank" class="px-3 py-2 rounded-lg border border-outline-variant/60 bg-white hover:bg-gray-100 text-on-surface text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs" title="Download Resume File">
+                                <span class="material-symbols-outlined !text-base text-emerald-600">download</span> Download
+                            </a>
+                            {% else %}
+                            <div class="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 border border-outline-variant/30 text-on-surface-variant/60 text-xs font-medium italic">
+                                <span class="material-symbols-outlined !text-sm">description</span> No Resume File
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-50/60 p-8 rounded-xl border border-outline-variant/30 text-center flex flex-col items-center justify-center">
+                <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2.5">
+                    <span class="material-symbols-outlined !text-2xl">person_search</span>
+                </div>
+                <h4 class="text-xs font-bold text-on-surface mb-1">No Applications Received Yet</h4>
+                <p class="text-xs text-on-surface-variant max-w-sm">Candidate applications and resume documents will appear here automatically once job seekers apply to this posting.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Audit & Quality Control Sidebar -->
+    <div class="col-span-1 bg-white p-6 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col justify-between">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface mb-3">Moderation Audit Checklist</h3>
+            <div class="space-y-3 text-xs text-on-surface-variant">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-600 !text-base">check_circle</span>
+                    <span>No forbidden keywords or spam links detected</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-600 !text-base">check_circle</span>
+                    <span>Organization verification documents confirmed</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-emerald-600 !text-base">check_circle</span>
+                    <span>Compensation package meets regional minimums</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-outline-variant/20">
+            <h4 class="text-xs font-bold text-on-surface mb-2">Internal Admin Notes</h4>
+            <textarea id="adminRemarksInput" rows="3" placeholder="Add quality review notes or rejection reasons..." class="w-full text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary p-2.5"></textarea>
+            <button onclick="const rem = document.getElementById('adminRemarksInput').value; superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'reject', type: '{{ current_type }}', remarks: rem}, 'Confirm rejection with these remarks?');" class="w-full mt-2 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all">Submit Rejection & Notify</button>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div id="rejectPostingModal" class="modal-backdrop hidden fixed inset-0 bg-on-surface/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/30 animate-fade-in">
+        <div class="flex justify-between items-center pb-3 border-b border-outline-variant/20 mb-4">
+            <h3 class="text-base font-extrabold text-on-surface">Posting Rejection Reason</h3>
+            <button data-modal-close="rejectPostingModal" class="text-on-surface-variant hover:text-on-surface">✕</button>
+        </div>
+        <div class="space-y-4">
+            <p class="text-xs text-on-surface-variant">Please specify the exact quality review issue or policy violation. This explanation will be sent to the employer.</p>
+            <div>
+                <label class="block text-[10px] font-bold text-on-surface-variant/70 uppercase mb-1">Rejection Remarks</label>
+                <textarea id="modalRemarksInput" rows="4" class="w-full px-3 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Incomplete salary breakdown, ambiguous qualifications..."></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button data-modal-close="rejectPostingModal" class="px-4 py-2 rounded-lg border border-outline-variant/40 text-xs font-bold text-on-surface-variant hover:bg-gray-50">Cancel</button>
+                <button onclick="const rem = document.getElementById('modalRemarksInput').value; if(!rem){showToast('Please provide a rejection reason', 'error'); return;} superAdminAction('{% url 'super_admin_job_action' user_uuid=header_user.user_uuid job_id=posting.id %}', {action: 'reject', type: '{{ current_type }}', remarks: rem}, 'Confirm rejection?');" class="px-4 py-2 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 shadow-sm">Reject Posting</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tailwind Resume Viewer Modal -->
+<div id="tailwindResumeModal" class="modal-backdrop hidden fixed inset-0 bg-on-surface/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div class="bg-white rounded-2xl max-w-4xl w-full h-[85vh] shadow-2xl border border-outline-variant/30 flex flex-col overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-red-500 !text-2xl">picture_as_pdf</span>
+                <div>
+                    <h4 id="trm-candidate-name" class="text-sm font-extrabold tracking-tight text-white">Candidate Resume</h4>
+                    <p id="trm-filename" class="text-[11px] text-slate-400 font-mono">document.pdf</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a id="trm-download-btn" href="#" download target="_blank" class="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs">
+                    <span class="material-symbols-outlined !text-sm">download</span> Download PDF
+                </a>
+                <button type="button" onclick="closeTailwindResumeModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors font-bold">
+                    ✕
+                </button>
+            </div>
+        </div>
+        <!-- Modal Body (Iframe) -->
+        <div class="flex-1 bg-slate-100 p-2 sm:p-4 flex items-center justify-center relative min-h-0">
+            <div id="trm-loader" class="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-slate-100/80 z-10">
+                <span class="material-symbols-outlined !text-4xl animate-spin mb-2 text-primary">progress_activity</span>
+                <p class="text-xs font-medium">Loading document preview...</p>
+            </div>
+            <iframe id="trm-iframe" src="" class="w-full h-full rounded-xl border border-slate-300 shadow-md bg-white relative z-20" onload="const l = document.getElementById('trm-loader'); if(l) l.classList.add('hidden');"></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+function openTailwindResumeModal(url, candidateName, filename = 'resume.pdf') {
+    if (!url || url === 'None' || url === 'null') {
+        if (window.EduNotify) EduNotify.error('Resume file is not available or path is invalid.');
+        else alert('Resume file is not available.');
+        return;
+    }
+    document.getElementById('trm-candidate-name').textContent = candidateName || 'Candidate Resume';
+    document.getElementById('trm-filename').textContent = url.split('/').pop() || filename;
+    document.getElementById('trm-download-btn').href = url;
+    const loader = document.getElementById('trm-loader');
+    if (loader) loader.classList.remove('hidden');
+    document.getElementById('trm-iframe').src = url;
+    document.getElementById('tailwindResumeModal').classList.remove('hidden');
+}
+
+function closeTailwindResumeModal() {
+    document.getElementById('tailwindResumeModal').classList.add('hidden');
+    document.getElementById('trm-iframe').src = '';
+}
+</script>
+{% endblock %}

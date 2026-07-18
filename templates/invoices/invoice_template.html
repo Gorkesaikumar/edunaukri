@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        @page {
+            margin: 40px;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.5;
+            background-color: #ffffff;
+        }
+        .invoice-container {
+            width: 100%;
+            background: #ffffff;
+        }
+        table {
+            padding: 0;
+        }
+        th, td {
+            padding: 2px;
+        }
+        .header-table, .billing-table, .items-table, .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            padding: 0;
+        }
+        .header-table td {
+            vertical-align: top;
+        }
+        .business-details img {
+            max-width: 250px;
+            max-height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .business-details p, .billing-info p {
+            margin: 0 0 5px 0;
+            color: #666;
+        }
+        .invoice-meta h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            color: #4338ca;
+            text-transform: uppercase;
+        }
+        .invoice-meta table {
+            width: 100%;
+        }
+        .invoice-meta th {
+            width: 40%;
+            text-align: right;
+            padding-right: 10px;
+            color: #666;
+            font-weight: normal;
+        }
+        .invoice-meta td {
+            width: 60%;
+            text-align: right;
+            font-weight: bold;
+            padding-left: 5px;
+        }
+        
+        .billing-table th {
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        .billing-table td {
+            padding-top: 15px;
+            vertical-align: top;
+        }
+        .items-table {
+            border: 1px solid #e5e7eb;
+        }
+        .items-table th {
+            background-color: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .items-table th.right, .items-table td.right {
+            text-align: right;
+        }
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .totals-table {
+            width: 350px;
+            margin-left: auto;
+        }
+        .totals-table th {
+            width: 50%;
+            text-align: right;
+            padding: 8px 15px;
+            color: #666;
+            font-weight: normal;
+        }
+        .totals-table td {
+            width: 50%;
+            text-align: right;
+            padding: 8px 0;
+            font-weight: bold;
+        }
+        .totals-table tr.grand-total th, .totals-table tr.grand-total td {
+            font-size: 18px;
+            color: #111827;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 15px;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-paid { background-color: #d1fae5; color: #065f46; }
+        .badge-unpaid { background-color: #fee2e2; color: #991b1b; }
+        .badge-refunded { background-color: #f3f4f6; color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <table class="header-table">
+            <tr>
+                <td class="business-details" style="width: 50%;">
+                    <img src="{% static 'img/screen.jpeg' %}" alt="EduNaukri Logo">
+                    <p>{{ config.business_address|linebreaksbr }}</p>
+                    {% if config.show_phone and config.phone %}<p>Phone: {{ config.phone }}</p>{% endif %}
+                    {% if config.show_email and config.email %}<p>Email: {{ config.email }}</p>{% endif %}
+                    {% if config.show_website and config.website %}<p>Website: {{ config.website }}</p>{% endif %}
+                    {% if config.show_gstin and config.gstin %}<p>GSTIN: {{ config.gstin }}</p>{% endif %}
+                    {% if config.show_pan and config.pan %}<p>PAN: {{ config.pan }}</p>{% endif %}
+                </td>
+                <td class="invoice-meta" style="width: 50%;">
+                    <h2>{{ config.invoice_header }}</h2>
+                    <table>
+                        <tr>
+                            <th>Invoice Number:</th>
+                            <td>{{ invoice.invoice_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Invoice Date:</th>
+                            <td>{{ invoice.issued_at|date:"M d, Y"|default:invoice.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% if invoice.due_at %}
+                        <tr>
+                            <th>Due Date:</th>
+                            <td>{{ invoice.due_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                {% if invoice.status == 'paid' %}
+                                    <span class="badge badge-paid">PAID</span>
+                                {% elif invoice.status == 'refunded' %}
+                                    <span class="badge badge-refunded">REFUNDED</span>
+                                {% else %}
+                                    <span class="badge badge-unpaid">{{ invoice.status|upper }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <table class="billing-table">
+            <tr>
+                <th style="width: 50%;">BILLED TO</th>
+                <th style="width: 50%;">PAYMENT DETAILS</th>
+            </tr>
+            <tr>
+                <td class="billing-info">
+                    <p style="font-weight: bold; font-size: 16px; color: #111827;">{{ invoice.bill_to_name_snapshot }}</p>
+                    {% if invoice.pdf_metadata and invoice.pdf_metadata.billing_address %}
+                        <p>{{ invoice.pdf_metadata.billing_address|linebreaksbr }}</p>
+                    {% endif %}
+                    {% if invoice.pdf_metadata and invoice.pdf_metadata.gstin %}
+                        <p>GSTIN: {{ invoice.pdf_metadata.gstin }}</p>
+                    {% endif %}
+                </td>
+                <td class="billing-info">
+                    {% if config.show_payment_method and payments.exists %}
+                        <p><strong>Payment Method:</strong> {{ payments.first.get_payment_method_display }}</p>
+                    {% endif %}
+                    {% if config.show_transaction_id and payments.exists and payments.first.reference_number %}
+                        <p><strong>Transaction ID:</strong> {{ payments.first.reference_number }}</p>
+                    {% endif %}
+                    {% if invoice.paid_at %}
+                        <p><strong>Payment Date:</strong> {{ invoice.paid_at|date:"M d, Y" }}</p>
+                    {% endif %}
+                    {% if config.payment_notes %}
+                        <p style="margin-top: 10px;">{{ config.payment_notes|linebreaksbr }}</p>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Candidate</th>
+                    <th>Job / Designation</th>
+                    <th class="right">Annual CTC</th>
+                    <th class="right">Fee Rate</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in line_items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ invoice.candidate_name|default:"-" }}</td>
+                    <td>{{ invoice.candidate_job_title|default:"-" }}</td>
+                    <td class="right">
+                        {% if invoice.candidate_annual_ctc %}
+                            {{ invoice.currency }} {{ invoice.candidate_annual_ctc }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="right">
+                        {% if invoice.pricing_method_snapshot == 'percentage_ctc' %}
+                            {{ invoice.service_charge_percentage_snapshot }}%
+                        {% else %}
+                            Fixed
+                        {% endif %}
+                    </td>
+                    <td class="right">{{ invoice.currency }} {{ item.line_total }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">No items found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="totals-table">
+            <tr>
+                <th>Recruitment Fee</th>
+                <td>{{ invoice.currency }} {{ invoice.subtotal }}</td>
+            </tr>
+            {% if config.show_tax_breakdown and invoice.tax_amount > 0 %}
+                {% if invoice.cgst_amount > 0 %}
+                <tr>
+                    <th>CGST</th>
+                    <td>{{ invoice.currency }} {{ invoice.cgst_amount }}</td>
+                </tr>
+                <tr>
+                    <th>SGST</th>
+                    <td>{{ invoice.currency }} {{ invoice.sgst_amount }}</td>
+                </tr>
+                {% endif %}
+                {% if invoice.igst_amount > 0 %}
+                <tr>
+                    <th>IGST</th>
+                    <td>{{ invoice.currency }} {{ invoice.igst_amount }}</td>
+                </tr>
+                {% endif %}
+                {% if not invoice.cgst_amount and not invoice.igst_amount %}
+                <tr>
+                    <th>Tax</th>
+                    <td>{{ invoice.currency }} {{ invoice.tax_amount }}</td>
+                </tr>
+                {% endif %}
+            {% endif %}
+            <tr class="grand-total">
+                <th>Grand Total</th>
+                <td>{{ invoice.currency }} {{ invoice.total_amount }}</td>
+            </tr>
+            {% if invoice.amount_paid > 0 and invoice.status != 'paid' %}
+            <tr>
+                <th>Amount Paid</th>
+                <td style="color: #059669;">-{{ invoice.currency }} {{ invoice.amount_paid }}</td>
+            </tr>
+            <tr>
+                <th>Balance Due</th>
+                <td>{{ invoice.currency }} {{ invoice.total_amount|add:"-"|add:invoice.amount_paid }}</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <div class="footer">
+            {% if config.thank_you_message %}
+                <p style="font-weight: bold; color: #4338ca; font-size: 14px;">{{ config.thank_you_message }}</p>
+            {% endif %}
+            {% if config.show_terms and config.terms_conditions %}
+                <div style="margin-top: 15px; text-align: left; font-size: 11px; background: #f9fafb; padding: 15px; border-radius: 4px;">
+                    <strong>Terms & Conditions:</strong>
+                    <p style="margin-top: 5px;">{{ config.terms_conditions|linebreaksbr }}</p>
+                </div>
+            {% endif %}
+            {% if config.footer_text %}
+                <p style="margin-top: 15px;">{{ config.footer_text|linebreaksbr }}</p>
+            {% endif %}
+            <p style="margin-top: 15px; font-size: 10px; color: #9ca3af;">Generated automatically by EduNaukri Billing System</p>
+        </div>
+    </div>
+</body>
+</html>

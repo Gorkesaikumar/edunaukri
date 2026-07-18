@@ -1,0 +1,208 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}{{ application_detail.candidate_name }} | Application{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/college-applications.css' %}">
+<script src="{% static 'js/college-applications.js' %}" defer></script>
+{% endblock %}
+
+{% block dashboard_content %}
+<div id="icdApplicationDetail"
+     data-status-url="{{ application_detail.status_url }}"
+     data-notes-url="{{ application_detail.notes_url }}"
+     data-csrf="{{ csrf_token }}">
+
+<header class="icd-page-head">
+    <a href="{{ application_detail.list_url }}" class="icd-link-sm d-inline-flex align-items-center gap-1 mb-3">
+        <i class="bi bi-arrow-left"></i> Back to Applications
+    </a>
+    <div class="d-flex align-items-center gap-4 flex-wrap bg-white p-4 rounded-4 border shadow-sm">
+        {% if application_detail.photo_url %}
+        <img src="{{ application_detail.photo_url }}" alt="" class="icd-list-card__avatar icd-list-card__avatar--photo" style="width: 72px; height: 72px;">
+        {% else %}
+        <div class="icd-list-card__avatar" style="width: 72px; height: 72px; font-size: 1.5rem;">{{ application_detail.candidate_initials }}</div>
+        {% endif %}
+        <div>
+            <h1 class="icd-page-head__title mb-1">{{ application_detail.candidate_name }}</h1>
+            <p class="icd-page-head__desc fw-medium text-dark mb-1">{{ application_detail.vacancy_title }}{% if application_detail.department %} • {{ application_detail.department }}{% endif %}</p>
+            <p class="icd-page-head__desc small"><i class="bi bi-geo-alt"></i> {{ application_detail.location }}</p>
+        </div>
+    </div>
+</header>
+
+<div class="icd-detail-grid">
+    <section class="icd-card icd-detail-main">
+        <div class="icd-detail-head">
+            <span class="icd-badge {{ application_detail.status_class }}">{{ application_detail.status_label }}</span>
+            <p class="icd-detail-meta">Applied {{ application_detail.applied_label }} · Updated {{ application_detail.updated_label }}</p>
+        </div>
+
+        <dl class="icd-dl icd-detail-dl">
+            <div class="icd-dl-group"><dt>Email</dt><dd>{{ application_detail.candidate_email|default:"—" }}</dd></div>
+            <div class="icd-dl-group"><dt>Phone</dt><dd class="d-flex align-items-center gap-2">
+                {{ application_detail.candidate_phone|default:"—" }}
+                {% if application_detail.candidate_phone %}
+                <a href="https://wa.me/{{ application_detail.candidate_phone|cut:'+'|cut:' ' }}?text=Hello {{ application_detail.candidate_name }}, regarding your faculty application for {{ application_detail.vacancy_title }}..." target="_blank" class="icd-btn icd-btn--sm icd-btn--soft-success" title="Chat on WhatsApp" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;">
+                    <i class="bi bi-whatsapp"></i> Chat
+                </a>
+                {% endif %}
+            </dd></div>
+            <div class="icd-dl-group"><dt>Current Institution</dt><dd>{{ application_detail.current_institution }}</dd></div>
+            <div class="icd-dl-group"><dt>Designation</dt><dd>{{ application_detail.current_designation }}</dd></div>
+            <div class="icd-dl-group"><dt>Specialization</dt><dd>{{ application_detail.specialization|default:"—" }}</dd></div>
+            <div class="icd-dl-group"><dt>Expected Salary</dt><dd>{{ application_detail.expected_salary }}</dd></div>
+            <div class="icd-dl-group"><dt>Publications</dt><dd>{{ application_detail.research_publications_count }}</dd></div>
+        </dl>
+
+        {% if application_detail.has_cv %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{{ application_detail.cv_url }}" class="icd-btn icd-btn--primary icd-btn--sm" target="_blank" rel="noopener">Download CV</a>
+            <a href="{{ application_detail.cv_url }}?preview=1" class="icd-btn icd-btn--soft icd-btn--sm" target="_blank" rel="noopener">Preview CV</a>
+        </div>
+        {% endif %}
+
+        {% if application_detail.cover_letter %}
+        <div class="icd-detail-block">
+            <h2 class="icd-section__title">Cover Letter</h2>
+            <p class="icd-detail-text">{{ application_detail.cover_letter|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        {% if application_detail.qualifications %}
+        <div class="icd-detail-block">
+            <h2 class="icd-section__title">Qualifications</h2>
+            <ul class="icd-list">
+                {% for row in application_detail.qualifications %}
+                <li class="icd-list__meta">{{ row.degree|default:row.name|default:row }}{% if row.institution %} — {{ row.institution }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if application_detail.timeline %}
+        <div class="icd-detail-block">
+            <h2 class="icd-section__title">Application Timeline</h2>
+            <ul class="icd-timeline">
+                {% for entry in application_detail.timeline %}
+                <li class="icd-timeline__item">
+                    <div class="icd-timeline__dot" aria-hidden="true"></div>
+                    <div>
+                        <p class="icd-timeline__title">{{ entry.title }}</p>
+                        {% if entry.description %}<p class="icd-timeline__desc">{{ entry.description }}</p>{% endif %}
+                        <p class="icd-timeline__time">{{ entry.occurred_at }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </section>
+
+    <aside class="icd-card icd-form-card">
+        <h2 class="icd-section__title">Pipeline Actions</h2>
+        {% if not application_detail.is_terminal %}
+        <label class="form-label fw-semibold" for="icdDetailStatus">Update Status</label>
+        <select class="form-select mb-3" id="icdDetailStatus" data-status-url="{{ application_detail.status_url }}">
+            <option value="{{ application_detail.status }}" selected>{{ application_detail.status_label }}</option>
+            {% for opt in application_detail.next_statuses %}
+            <option value="{{ opt.value }}">{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+        <p class="text-muted small">This application is in a terminal state.</p>
+        {% endif %}
+
+        <label class="form-label fw-semibold">College Notes</label>
+        <textarea class="form-control mb-3" rows="3" placeholder="Add private notes here..." data-notes-field="college_notes">{{ application_detail.college_notes }}</textarea>
+        
+        <label class="form-label fw-semibold">Internal Remarks</label>
+        <textarea class="form-control mb-3" rows="3" placeholder="Remarks for other recruiters..." data-notes-field="internal_remarks">{{ application_detail.internal_remarks }}</textarea>
+        
+        <button type="button" class="icd-btn icd-btn--primary w-100 justify-content-center" data-save-notes data-notes-url="{{ application_detail.notes_url }}">
+            <i class="bi bi-save"></i> Save Notes
+        </button>
+
+        {% if application_detail.rejection_reason %}
+        <hr>
+        <p class="small text-muted mb-1">Rejection reason</p>
+        <p class="small">{{ application_detail.rejection_reason }}</p>
+        {% endif %}
+
+        {% if application_detail.claim_eligibility %}
+        <hr>
+        <h2 class="icd-section__title text-danger"><i class="bi bi-shield-check"></i> Claim Protection</h2>
+        {% if application_detail.claim_eligibility.is_active %}
+            <p class="small text-success fw-bold mb-1">Active until {{ application_detail.claim_eligibility.deadline }}</p>
+            {% if not application_detail.claim_eligibility.has_active_claim %}
+            <button type="button" class="icd-btn icd-btn--soft-danger icd-btn--sm w-100" data-bs-toggle="modal" data-bs-target="#icdClaimModal">
+                Submit Claim
+            </button>
+            {% else %}
+            <p class="small text-muted mb-0">A claim is currently under review.</p>
+            {% endif %}
+        {% else %}
+            <p class="small text-muted mb-1">Claim protection expired</p>
+        {% endif %}
+        {% endif %}
+    </aside>
+</div>
+
+<!-- Claim Submission Modal -->
+<div class="modal fade" id="icdClaimModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit Placement Claim</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="icdClaimForm" method="post" action="{% portal_url 'college_submit_claim' application_detail.application_id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Submit an absconding or failure-to-join claim for <strong>{{ application_detail.candidate_name }}</strong>. Note: Claims are subject to Super Admin review.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="claimReason">Claim Reason <span class="text-danger">*</span></label>
+                        <select class="form-select" id="claimReason" name="claim_reason" required>
+                            <option value="">Select a reason</option>
+                            <option value="absconded">Absconded</option>
+                            <option value="left_without_notice">Left Without Notice</option>
+                            <option value="failed_to_join">Failed to Join after Confirmation</option>
+                            <option value="other_review_required">Other (Review Required)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="incidentDate">Incident Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="incidentDate" name="incident_date" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="claimDescription">Detailed Explanation <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="claimDescription" name="claim_description" rows="4" required placeholder="Provide full details regarding the candidate's exit or failure to join..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Supporting Documents</label>
+                        <input type="file" class="form-control" name="supporting_documents" multiple>
+                        <div class="form-text">Upload attendance records, HR incident reports, or official communications.</div>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="claimDeclaration" required>
+                        <label class="form-check-label small" for="claimDeclaration">
+                            I declare that the information provided is accurate and that this placement qualifies for a claim under the platform's guarantee policy.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="icd-btn icd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="icd-btn icd-btn--danger">Submit Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

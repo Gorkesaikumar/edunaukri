@@ -1,0 +1,59 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Notifications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if notifications_page %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <h1 class="rcd-section-head__title">Notifications</h1>
+        <p class="mb-0 text-muted">Stay updated on applications, jobs, and account activity.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        {% if notifications_page.unread_count %}
+        <span class="rcd-interview-panel__badge">{{ notifications_page.unread_count }} unread</span>
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-notifications-mark-all" data-url="{{ notifications_page.mark_all_url }}">Mark all read</button>
+        {% endif %}
+    </div>
+</header>
+
+<div id="recNotificationsPage">
+    {% if notifications_page.notifications %}
+    <div class="rcd-stack">
+        {% for item in notifications_page.notifications %}
+        <article class="rcd-bento rcd-interview-panel{% if not item.is_read %} border-primary border-opacity-25{% endif %}" data-notification-id="{{ item.id }}">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <h2 class="h6 mb-1{% if not item.is_read %} fw-bold{% endif %}">{{ item.title }}</h2>
+                    <p class="mb-1 text-muted">{{ item.body }}</p>
+                    <small class="text-muted">{{ item.occurred_label }}</small>
+                </div>
+                {% if not item.is_read %}
+                <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-notification-read" data-url="{{ item.mark_read_url }}">Mark read</button>
+                {% else %}
+                <span class="rcd-status-pill">Read</span>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="rcd-bento rcd-empty">
+        <span class="material-symbols-outlined d-block">notifications_off</span>
+        <h2>No notifications yet</h2>
+        <p>Alerts about applications and job activity will show up here.</p>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="rcd-bento rcd-empty"><p>Notifications could not be loaded.</p></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.REC_PORTAL = window.REC_PORTAL || { csrfToken: "{{ csrf_token|escapejs }}" };
+</script>
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+{% endblock %}

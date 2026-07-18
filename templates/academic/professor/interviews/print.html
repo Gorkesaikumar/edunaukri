@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Interview Details — {{ interview.job_title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #111; margin: 2rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+        h2 { font-size: 1rem; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 0.25rem; }
+        .meta { color: #555; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        td { padding: 0.35rem 0; vertical-align: top; }
+        td:first-child { width: 9rem; color: #666; font-size: 0.875rem; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+{% with d=interview %}
+<h1>{{ d.job_title }}</h1>
+<p class="meta">{{ d.company_name }} · {{ d.round_label }} · {{ d.status_label }}</p>
+
+<h2>Job Information</h2>
+<table>
+    <tr><td>Department</td><td>{{ d.department|default:"—" }}</td></tr>
+    <tr><td>Salary</td><td>{{ d.salary_display|default:"Not disclosed" }}</td></tr>
+    <tr><td>Employment</td><td>{{ d.employment_type|default:"—" }}</td></tr>
+    <tr><td>Work Mode</td><td>{{ d.work_mode|default:"—" }}</td></tr>
+    <tr><td>Location</td><td>{{ d.location|default:"—" }}</td></tr>
+</table>
+
+<h2>Interview Details</h2>
+<table>
+    <tr><td>Interview ID</td><td>{{ d.interview_id }}</td></tr>
+    <tr><td>Round</td><td>{{ d.round_label }}</td></tr>
+    <tr><td>Type</td><td>{{ d.interview_type }}</td></tr>
+    <tr><td>Mode</td><td>{{ d.mode }}</td></tr>
+    <tr><td>Date</td><td>{{ d.date_label }}</td></tr>
+    <tr><td>Time</td><td>{{ d.time_label }} ({{ d.timezone_label }})</td></tr>
+    <tr><td>Duration</td><td>{{ d.duration_label }}</td></tr>
+    {% if d.meet_url %}<tr><td>Meeting Link</td><td>{{ d.meet_url }}</td></tr>{% endif %}
+</table>
+
+<h2>Recruiter</h2>
+<table>
+    <tr><td>Name</td><td>{{ d.recruiter_name }}</td></tr>
+    <tr><td>Designation</td><td>{{ d.recruiter_designation }}</td></tr>
+    {% if d.recruiter_email %}<tr><td>Email</td><td>{{ d.recruiter_email }}</td></tr>{% endif %}
+</table>
+
+{% if d.panel %}
+<h2>Interview Panel</h2>
+<table>
+    {% for member in d.panel %}
+    <tr><td>{{ member.name }}</td><td>{{ member.designation }}{% if member.department %} · {{ member.department }}{% endif %}</td></tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% if d.instructions %}
+<h2>Instructions</h2>
+<p>{{ d.instructions|linebreaksbr }}</p>
+{% endif %}
+
+<p class="meta">Generated from {{ PLATFORM_NAME }} Interview Command Center.</p>
+<button class="no-print" onclick="window.print()">Print / Save as PDF</button>
+{% endwith %}
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <h1 class="jsd-page-head__title">{{ application.job_title_snapshot }}</h1>
+    <p class="jsd-page-head__desc">{{ application.company_name_snapshot }}</p>
+</header>
+<div class="jsd-card">
+    <div class="jsd-card__body">
+        <p><strong>Status:</strong> {{ application.get_status_display }}</p>
+        <p><strong>Applied:</strong> {{ application.applied_at|date:"M d, Y" }}</p>
+        <a href="{% url 'jobseeker_tracker' user_uuid=portal_user_uuid %}" class="jsd-link">Back to Tracker</a>
+    </div>
+</div>
+{% endblock %}

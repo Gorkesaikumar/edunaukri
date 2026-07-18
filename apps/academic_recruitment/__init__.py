@@ -1,0 +1,1 @@
+"""Academic Recruitment application package."""

@@ -1,0 +1,163 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Company Profile | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if not profile_page %}
+<div class="rcd-bento rcd-empty"><p>Your recruiter profile could not be loaded.</p></div>
+{% else %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <h1 class="rcd-section-head__title">Company Profile</h1>
+        <p class="mb-0 text-muted">Manage your recruiter identity and company page.</p>
+    </div>
+</header>
+
+<div id="recProfilePage" class="rcd-stack"
+     data-api-profile="{{ profile_page.api_urls.profile }}"
+     data-api-company="{{ profile_page.api_urls.company }}"
+     data-api-create-company="{{ profile_page.api_urls.create_company }}">
+
+    <section class="rcd-bento rcd-interview-panel">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="rcd-profile-avatar">
+                {% if profile_page.recruiter.avatar_url %}
+                <img src="{{ profile_page.recruiter.avatar_url }}" alt="">
+                {% else %}
+                <span>{{ profile_page.recruiter.initials }}</span>
+                {% endif %}
+            </div>
+            <div>
+                <h2 class="h4 mb-1">{{ profile_page.recruiter.full_name }}</h2>
+                <p class="text-muted mb-0">{{ profile_page.recruiter.designation|default:"Recruiter" }}{% if profile_page.recruiter.company_association %} · {{ profile_page.recruiter.company_association }}{% endif %}</p>
+                <p class="text-muted small mb-0">{{ profile_page.recruiter.login_email }}</p>
+            </div>
+        </div>
+        <h3 class="h6 mb-3"><span class="material-symbols-outlined align-middle">badge</span> Recruiter Details</h3>
+        <form id="recProfileForm" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" for="recFirstName">First Name</label>
+                <input type="text" class="form-control" id="recFirstName" value="{{ profile_page.recruiter.first_name }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="recLastName">Last Name</label>
+                <input type="text" class="form-control" id="recLastName" value="{{ profile_page.recruiter.last_name }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="recPhone">Mobile</label>
+                <input type="tel" class="form-control" id="recPhone" value="{{ profile_page.recruiter.phone }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recOfficialEmail">Official Email</label>
+                <input type="email" class="form-control" id="recOfficialEmail" value="{{ profile_page.recruiter.official_email }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recDesignation">Designation</label>
+                <input type="text" class="form-control" id="recDesignation" value="{{ profile_page.recruiter.designation }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recDepartment">Department</label>
+                <input type="text" class="form-control" id="recDepartment" value="{{ profile_page.recruiter.department }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recAssociation">Company Association</label>
+                <input type="text" class="form-control" id="recAssociation" value="{{ profile_page.recruiter.company_association }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Save Recruiter Profile</button>
+            </div>
+        </form>
+    </section>
+
+    {% if profile_page.has_company and profile_page.company %}
+    <section class="rcd-bento rcd-interview-panel">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3" id="recCompanyHeader">
+            <div>
+                <h3 class="h5 mb-1 d-flex align-items-center flex-wrap gap-2" id="recCompanyTitle">
+                    <span class="material-symbols-outlined align-middle">apartment</span>
+                    <span id="recCompanyNameDisplay">{{ profile_page.company.name }}</span>
+                    <span id="recCompanyVerifiedBadge">
+                    {% include "it/recruiter/partials/company_verified_badge.html" with verified=profile_page.company.is_verified show_label=True %}
+                    </span>
+                </h3>
+                <p class="text-muted small mb-0" id="recCompanyIndustryDisplay">{{ profile_page.company.industry|default:"Industry not set" }}</p>
+            </div>
+        </div>
+        <div id="recCompanyVerifyAlert">
+        {% if profile_page.company.is_verified %}
+        <div class="alert alert-success py-2 small d-flex align-items-center gap-2 mb-3 rec-company-verify-banner">
+            <span class="material-symbols-outlined" style="font-size:1.125rem" aria-hidden="true">verified</span>
+            Your company is verified and can publish jobs to the marketplace.
+        </div>
+        {% endif %}
+        </div>
+        <form id="recCompanyForm" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="recCompanyName">Company Name</label>
+                <input type="text" class="form-control" id="recCompanyName" value="{{ profile_page.company.name }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recCompanyIndustry">Industry</label>
+                <input type="text" class="form-control" id="recCompanyIndustry" value="{{ profile_page.company.industry }}">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="recCompanyDesc">Description</label>
+                <textarea class="form-control" id="recCompanyDesc" rows="4">{{ profile_page.company.description }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recCompanyWebsite">Website</label>
+                <input type="url" class="form-control" id="recCompanyWebsite" value="{{ profile_page.company.website_url }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recCompanyHQ">Headquarters</label>
+                <input type="text" class="form-control" id="recCompanyHQ" value="{{ profile_page.company.headquarters_location }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="recCompanyCity">City</label>
+                <input type="text" class="form-control" id="recCompanyCity" value="{{ profile_page.company.city }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="recCompanyState">State</label>
+                <input type="text" class="form-control" id="recCompanyState" value="{{ profile_page.company.state }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="recCompanyPhone">Phone</label>
+                <input type="tel" class="form-control" id="recCompanyPhone" value="{{ profile_page.company.phone }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Save Company Profile</button>
+            </div>
+        </form>
+    </section>
+    {% else %}
+    <section class="rcd-bento rcd-interview-panel">
+        <h3 class="h5 mb-2"><span class="material-symbols-outlined align-middle">add_business</span> Register Your Company</h3>
+        <p class="text-muted">Create your company profile to start posting jobs on {{ PLATFORM_NAME }}.</p>
+        <form id="recCreateCompanyForm" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="recNewCompanyName">Company Name</label>
+                <input type="text" class="form-control" id="recNewCompanyName" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="recNewCompanyIndustry">Industry</label>
+                <input type="text" class="form-control" id="recNewCompanyIndustry" placeholder="e.g. IT Services">
+            </div>
+            <div class="col-12">
+                <label class="form-label" for="recNewCompanyDesc">Description</label>
+                <textarea class="form-control" id="recNewCompanyDesc" rows="3"></textarea>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Create Company</button>
+            </div>
+        </form>
+    </section>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.REC_PORTAL = { csrfToken: "{{ csrf_token|escapejs }}" };</script>
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+{% endblock %}

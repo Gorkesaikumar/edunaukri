@@ -1,0 +1,95 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Interviews | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <h1 class="fjd-page-head__title">Interviews</h1>
+    <p class="fjd-page-head__desc">Manage interview invitations, join online sessions, and track outcomes.</p>
+</header>
+
+{% if interviews_page %}
+<section class="fjd-tracker fjd-tracker--page">
+    {% for stat in interviews_page.summary %}
+    <article class="fjd-card fjd-tracker__item fjd-tracker__item--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }} fjd-tracker__icon" aria-hidden="true"></i>
+        <p class="fjd-tracker__value">{{ stat.value }}</p>
+        <p class="fjd-tracker__label">{{ stat.label }}</p>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="fjd-filters" method="get">
+    <label class="fjd-filters__search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input type="search" name="q" value="{{ interviews_page.filters.q }}" placeholder="Search institution or role">
+    </label>
+    <select name="status" class="fjd-filters__select">
+        <option value="">All interviews</option>
+        <option value="upcoming"{% if interviews_page.filters.status == 'upcoming' %} selected{% endif %}>Upcoming</option>
+        <option value="completed"{% if interviews_page.filters.status == 'completed' %} selected{% endif %}>Completed</option>
+        <option value="offer"{% if interviews_page.filters.status == 'offer' %} selected{% endif %}>Offers</option>
+    </select>
+    <button type="submit" class="fjd-btn fjd-btn--primary">Filter</button>
+</form>
+
+{% if interviews_page.interviews %}
+<div class="fjd-list">
+    {% for item in interviews_page.interviews %}
+    <article class="fjd-card fjd-card--hover fjd-list-card">
+        <div class="fjd-interview">
+            <div class="fjd-interview__date">
+                <span class="fjd-interview__month">{{ item.month_label }}</span>
+                <span class="fjd-interview__day">{{ item.day_label }}</span>
+            </div>
+            <div class="fjd-list-card__main flex-grow-1">
+                <div class="fjd-list-card__logo">
+                    {% if item.logo_url %}<img src="{{ item.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+                </div>
+                <div>
+                    <h2 class="fjd-list-card__title">{{ item.job_title }}</h2>
+                    <p class="fjd-list-card__meta">{{ item.institution_name }} • {{ item.interview_type }}</p>
+                    <p class="fjd-list-card__dates">{{ item.date_label }}{% if item.time_label %} at {{ item.time_label }}{% endif %}</p>
+                    {% if item.location_label %}
+                    <p class="fjd-interview__location"><i class="bi bi-geo-alt"></i> {{ item.location_label }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="fjd-list-card__side">
+            <span class="fjd-badge {{ item.status_class }}">{{ item.status_label }}</span>
+            <div class="fjd-list-card__actions">
+                {% if item.can_join and item.meet_url %}
+                <a href="{{ item.meet_url }}" class="fjd-btn fjd-btn--primary" target="_blank" rel="noopener noreferrer">Join Interview</a>
+                {% endif %}
+                <a href="{{ item.detail_url }}" class="fjd-btn fjd-btn--outline">View Details</a>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if interviews_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Interview pages">
+    {% if interviews_page.pagination_prev_query %}
+    <a class="fjd-page-btn" href="{{ interviews_page.pagination_prev_query }}">Previous</a>
+    {% endif %}
+    <span>Page {{ interviews_page.page }} of {{ interviews_page.total_pages }}</span>
+    {% if interviews_page.pagination_next_query %}
+    <a class="fjd-page-btn" href="{{ interviews_page.pagination_next_query }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="fjd-card fjd-empty">
+    <i class="bi bi-calendar-event"></i>
+    <h2>No interviews yet</h2>
+    <p>When institutions schedule interviews for your applications, they will appear here.</p>
+</div>
+{% endif %}
+{% else %}
+<div class="fjd-card fjd-empty"><p>Complete your profile to view interviews.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+
+
+{% block content %}
+<!-- Financial KPI Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Total Invoiced Amount</p>
+        <span class="text-xl font-extrabold text-on-surface mt-1 block">₹{{ financials.total_invoiced|default:"0.00" }}</span>
+        <span class="text-[10px] text-on-surface-variant/60 mt-0.5 block">{{ financials.invoice_count|default:"0" }} total invoices</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Collected Revenue</p>
+        <span class="text-xl font-extrabold text-emerald-600 mt-1 block">₹{{ financials.total_paid|default:"0.00" }}</span>
+        <span class="text-[10px] text-emerald-600 font-bold mt-0.5 block">{{ financials.paid_count|default:"0" }} settled</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Outstanding Receivables</p>
+        <span class="text-xl font-extrabold text-indigo-600 mt-1 block">₹{{ financials.total_outstanding|default:"0.00" }}</span>
+        <span class="text-[10px] text-indigo-600 font-bold mt-0.5 block">{{ financials.outstanding_count|default:"0" }} pending</span>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Overdue Invoices</p>
+        <span class="text-xl font-extrabold {% if financials.overdue_count > 0 %}text-error{% else %}text-emerald-700{% endif %} mt-1 block">{{ financials.overdue_count|default:"0" }}</span>
+        <span class="text-[10px] text-on-surface-variant/60 mt-0.5 block">Requires follow-up</span>
+    </div>
+</div>
+
+<!-- Invoices Management Section -->
+<div id="invoices-section" class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Platform Billing & Invoices</h3>
+            <p class="text-[10px] text-on-surface-variant/60">Placement fees generated across IT recruitment and faculty hiring domains</p>
+        </div>
+        <form method="GET" class="flex flex-wrap items-center gap-2">
+            <input type="text" name="q" value="{{ current_q }}" placeholder="Search Invoice #, Name..." class="px-3 py-1.5 rounded-lg border border-outline-variant/30 text-xs focus:ring-1 focus:ring-primary w-48">
+            <select name="domain" class="pl-3 pr-8 py-1.5 rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant focus:ring-1 focus:ring-primary">
+                <option value="">All Domains</option>
+                <option value="it" {% if current_domain == 'it' %}selected{% endif %}>IT</option>
+                <option value="faculty" {% if current_domain == 'faculty' %}selected{% endif %}>Faculty</option>
+            </select>
+            <select name="status" class="pl-3 pr-8 py-1.5 rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant focus:ring-1 focus:ring-primary">
+                <option value="">All Invoices</option>
+                <option value="issued" {% if current_status == 'issued' %}selected{% endif %}>Issued</option>
+                <option value="paid" {% if current_status == 'paid' %}selected{% endif %}>Paid</option>
+                <option value="overdue" {% if current_status == 'overdue' %}selected{% endif %}>Overdue</option>
+                <option value="cancelled" {% if current_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+            <select name="payment_status" class="pl-3 pr-8 py-1.5 rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant focus:ring-1 focus:ring-primary">
+                <option value="">All Payments</option>
+                <option value="paid" {% if current_payment_status == 'paid' %}selected{% endif %}>Fully Paid</option>
+                <option value="outstanding" {% if current_payment_status == 'outstanding' %}selected{% endif %}>Outstanding</option>
+            </select>
+            <button type="submit" class="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90">Filter</button>
+            <a href="?" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200">Clear</a>
+        </form>
+    </div>
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Invoice & Entity</th>
+                    <th class="p-3.5">Domain</th>
+                    <th class="p-3.5">Candidate & Role</th>
+                    <th class="p-3.5">Fee & GST</th>
+                    <th class="p-3.5">Amounts</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5">Dates</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for inv in invoices %}
+                <tr class="hover:bg-gray-50/80 transition-colors">
+                    <td class="p-3.5">
+                        <div>
+                            <span class="font-extrabold text-on-surface font-mono">{{ inv.invoice_number }}</span>
+                            <p class="text-[11px] text-on-surface-variant/70 font-semibold truncate w-32" title="{{ inv.bill_to_name_snapshot }}">{{ inv.bill_to_name_snapshot|default:"Client Organization" }}</p>
+                        </div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if inv.domain == 'faculty' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ inv.domain|default:"it" }}</span>
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-semibold text-on-surface">{{ inv.candidate_name|default:"Unknown Candidate" }}</div>
+                        <div class="text-[10px] text-on-surface-variant/70">{{ inv.candidate_job_title|default:"Unknown Role" }}</div>
+                        {% if inv.candidate_annual_ctc %}
+                        <div class="text-[10px] text-indigo-600 font-mono mt-0.5">CTC: ₹{{ inv.candidate_annual_ctc }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[11px]">
+                        <div>Fee: ₹{{ inv.taxable_amount }}</div>
+                        <div class="text-[10px]">GST: ₹{{ inv.cgst_amount|add:inv.sgst_amount|add:inv.igst_amount }}</div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-extrabold text-on-surface font-mono text-sm block">Total: ₹{{ inv.total_amount }}</span>
+                        {% if inv.amount_paid > 0 %}
+                        <span class="text-[10px] text-emerald-600 font-mono block">Paid: ₹{{ inv.amount_paid }}</span>
+                        {% endif %}
+                        {% if inv.total_amount > inv.amount_paid %}
+                        <span class="text-[10px] text-red-500 font-mono block">Bal: ₹{{ inv.total_amount|add:"-"|add:inv.amount_paid }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5">
+                        {% if inv.status == 'paid' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">Paid</span>
+                        {% elif inv.status == 'overdue' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase">Overdue</span>
+                        {% elif inv.status == 'issued' or inv.status == 'pending' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">Pending</span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase">{{ inv.status|default:"Draft" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[10px]">
+                        <div>Iss: {{ inv.issued_at|slice:":10"|default:"N/A" }}</div>
+                        <div class="text-[10px] text-on-surface-variant/60">Due: {{ inv.due_at|slice:":10"|default:"N/A" }}</div>
+                    </td>
+                    <td class="p-3.5 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                            <button onclick="openInvoiceModal('{{ inv.invoice_number }}', '{{ inv.bill_to_name_snapshot|escapejs }}', '{{ inv.candidate_name|escapejs }}', '{{ inv.candidate_job_title|escapejs }}', '{{ inv.total_amount }}', '{{ inv.amount_paid }}', '{{ inv.status }}')" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-primary transition-colors" title="View Preview">
+                                <span class="material-symbols-outlined !text-base">visibility</span>
+                            </button>
+                            <a href="{% url 'super_admin_invoice_download' user_uuid=header_user.user_uuid invoice_id=inv.id %}" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-emerald-600 transition-colors" title="Download PDF">
+                                <span class="material-symbols-outlined !text-base">download</span>
+                            </a>
+                            {% if inv.status != 'paid' and inv.status != 'cancelled' %}
+                            <button onclick="superAdminAction('{% url 'super_admin_billing' user_uuid=header_user.user_uuid %}', {action: 'mark_paid', invoice_id: '{{ inv.id }}'}, 'Mark this invoice as fully paid?')" class="p-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 text-emerald-600 transition-colors" title="Mark Paid">
+                                <span class="material-symbols-outlined !text-base">payments</span>
+                            </button>
+                            <button onclick="superAdminAction('{% url 'super_admin_billing' user_uuid=header_user.user_uuid %}', {action: 'send_reminder', invoice_id: '{{ inv.id }}'}, 'Send a payment reminder?')" class="p-1.5 rounded-lg border border-indigo-200 hover:bg-indigo-50 text-indigo-600 transition-colors" title="Send Reminder">
+                                <span class="material-symbols-outlined !text-base">notifications_active</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs">No billing invoices recorded in the system.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<!-- Invoice Preview Modal -->
+<div id="invoicePreviewModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300">
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">receipt_long</span> Invoice Preview
+            </h3>
+            <button onclick="closeInvoiceModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <span id="modalInvoiceNumber" class="text-sm font-extrabold font-mono text-gray-900 block"></span>
+                    <span id="modalStatus" class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"></span>
+                </div>
+            </div>
+            
+            <div class="space-y-4 text-sm">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Billed To</span>
+                        <div id="modalBilledTo" class="font-semibold text-gray-900"></div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Candidate Details</span>
+                        <div id="modalCandidate" class="font-semibold text-gray-900"></div>
+                        <div id="modalRole" class="text-xs text-gray-600 mt-0.5"></div>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-100 pt-4 mt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600">Total Invoice Amount</span>
+                        <span id="modalTotal" class="font-extrabold text-gray-900 font-mono text-base"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Amount Paid</span>
+                        <span id="modalPaid" class="font-bold text-emerald-600 font-mono"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+            <button onclick="closeInvoiceModal()" class="px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openInvoiceModal(invNum, billedTo, candidate, role, total, paid, status) {
+    document.getElementById('modalInvoiceNumber').innerText = invNum;
+    document.getElementById('modalBilledTo').innerText = billedTo;
+    document.getElementById('modalCandidate').innerText = candidate;
+    document.getElementById('modalRole').innerText = role;
+    document.getElementById('modalTotal').innerText = '₹' + total;
+    document.getElementById('modalPaid').innerText = '₹' + paid;
+    
+    const statusBadge = document.getElementById('modalStatus');
+    statusBadge.innerText = status;
+    statusBadge.className = 'inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider';
+    if(status === 'paid') statusBadge.classList.add('bg-emerald-100', 'text-emerald-800');
+    else if(status === 'overdue') statusBadge.classList.add('bg-red-100', 'text-red-800');
+    else statusBadge.classList.add('bg-amber-100', 'text-amber-800');
+
+    const modal = document.getElementById('invoicePreviewModal');
+    modal.classList.remove('hidden');
+    // slight delay for transition
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+}
+
+function closeInvoiceModal() {
+    const modal = document.getElementById('invoicePreviewModal');
+    modal.classList.add('opacity-0');
+    modal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+</script>
+{% endblock %}

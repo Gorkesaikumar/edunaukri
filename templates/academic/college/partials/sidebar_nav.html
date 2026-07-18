@@ -1,0 +1,49 @@
+<nav class="icd-sidebar__nav" aria-label="Institution recruiter dashboard">
+
+    {% for item in sidebar.primary %}
+
+    {% if item.key == 'post_vacancy' and not is_profile_completed %}
+    <a class="icd-sidebar__link text-muted"
+       href="#" aria-disabled="true" title="Complete Profile First" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-lock-fill" aria-hidden="true"></i>
+        <span>{{ item.label }}</span>
+    </a>
+    {% else %}
+    <a class="icd-sidebar__link{% if item.active %} icd-sidebar__link--active{% endif %}"
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+        <div class="d-flex align-items-center w-100 gap-2">
+            <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+            <span>{{ item.label }}</span>
+            {% if item.unread_count and item.unread_count > 0 %}
+                <span class="badge rounded-pill bg-danger ms-auto icd-pulse-animation" id="sidebar-{{ item.key }}-badge">{{ item.unread_count }}</span>
+            {% else %}
+                <span class="badge rounded-pill bg-danger ms-auto icd-pulse-animation d-none" id="sidebar-{{ item.key }}-badge">0</span>
+            {% endif %}
+        </div>
+    </a>
+    {% endif %}
+
+    {% endfor %}
+
+
+
+    <div class="icd-sidebar__sep" aria-hidden="true"></div>
+
+
+
+    {% for item in sidebar.secondary %}
+
+    <a class="icd-sidebar__link{% if item.active %} icd-sidebar__link--active{% endif %}{% if item.key == 'settings' %} icd-sidebar__link--settings{% endif %}"
+
+       href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+
+        <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+
+        <span>{{ item.label }}</span>
+
+    </a>
+
+    {% endfor %}
+
+</nav>
+

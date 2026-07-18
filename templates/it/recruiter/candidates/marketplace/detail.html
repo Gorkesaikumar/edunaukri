@@ -1,0 +1,111 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ candidate.name }} | Candidate Profile{% endblock %}
+
+{% block dashboard_content %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <a href="{{ marketplace_url }}" class="rcd-section-head__link d-inline-flex mb-2">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            Back to Marketplace
+        </a>
+        <h1 class="rcd-section-head__title">{{ candidate.name }}</h1>
+        <p class="mb-0 text-muted">{{ candidate.headline }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        {% if candidate.can_download_resume %}
+        <a href="{{ candidate.resume_url }}" class="rcd-btn rcd-btn--outline rcd-btn--sm" download>Download Resume</a>
+        {% endif %}
+        <a href="{{ candidate.messages_url }}" class="rcd-btn rcd-btn--soft rcd-btn--sm">Send Message</a>
+        <a href="{{ candidate.interviews_url }}" class="rcd-btn rcd-btn--primary rcd-btn--sm">Invite for Interview</a>
+    </div>
+</header>
+
+<div class="rcd-grid-2-1">
+    <div class="rcd-stack">
+        <section class="rcd-bento p-4">
+            <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Overview</h2>
+            {% if candidate.summary %}
+            <p class="mb-0">{{ candidate.summary }}</p>
+            {% else %}
+            <p class="text-muted mb-0">No summary provided.</p>
+            {% endif %}
+        </section>
+
+        {% if candidate.experiences %}
+        <section class="rcd-bento p-4">
+            <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Experience</h2>
+            <ul class="list-unstyled mb-0">
+                {% for exp in candidate.experiences %}
+                <li class="mb-3">
+                    <strong>{{ exp.title }}</strong><br>
+                    <span class="text-muted">{{ exp.company }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if candidate.education %}
+        <section class="rcd-bento p-4">
+            <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Education</h2>
+            <ul class="list-unstyled mb-0">
+                {% for edu in candidate.education %}
+                <li class="mb-3">
+                    <strong>{{ edu.degree }}</strong><br>
+                    <span class="text-muted">{{ edu.institution }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+
+    <div class="rcd-stack">
+        <section class="rcd-bento p-4">
+            <div class="text-center mb-3">
+                {% if candidate.photo_url %}
+                <img src="{{ candidate.photo_url }}" alt="" class="rcd-marketplace-detail__photo">
+                {% else %}
+                <div class="rcd-pipeline-card__avatar mx-auto" style="width:4.5rem;height:4.5rem;font-size:1.25rem">{{ candidate.initials }}</div>
+                {% endif %}
+            </div>
+            <dl class="rcd-candidate-card__meta">
+                <div><dt>Location</dt><dd>{{ candidate.location }}</dd></div>
+                <div><dt>Experience</dt><dd>{{ candidate.experience_years }} yrs</dd></div>
+                <div><dt>Expected salary</dt><dd>{{ candidate.expected_salary }}</dd></div>
+                <div><dt>Work mode</dt><dd>{{ candidate.work_mode }}</dd></div>
+                <div><dt>Employment type</dt><dd>{{ candidate.employment_type }}</dd></div>
+                <div><dt>Notice period</dt><dd>{{ candidate.notice_period }}</dd></div>
+                <div><dt>Profile completion</dt><dd>{{ candidate.profile_completion }}%</dd></div>
+                <div><dt>Last updated</dt><dd>{{ candidate.updated_label }}</dd></div>
+            </dl>
+        </section>
+
+        {% if candidate.skills %}
+        <section class="rcd-bento p-4">
+            <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Skills</h2>
+            <div class="rcd-marketplace-card__skills">
+                {% for skill in candidate.skills %}
+                <span class="rcd-job-card__tag rcd-job-card__tag--primary">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="rcd-bento p-4">
+            <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Actions</h2>
+            <div class="d-grid gap-2">
+                <a href="{{ candidate.saved_url }}" class="rcd-btn rcd-btn--soft rcd-btn--block">Save Candidate</a>
+                <a href="{{ candidate.applicants_url }}" class="rcd-btn rcd-btn--outline rcd-btn--block">View Applicants</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.REC_PORTAL = { csrfToken: "{{ csrf_token|escapejs }}" };</script>
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% load static %}
+{# Top Navigation Bar (glassmorphism, sticky) #}
+<nav class="ed-navbar" aria-label="Primary navigation">
+    <div class="ed-container ed-navbar__inner">
+        {# Brand #}
+        <a class="ed-brand d-flex align-items-center gap-2" href="{% url 'home' %}" aria-label="{{ PLATFORM_NAME }} home">
+            <img class="ed-brand__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo">
+        </a>
+
+        {# Center links (desktop) #}
+        <div class="ed-nav-links d-none d-lg-flex mx-auto">
+            <a class="ed-nav-link{% if nav.active == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if nav.active == 'home' %} aria-current="page"{% endif %}>Home</a>
+            <a class="ed-nav-link{% if nav.active == 'jobs' %} active{% endif %}" href="{% url 'marketplace_browse_jobs' %}"{% if nav.active == 'jobs' %} aria-current="page"{% endif %}>Jobs</a>
+            <a class="ed-nav-link{% if nav.active == 'institutions' %} active{% endif %}" href="{% url 'institutions_browse' %}"{% if nav.active == 'institutions' %} aria-current="page"{% endif %}>Institutions</a>
+            <a class="ed-nav-link{% if nav.active == 'about' %} active{% endif %}" href="{% url 'about' %}"{% if nav.active == 'about' %} aria-current="page"{% endif %}>About</a>
+            <a class="ed-nav-link" href="#">Contact</a>
+        </div>
+
+        {# Right actions (desktop) #}
+        <div class="ed-navbar__actions d-none d-lg-flex">
+            {% if nav.is_authenticated %}
+                {% include "partials/nav_user_menu.html" %}
+            {% else %}
+                <a href="{% url 'domain_selection' %}" class="ed-btn-link">Sign In</a>
+                <a href="{% url 'signup_domain_selection' %}" class="ed-btn ed-btn--primary">Get Started</a>
+            {% endif %}
+        </div>
+
+        {# Mobile toggler #}
+        <button class="ed-navbar__toggler d-lg-none" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#edMobileNav" aria-controls="edMobileNav" aria-label="Open navigation menu">
+            <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+    </div>
+</nav>

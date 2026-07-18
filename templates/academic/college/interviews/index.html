@@ -1,0 +1,396 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Interviews | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head icd-page-head--split">
+    <div>
+        <h1 class="icd-page-head__title">Interviews</h1>
+        <p class="icd-page-head__desc">Schedule and manage interview rounds for shortlisted faculty candidates.</p>
+    </div>
+</header>
+
+{% if interviews_page %}
+<section class="icd-stats mb-4">
+    {% for stat in interviews_page.summary %}
+    <article class="icd-card icd-stat">
+        <span class="icd-stat__icon icd-stat__icon--{{ stat.tone }}"><i class="bi {{ stat.icon }}"></i></span>
+        <div>
+            <p class="icd-stat__label">{{ stat.label }}</p>
+            <p class="icd-stat__value">{{ stat.value }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="icd-filters" method="get">
+    <label class="icd-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ interviews_page.filters.q }}" placeholder="Search candidate or vacancy">
+    </label>
+    <select class="icd-filters__select" name="status">
+        <option value="">All stages</option>
+        <option value="pending"{% if interviews_page.filters.status == "pending" %} selected{% endif %}>Pending schedule</option>
+        <option value="scheduled"{% if interviews_page.filters.status == "scheduled" %} selected{% endif %}>Scheduled</option>
+        <option value="completed"{% if interviews_page.filters.status == "completed" %} selected{% endif %}>Completed</option>
+        <option value="offer"{% if interviews_page.filters.status == "offer" %} selected{% endif %}>Post-interview offers</option>
+    </select>
+    <button type="submit" class="icd-btn icd-btn--primary icd-btn--sm">Filter</button>
+</form>
+
+<div id="icdInterviewsPage"
+     data-api-schedule-template="{{ interviews_page.api_urls.schedule_template }}"
+     data-api-reschedule-template="{{ interviews_page.api_urls.reschedule_template }}"
+     data-api-cancel-template="{{ interviews_page.api_urls.cancel_template }}"
+     data-api-complete-template="{{ interviews_page.api_urls.complete_template }}"
+     data-api-select-template="{{ interviews_page.api_urls.select_template }}"
+     data-api-reject-template="{{ interviews_page.api_urls.reject_template }}"
+     data-csrf="{{ csrf_token }}">
+{{ interviews_page.calendar_events|json_script:"icdInterviewCalendarData" }}
+
+<section class="icd-card icd-int-calendar mb-3" id="icdInterviewCalendar">
+    <div class="icd-int-calendar__head">
+        <h2 class="icd-section__title mb-0">Next 7 Days</h2>
+        <p class="icd-list-card__meta mb-0">Interview load by day</p>
+    </div>
+    <div class="icd-int-calendar__grid" id="icdInterviewCalendarGrid"></div>
+</section>
+
+{# ── Candidates Awaiting Interview Scheduling ── #}
+{% if not interviews_page.filters.status or interviews_page.filters.status == "pending" %}
+<section class="mb-4" id="icdPendingSection">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h2 class="icd-section__title mb-0">
+            <i class="bi bi-hourglass-split text-warning me-2"></i>Candidates Awaiting Interview Scheduling
+        </h2>
+        <span class="icd-badge icd-badge--warning">{{ interviews_page.pending_candidates|length }} pending</span>
+    </div>
+
+    {% if interviews_page.pending_candidates %}
+    <div class="icd-pending-grid">
+        {% for candidate in interviews_page.pending_candidates %}
+        <article class="icd-card icd-pending-card">
+            <div class="icd-pending-card__top">
+                <div class="icd-pending-card__avatar-wrap">
+                    {% if candidate.candidate_photo_url %}
+                    <img class="icd-pending-card__avatar" src="{{ candidate.candidate_photo_url }}" alt="{{ candidate.candidate_name }}">
+                    {% else %}
+                    <div class="icd-pending-card__avatar icd-pending-card__avatar--initials">{{ candidate.candidate_initials }}</div>
+                    {% endif %}
+                </div>
+                <div class="icd-pending-card__info">
+                    <h3 class="icd-pending-card__name">{{ candidate.candidate_name }}</h3>
+                    <p class="icd-pending-card__role">{{ candidate.vacancy_title }}</p>
+                    {% if candidate.department %}
+                    <p class="icd-pending-card__dept"><i class="bi bi-building"></i> {{ candidate.department }}</p>
+                    {% endif %}
+                </div>
+                <span class="icd-badge icd-badge--warning ms-auto flex-shrink-0">Shortlisted</span>
+            </div>
+            <div class="icd-pending-card__meta">
+                <span title="Qualification"><i class="bi bi-mortarboard"></i> {{ candidate.qualification_label }}</span>
+                <span title="Experience"><i class="bi bi-briefcase"></i> {{ candidate.experience_label }}</span>
+                <span title="Shortlisted on"><i class="bi bi-calendar-check"></i> {{ candidate.shortlisted_label }}</span>
+                {% if candidate.cv_available %}
+                <span class="text-success" title="Resume available"><i class="bi bi-file-earmark-check"></i> Resume</span>
+                {% endif %}
+            </div>
+            <div class="icd-pending-card__actions">
+                <button type="button"
+                        class="icd-btn icd-btn--primary icd-btn--sm icd-int-open"
+                        data-action="schedule"
+                        data-application-id="{{ candidate.application_id }}"
+                        data-candidate="{{ candidate.candidate_name }}"
+                        data-interview-type=""
+                        data-mode=""
+                        data-meeting-platform=""
+                        data-date=""
+                        data-time=""
+                        data-meeting-link=""
+                        data-location=""
+                        data-interviewer-name=""
+                        data-duration="45"
+                        data-notes="">
+                    <i class="bi bi-calendar-plus"></i> Schedule Interview
+                </button>
+                <button type="button"
+                        class="icd-btn icd-btn--soft icd-btn--sm icd-pending-profile"
+                        data-profile-url="{{ candidate.profile_url }}">
+                    <i class="bi bi-person-lines-fill"></i> View Profile
+                </button>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="icd-card icd-empty-compact">
+        <i class="bi bi-calendar-x text-muted"></i>
+        <div>
+            <p class="mb-0 fw-semibold text-muted">No Candidates Awaiting Interview</p>
+            <p class="mb-0 small text-muted">Shortlisted candidates will automatically appear here when they are ready for interview scheduling.</p>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+{# ── Scheduled / Completed / Offer interviews list ── #}
+{% if interviews_page.interviews %}
+<section class="mb-3">
+    <h2 class="icd-section__title mb-3">
+        {% if interviews_page.filters.status == "scheduled" %}Scheduled Interviews
+        {% elif interviews_page.filters.status == "completed" %}Completed Interviews
+        {% elif interviews_page.filters.status == "offer" %}Post-Interview Offers
+        {% else %}All Interviews{% endif %}
+    </h2>
+    <div class="icd-list">
+        {% for item in interviews_page.interviews %}
+        <article class="icd-list-card">
+            <!-- Left Column: Avatar & Candidate Info -->
+            <div class="icd-list-card__main">
+                <div class="icd-list-card__avatar">{{ item.candidate_name|slice:":2"|upper }}</div>
+                <div>
+                    <h2 class="icd-list-card__title">{{ item.candidate_name }}</h2>
+                    <p class="icd-list-card__role">{{ item.vacancy_title }}</p>
+                    {% if item.department %}
+                    <p class="icd-list-card__dept"><i class="bi bi-building"></i> {{ item.department }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Center Column: Interview Details -->
+            <div class="icd-list-card__center">
+                <p class="icd-list-card__date">
+                    <i class="bi bi-calendar-event text-primary"></i> 
+                    {{ item.date_label }}{% if item.time_label %} at {{ item.time_label }}{% endif %}
+                </p>
+                <p class="icd-list-card__meta">
+                    <i class="bi bi-camera-video"></i> {{ item.interview_type }} · {{ item.meeting_platform|default:item.mode }}
+                </p>
+                {% if item.interviewer_name %}
+                <p class="icd-list-card__meta"><i class="bi bi-person-badge"></i> {{ item.interviewer_name }}</p>
+                {% endif %}
+                {% if item.location %}
+                <p class="icd-list-card__meta"><i class="bi bi-geo-alt"></i> {{ item.location }}</p>
+                {% endif %}
+                {% if item.meeting_link %}
+                <div class="mt-1">
+                    <a href="{{ item.meeting_link }}" target="_blank" class="icd-btn icd-btn--soft icd-btn--sm">
+                        <i class="bi bi-link-45deg"></i> Join Meeting
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column: Status & Actions -->
+            <div class="icd-list-card__side">
+                <span class="icd-badge {{ item.status_badge }}">{{ item.status_label }}</span>
+                <div class="icd-list-card__actions">
+                    {% if item.can_complete %}
+                    <button type="button" class="icd-btn icd-btn--primary icd-btn--sm icd-int-complete"
+                            data-application-id="{{ item.application_id }}">Mark Complete</button>
+                    {% endif %}
+                    {% if item.can_select %}
+                    <button type="button" class="icd-btn icd-btn--success icd-btn--sm icd-int-select"
+                            data-application-id="{{ item.application_id }}">Select</button>
+                    {% endif %}
+                    {% if item.can_schedule %}
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm icd-int-open"
+                            data-action="{% if item.can_reschedule %}reschedule{% else %}schedule{% endif %}"
+                            data-application-id="{{ item.application_id }}"
+                            data-candidate="{{ item.candidate_name }}"
+                            data-interview-type="{{ item.interview_type }}"
+                            data-mode="{{ item.mode }}"
+                            data-meeting-platform="{{ item.meeting_platform }}"
+                            data-date="{{ item.date_label }}"
+                            data-time="{{ item.time_label }}"
+                            data-meeting-link="{{ item.meeting_link }}"
+                            data-location="{{ item.location }}"
+                            data-interviewer-name="{{ item.interviewer_name }}"
+                            data-duration="{{ item.duration_minutes }}"
+                            data-notes="{{ item.notes }}">
+                        {% if item.can_reschedule %}Reschedule{% else %}Schedule{% endif %}
+                    </button>
+                    {% endif %}
+                    <a href="{{ item.application_url }}" class="icd-btn icd-btn--soft icd-btn--sm">Details</a>
+                    {% if item.can_cancel %}
+                    <button type="button" class="icd-btn icd-btn--soft-danger icd-btn--sm icd-int-cancel"
+                            data-application-id="{{ item.application_id }}">Cancel</button>
+                    {% endif %}
+                    {% if item.can_reject %}
+                    <button type="button" class="icd-btn icd-btn--soft-danger icd-btn--sm icd-int-reject"
+                            data-application-id="{{ item.application_id }}">Reject</button>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% elif interviews_page.filters.status and interviews_page.filters.status != "pending" %}
+    <div class="icd-card icd-empty">
+        <i class="bi bi-calendar-event"></i>
+        <h2 style="font-size: 1.5rem;">No interviews yet</h2>
+        <p>Move applications to management approval and schedule interview rounds here.</p>
+    </div>
+{% endif %}
+</div>
+
+{% if interviews_page.total_pages > 1 %}
+<nav class="icd-pagination mt-3" aria-label="Interview pages">
+    {% if interviews_page.page > 1 %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ interviews_page.filters.q|urlencode }}&status={{ interviews_page.filters.status|urlencode }}&page={{ interviews_page.page|add:'-1' }}">Previous</a>
+    {% endif %}
+    <span>Page {{ interviews_page.page }} of {{ interviews_page.total_pages }}</span>
+    {% if interviews_page.page < interviews_page.total_pages %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ interviews_page.filters.q|urlencode }}&status={{ interviews_page.filters.status|urlencode }}&page={{ interviews_page.page|add:'1' }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endif %}
+
+{# ── Schedule Interview Modal ── #}
+<div class="modal fade" id="icdInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="icdInterviewModalTitle">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="icd-int-modal-candidate mb-3" id="icdInterviewCandidateCtx">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icd-list-card__avatar" style="width:48px;height:48px;font-size:1.1rem;" id="icdInterviewCandidateInitials">--</div>
+                        <div>
+                            <p class="fw-semibold mb-0" id="icdInterviewCandidate"></p>
+                            <span class="icd-badge icd-badge--warning">Shortlisted</span>
+                        </div>
+                    </div>
+                </div>
+                <form id="icdInterviewForm" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewDate">Interview Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="icdInterviewDate" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewTime">Interview Time <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="icdInterviewTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewType">Interview Round / Type</label>
+                        <input type="text" class="form-control" id="icdInterviewType" placeholder="e.g. Technical Round 1, HR Interview">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewChannel">Interview Mode</label>
+                        <select class="form-select" id="icdInterviewChannel">
+                            <option value="google_meet">Online — Google Meet</option>
+                            <option value="zoom">Online — Zoom</option>
+                            <option value="microsoft_teams">Online — Microsoft Teams</option>
+                            <option value="phone">Phone Interview</option>
+                            <option value="walk_in">Offline / Walk-in</option>
+                            <option value="video">Video Interview</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12" id="icdInterviewLinkWrap">
+                        <label class="form-label fw-semibold" for="icdInterviewLink">Meeting Link</label>
+                        <input type="url" class="form-control" id="icdInterviewLink" placeholder="https://meet.google.com/...">
+                    </div>
+                    <div class="col-md-12" id="icdInterviewLocationWrap" style="display:none;">
+                        <label class="form-label fw-semibold" for="icdInterviewLocation">Venue / Location</label>
+                        <input type="text" class="form-control" id="icdInterviewLocation" placeholder="e.g. Seminar Hall 2, Campus Address">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewInterviewer">Interview Panel</label>
+                        <input type="text" class="form-control" id="icdInterviewInterviewer" placeholder="Panel Lead / HR Name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="icdInterviewDuration">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="icdInterviewDuration" min="15" step="15" value="45">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="icdInterviewNotes">Interview Instructions / Notes</label>
+                        <textarea class="form-control" id="icdInterviewNotes" rows="2" placeholder="Bring original certificates, portfolio etc."></textarea>
+                    </div>
+                </form>
+                <p class="text-danger small mt-2 mb-0" id="icdInterviewError" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="icd-btn icd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--primary" id="icdInterviewSubmit">
+                    <i class="bi bi-calendar-check me-1"></i>Schedule Interview
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Select Candidate Modal ── #}
+<div class="modal fade" id="icdSelectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title">Select Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="icdSelectForm">
+                    <div class="alert alert-danger" id="icdSelectError" hidden></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Selection Notes / Remarks</label>
+                        <textarea class="form-control" id="icdSelectNotes" rows="3" placeholder="Enter selection remarks, feedback, or any notes for internal records..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="icdSelectSubmit">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Reject Candidate Modal ── #}
+<div class="modal fade" id="icdRejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title">Reject Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="icdRejectForm">
+                    <div class="alert alert-danger" id="icdRejectError" hidden></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="icdRejectNotes" rows="3" placeholder="Explain the reason for rejection..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="icdRejectSubmit">Reject Candidate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Profile Modal ── #}
+<div class="modal fade" id="icdInterviewProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Candidate Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="icdInterviewProfileBody">
+                <div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/college-interviews.js' %}"></script>
+{% endblock %}

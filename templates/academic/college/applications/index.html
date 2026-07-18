@@ -1,0 +1,676 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}Applications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/college-applications.css' %}">
+<script src="{% static 'js/college-applications.js' %}" defer></script>
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="icd-page-head__title mb-0">Applications</h1>
+        <p class="icd-page-head__desc mb-0">
+            Review and manage faculty applications.
+            {% if applications_page %}
+            <span class="ms-2 badge rounded-pill bg-primary-subtle text-primary fw-semibold">
+                {{ applications_page.pagination.total_count }} total
+            </span>
+            {% endif %}
+        </p>
+    </div>
+    <a href="{% portal_url 'college_vacancy_create' %}" class="icd-btn icd-btn--primary rounded-pill px-4">
+        <i class="bi bi-plus-lg me-1"></i> Post Vacancy
+    </a>
+</header>
+
+{% if applications_page %}
+
+{# ── Analytics KPI Strip ── #}
+<section class="ats-kpi-strip" aria-label="Application analytics">
+    {% for stat in applications_page.analytics %}
+    <a class="ats-kpi-card ats-kpi-card--{{ stat.tone }}{% if applications_page.filters.status == stat.key %} ats-kpi-card--active{% endif %}"
+       href="{% portal_url 'college_applications' %}?status={{ stat.key }}{% if applications_page.filters.vacancy_id %}&vacancy_id={{ applications_page.filters.vacancy_id }}{% endif %}">
+        <i class="bi {{ stat.icon }} ats-kpi-card__icon"></i>
+        <span class="ats-kpi-card__value">{{ stat.value }}</span>
+        <span class="ats-kpi-card__label">{{ stat.label }}</span>
+    </a>
+    {% endfor %}
+</section>
+
+{# ── Filter & Sort Bar ── #}
+<div class="ats-filter-bar" id="icdApplicationsPage"
+     data-status-template="{{ applications_page.api_urls.status_template }}"
+     data-notes-template="{{ applications_page.api_urls.notes_template }}"
+     data-csrf="{{ csrf_token }}">
+
+    <form class="ats-filter-bar__form" method="get" action="{% portal_url 'college_applications' %}">
+        <label class="ats-filter-bar__search">
+            <i class="bi bi-search"></i>
+            <input type="search" name="q" value="{{ applications_page.filters.q }}"
+                   placeholder="Search candidate, vacancy, department…" autocomplete="off">
+        </label>
+        <select name="status" class="ats-filter-bar__select" aria-label="Filter by status">
+            <option value="">All Statuses</option>
+            {% for opt in applications_page.status_options %}
+            <option value="{{ opt.value }}"{% if applications_page.filters.status == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+        <select name="vacancy_id" class="ats-filter-bar__select" aria-label="Filter by vacancy">
+            <option value="">All Vacancies</option>
+            {% for vac in applications_page.vacancy_filters %}
+            <option value="{{ vac.id }}"{% if applications_page.filters.vacancy_id == vac.id %} selected{% endif %}>{{ vac.title }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort" class="ats-filter-bar__select" aria-label="Sort by">
+            <option value="newest"{% if applications_page.filters.sort == "newest" %} selected{% endif %}>Newest First</option>
+            <option value="oldest"{% if applications_page.filters.sort == "oldest" %} selected{% endif %}>Oldest First</option>
+            <option value="updated"{% if applications_page.filters.sort == "updated" %} selected{% endif %}>Recently Updated</option>
+        </select>
+        <button type="submit" class="icd-btn icd-btn--primary ats-filter-bar__submit">
+            <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+        {% if applications_page.filters.q or applications_page.filters.status or applications_page.filters.vacancy_id %}
+        <a href="{% portal_url 'college_applications' %}" class="icd-btn icd-btn--soft ats-filter-bar__clear" title="Clear filters">
+            <i class="bi bi-x-lg"></i>
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+{# ── Candidate List ── #}
+{% if applications_page.applications %}
+<div class="ats-list" role="list">
+    {% for app in applications_page.applications %}
+    <article class="ats-card" role="listitem" data-application-id="{{ app.id }}">
+
+        {# Avatar #}
+        <div class="ats-card__avatar-wrap">
+            {% if app.candidate_photo_url %}
+            <img class="ats-card__avatar" src="{{ app.candidate_photo_url }}" alt="{{ app.candidate }}">
+            {% else %}
+            <div class="ats-card__avatar ats-card__avatar--initials">{{ app.candidate_initials }}</div>
+            {% endif %}
+        </div>
+
+        {# Main Info #}
+        <div class="ats-card__body">
+            <div class="ats-card__top-row">
+                <div>
+                    <h2 class="ats-card__name">{{ app.candidate }}</h2>
+                    <p class="ats-card__role">
+                        <span class="ats-card__vacancy">{{ app.vacancy_title }}</span>
+                        {% if app.department %}
+                        <span class="ats-card__sep">·</span>
+                        <span class="ats-card__dept">{{ app.department }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="ats-card__actions-wrap">
+                    <span class="ats-badge ats-badge--{{ app.status_class }}">{{ app.status_label }}</span>
+                    <div class="dropdown">
+                        <button class="ats-actions-btn dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false"
+                                aria-label="Actions for {{ app.candidate }}">
+                            <i class="bi bi-three-dots-vertical"></i> Actions
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end ats-dropdown">
+                            <li><button class="dropdown-item ats-dropdown__item" type="button" 
+                                    data-open-profile-modal 
+                                    data-profile-url="{{ app.profile_url }}">
+                                <i class="bi bi-person-lines-fill"></i> View Profile
+                            </button></li>
+                            {% if app.permissions.can_preview_resume %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item" type="button"
+                                        data-open-resume-modal
+                                        data-resume-candidate="{{ app.candidate }}"
+                                        data-resume-job="{{ app.vacancy_title }}"
+                                        data-resume-preview="{{ app.cv_preview_url }}"
+                                        data-resume-download="{{ app.cv_download_url }}"
+                                        data-resume-file-name="{{ app.cv_file_name }}"
+                                        data-resume-mime-type="{{ app.cv_mime_type }}">
+                                    <i class="bi bi-file-earmark-text"></i> Preview Resume
+                                </button>
+                            </li>
+                            {% else %}
+                            <li><span class="dropdown-item ats-dropdown__item text-muted disabled">
+                                <i class="bi bi-file-earmark-x"></i> No Resume Uploaded
+                            </span></li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_download_resume %}
+                            <li><a class="dropdown-item ats-dropdown__item" href="{{ app.cv_download_url }}" download>
+                                <i class="bi bi-download"></i> Download Resume
+                            </a></li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            {% if app.permissions.can_shortlist %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item ats-dropdown__item--primary" type="button"
+                                        data-open-shortlist-modal
+                                        data-application-id="{{ app.id }}"
+                                        data-status-url="{{ app.status_url }}"
+                                        data-candidate="{{ app.candidate }}"
+                                        data-vacancy="{{ app.vacancy_title }}">
+                                    <i class="bi bi-check-circle"></i> Shortlist
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_reject %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item ats-dropdown__item--danger" type="button"
+                                        data-open-reject-modal
+                                        data-application-id="{{ app.id }}"
+                                        data-status-url="{{ app.status_url }}"
+                                        data-candidate="{{ app.candidate }}"
+                                        data-vacancy="{{ app.vacancy_title }}">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_shortlist or app.permissions.can_reject %}
+                            <li><hr class="dropdown-divider"></li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_add_notes %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item" type="button"
+                                        data-open-notes-modal
+                                        data-application-id="{{ app.id }}"
+                                        data-notes-url="{{ app.notes_url }}"
+                                        data-candidate="{{ app.candidate }}"
+                                        data-college-notes="{{ app.college_notes|escapejs }}"
+                                        data-internal-remarks="{{ app.internal_remarks|escapejs }}"
+                                        data-college-rating="{{ app.college_rating }}">
+                                    <i class="bi bi-journal-text"></i> Add Notes
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_schedule_interview %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item" type="button"
+                                        data-open-schedule-modal
+                                        data-application-id="{{ app.id }}"
+                                        data-candidate="{{ app.candidate }}"
+                                        data-vacancy="{{ app.vacancy_title }}">
+                                    <i class="bi bi-calendar-event"></i> Schedule Interview
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_send_offer %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item ats-dropdown__item--primary" type="button"
+                                        data-open-offer-modal
+                                        data-application-id="{{ app.id }}"
+                                        data-status-url="{{ app.status_url }}"
+                                        data-candidate="{{ app.candidate }}"
+                                        data-vacancy="{{ app.vacancy_title }}">
+                                    <i class="bi bi-envelope"></i> Send Offer
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_offer_accept %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item ats-dropdown__item--success" type="button"
+                                        data-quick-status
+                                        data-status-url="{{ app.status_url }}"
+                                        data-next-status="offer_accepted"
+                                        data-candidate="{{ app.candidate }}">
+                                    <i class="bi bi-check-circle"></i> Mark Accepted
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_offer_decline %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item ats-dropdown__item--danger" type="button"
+                                        data-quick-status
+                                        data-status-url="{{ app.status_url }}"
+                                        data-next-status="offer_declined"
+                                        data-candidate="{{ app.candidate }}">
+                                    <i class="bi bi-x-circle"></i> Mark Declined
+                                </button>
+                            </li>
+                            {% endif %}
+                            
+                            {% if app.permissions.can_contact %}
+                            <li>
+                                <button class="dropdown-item ats-dropdown__item" type="button"
+                                        data-open-contact-modal
+                                        data-candidate="{{ app.candidate }}"
+                                        data-email="{{ app.email }}"
+                                        data-phone="{{ app.phone }}">
+                                    <i class="bi bi-envelope"></i> Contact Candidate
+                                </button>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {# Meta Row #}
+            <div class="ats-card__meta-row">
+                {% if app.qualification_label %}
+                <span class="ats-card__meta-item" title="Qualification">
+                    <i class="bi bi-mortarboard"></i> {{ app.qualification_label }}
+                </span>
+                {% endif %}
+                <span class="ats-card__meta-item" title="Experience">
+                    <i class="bi bi-briefcase"></i> {{ app.experience_label }}
+                </span>
+                {% if app.location_label != "Not specified" %}
+                <span class="ats-card__meta-item" title="Location">
+                    <i class="bi bi-geo-alt"></i> {{ app.location_label }}
+                </span>
+                {% endif %}
+                {% if app.college_rating %}
+                <span class="ats-card__meta-item ats-card__rating" title="Your rating">
+                    {% for i in "12345" %}
+                    <i class="bi bi-star{% if forloop.counter <= app.college_rating %}-fill text-warning{% endif %}"></i>
+                    {% endfor %}
+                </span>
+                {% endif %}
+            </div>
+
+            {# Bottom Row: Skills + Date #}
+            <div class="ats-card__footer-row">
+                <div class="ats-card__skills">
+                    {% for skill in app.skills %}
+                    <span class="ats-skill-chip">{{ skill }}</span>
+                    {% endfor %}
+                    {% if not app.cv_available %}
+                    <span class="ats-skill-chip ats-skill-chip--warn" title="No resume uploaded">
+                        <i class="bi bi-exclamation-triangle"></i> No Resume
+                    </span>
+                    {% endif %}
+                </div>
+                <span class="ats-card__date" title="Applied date">
+                    <i class="bi bi-calendar3"></i> {{ app.applied_label }}
+                </span>
+            </div>
+        </div>
+
+    </article>
+    {% endfor %}
+</div>
+
+{% if applications_page.pagination.total_pages > 1 %}
+<nav class="ats-pagination" aria-label="Pagination">
+    {% if applications_page.pagination.has_previous %}
+    <a class="ats-pagination__btn" href="{{ pagination_prev_query }}">
+        <i class="bi bi-chevron-left"></i> Previous
+    </a>
+    {% else %}
+    <span class="ats-pagination__btn ats-pagination__btn--disabled">
+        <i class="bi bi-chevron-left"></i> Previous
+    </span>
+    {% endif %}
+    <span class="ats-pagination__info">
+        Page {{ applications_page.pagination.page }} of {{ applications_page.pagination.total_pages }}
+    </span>
+    {% if applications_page.pagination.has_next %}
+    <a class="ats-pagination__btn" href="{{ pagination_next_query }}">
+        Next <i class="bi bi-chevron-right"></i>
+    </a>
+    {% else %}
+    <span class="ats-pagination__btn ats-pagination__btn--disabled">
+        Next <i class="bi bi-chevron-right"></i>
+    </span>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+{# Empty state #}
+<div class="ats-empty-state">
+    <i class="bi bi-inbox ats-empty-state__icon"></i>
+    <h3 class="ats-empty-state__title">No Applications Found</h3>
+    <p class="ats-empty-state__desc">
+        {% if applications_page.filters.q or applications_page.filters.status or applications_page.filters.vacancy_id %}
+        No applications match your current filters. <a href="{% portal_url 'college_applications' %}">Clear filters</a>
+        {% else %}
+        Your published vacancies haven't received any applications yet.
+        {% endif %}
+    </p>
+    {% if not applications_page.filters.q and not applications_page.filters.status %}
+    <div class="d-flex gap-3 justify-content-center mt-3">
+        <a href="{% portal_url 'college_vacancy_create' %}" class="icd-btn icd-btn--primary px-4 rounded-pill">Post Vacancy</a>
+        <a href="{% portal_url 'college_vacancies' %}" class="icd-btn icd-btn--soft px-4 rounded-pill">Manage Vacancies</a>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="ats-empty-state">
+    <i class="bi bi-inbox ats-empty-state__icon"></i>
+    <h3 class="ats-empty-state__title">No Applications Yet</h3>
+    <p class="ats-empty-state__desc">Your published vacancies haven't received any applications yet. Consider sharing your vacancies to attract more candidates.</p>
+    <div class="d-flex gap-3 justify-content-center mt-3">
+        <a href="{% portal_url 'college_vacancy_create' %}" class="icd-btn icd-btn--primary px-4 rounded-pill">Post Vacancy</a>
+        <a href="{% portal_url 'college_vacancies' %}" class="icd-btn icd-btn--soft px-4 rounded-pill">Manage Vacancies</a>
+    </div>
+</div>
+{% endif %}
+
+{# ── Resume Modal (existing, unchanged) ── #}
+<div class="modal fade" id="icdResumeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content icd-resume-modal">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-0" id="icdResumeModalTitle">Candidate Resume</h5>
+                    <p class="text-muted small mb-0" id="icdResumeModalSubtitle"></p>
+                </div>
+                <div class="d-flex flex-wrap gap-2 ms-auto me-2" id="icdResumeToolbar">
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" id="icdResumeZoomOut" title="Zoom out">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" id="icdResumeZoomIn" title="Zoom in">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" id="icdResumeFullscreen" title="Fullscreen">
+                        <i class="bi bi-fullscreen"></i>
+                    </button>
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" id="icdResumePrint" title="Print">
+                        <i class="bi bi-printer"></i>
+                    </button>
+                    <a href="#" class="icd-btn icd-btn--soft icd-btn--sm" id="icdResumeDownload" target="_blank" rel="noopener noreferrer">
+                        Download
+                    </a>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 position-relative">
+                <div id="icdResumeUnsupported" class="icd-empty py-5" hidden>
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h3>Preview unavailable for this file type</h3>
+                    <p id="icdResumeUnsupportedText">Use download to open the document in your preferred editor.</p>
+                    <a href="#" class="icd-btn icd-btn--primary mt-2" id="icdResumeUnsupportedDownload" target="_blank" rel="noopener noreferrer">Download Resume</a>
+                </div>
+                <div id="icdResumeMissing" class="icd-empty py-5" hidden>
+                    <i class="bi bi-file-earmark-x"></i>
+                    <h3>Resume not available</h3>
+                    <p>The candidate has not uploaded a resume for this application.</p>
+                </div>
+                <div class="icd-resume-viewport" id="icdResumeViewport">
+                    <iframe id="icdResumeFrame" class="icd-resume-frame" title="Resume preview"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Notes Modal (new) ── #}
+<div class="modal fade" id="icdNotesModal" tabindex="-1" aria-hidden="true" aria-labelledby="icdNotesModalTitle">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold" id="icdNotesModalTitle">Recruiter Notes</h5>
+                    <p class="text-muted small mb-0" id="icdNotesModalSubtitle"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <label class="ats-notes-label fw-semibold mb-1">Your Rating</label>
+                <select class="form-select form-select-sm mb-3" id="icdNotesRating">
+                    <option value="">No rating</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Outstanding</option>
+                    <option value="4">⭐⭐⭐⭐ Strong</option>
+                    <option value="3">⭐⭐⭐ Average</option>
+                    <option value="2">⭐⭐ Weak</option>
+                    <option value="1">⭐ Not suitable</option>
+                </select>
+                <label class="ats-notes-label fw-semibold mb-1" for="icdNotesCollege">Interview Notes</label>
+                <textarea id="icdNotesCollege" class="form-control mb-3" rows="3" placeholder="Notes about the candidate for this position…"></textarea>
+                <label class="ats-notes-label fw-semibold mb-1" for="icdNotesInternal">Internal Remarks</label>
+                <textarea id="icdNotesInternal" class="form-control" rows="2" placeholder="Private notes visible only to recruiters…"></textarea>
+                <p class="text-danger small mt-2 mb-0" id="icdNotesError" hidden></p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="icd-btn icd-btn--soft rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--primary rounded-pill px-4" id="icdNotesSubmit">Save Notes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Offer Modal (existing, preserved) ── #}
+<div class="modal fade" id="icdOfferModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="icdOfferModalTitle">Send Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3" id="icdOfferCandidate"></p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="icdOfferLetterUrl">Offer Letter URL</label>
+                    <input type="url" id="icdOfferLetterUrl" class="form-control" placeholder="https://.../offer-letter.pdf">
+                </div>
+                <div>
+                    <label class="form-label fw-semibold" for="icdOfferNotes">Offer Notes</label>
+                    <textarea id="icdOfferNotes" class="form-control" rows="3" placeholder="Offer CTC, joining conditions, deadlines…"></textarea>
+                </div>
+                <p class="text-danger small mt-2 mb-0" id="icdOfferError" hidden></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="icd-btn icd-btn--soft rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--primary rounded-pill px-4" id="icdOfferSubmit">Release Offer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Schedule Interview Modal (new) ── #}
+<div class="modal fade" id="icdScheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold">Schedule Interview</h5>
+                    <p class="text-muted small mb-0" id="icdScheduleSubtitle"></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="icdScheduleForm">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold mb-1">Interview Type</label>
+                            <select class="form-select" id="icdSchedType" required>
+                                <option value="TECHNICAL">Technical Round</option>
+                                <option value="HR">HR Round</option>
+                                <option value="DEAN">Dean / HOD Round</option>
+                                <option value="MANAGEMENT">Management Round</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold mb-1">Mode</label>
+                            <select class="form-select" id="icdSchedMode" required>
+                                <option value="ONLINE">Online</option>
+                                <option value="OFFLINE">Offline (In-Person)</option>
+                                <option value="PHONE">Phone Call</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold mb-1">Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="icdSchedDate" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold mb-1">Duration (min)</label>
+                            <input type="number" class="form-control" id="icdSchedDuration" value="45" min="15" step="15" required>
+                        </div>
+                    </div>
+
+                    <div id="icdSchedOnlineFields">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold mb-1">Platform</label>
+                                <select class="form-select" id="icdSchedPlatform">
+                                    <option value="GOOGLE_MEET">Google Meet</option>
+                                    <option value="ZOOM">Zoom</option>
+                                    <option value="TEAMS">MS Teams</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label fw-semibold mb-1">Meeting Link</label>
+                                <input type="url" class="form-control" id="icdSchedLink" placeholder="https://...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="icdSchedOfflineFields" class="mb-3" style="display: none;">
+                        <label class="form-label fw-semibold mb-1">Location / Address</label>
+                        <input type="text" class="form-control" id="icdSchedLocation" placeholder="Campus Address, Room No...">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-1">Interviewer Name (Optional)</label>
+                        <input type="text" class="form-control" id="icdSchedInterviewer" placeholder="Name of the interviewer">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-1">Instructions for Candidate</label>
+                        <textarea class="form-control" id="icdSchedNotes" rows="2" placeholder="Any specific instructions (e.g. bring original certificates)"></textarea>
+                    </div>
+
+                    <p class="text-danger small mt-2 mb-0" id="icdSchedError" hidden></p>
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="icd-btn icd-btn--soft rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--primary rounded-pill px-4" id="icdSchedSubmit">Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal fade" id="icdProfileModal" tabindex="-1" aria-labelledby="icdProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow border-0" id="icdProfileModalContent">
+            <!-- Loaded via AJAX -->
+            <div class="modal-body text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-3 mb-0">Loading Candidate Profile...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shortlist Confirmation Modal -->
+<div class="modal fade" id="icdShortlistModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Shortlist Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <p>Are you sure you want to shortlist <strong id="icdShortlistCandidateName"></strong> for the <strong id="icdShortlistVacancyTitle"></strong> role?</p>
+                <p class="text-muted small mb-0">This will advance the candidate to the Shortlisted phase, enabling interview scheduling.</p>
+                <p class="text-danger small mt-2 mb-0" id="icdShortlistError" hidden></p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="icd-btn icd-btn--soft rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--primary rounded-pill px-4" id="icdShortlistSubmit">Confirm Shortlist</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Candidate Modal -->
+<div class="modal fade" id="icdRejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">Reject Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <p>You are about to reject <strong id="icdRejectCandidateName"></strong> for the <strong id="icdRejectVacancyTitle"></strong> role.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold mb-1">Rejection Reason (Optional)</label>
+                    <select class="form-select mb-2" id="icdRejectReasonCode">
+                        <option value="">Select a reason...</option>
+                        <option value="NOT_QUALIFIED">Does not meet qualifications</option>
+                        <option value="NO_EXPERIENCE">Insufficient experience</option>
+                        <option value="OTHER_CANDIDATE">Moved forward with another candidate</option>
+                        <option value="SALARY_EXPECTATION">Salary expectations mismatch</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                    <textarea class="form-control" id="icdRejectNotes" rows="2" placeholder="Internal notes about this rejection..."></textarea>
+                </div>
+                
+                <p class="text-danger small mt-2 mb-0" id="icdRejectError" hidden></p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="icd-btn icd-btn--soft rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-btn icd-btn--danger rounded-pill px-4" id="icdRejectSubmit">Confirm Rejection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Candidate Modal -->
+<div class="modal fade" id="icdContactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Contact Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light text-primary mb-3" style="width:64px;height:64px;font-size:2rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1" id="icdContactCandidateName"></h5>
+                    <p class="text-muted small">You can contact the candidate directly using the details below.</p>
+                </div>
+                
+                <div class="d-flex flex-column gap-3">
+                    <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                        <div class="text-start">
+                            <span class="d-block small text-muted mb-1"><i class="bi bi-envelope"></i> Email Address</span>
+                            <span class="fw-medium" id="icdContactEmail"></span>
+                        </div>
+                        <a href="#" class="icd-btn icd-btn--primary icd-btn--sm rounded-pill" id="icdContactEmailBtn">Copy</a>
+                    </div>
+                    
+                    <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                        <div class="text-start">
+                            <span class="d-block small text-muted mb-1"><i class="bi bi-telephone"></i> Phone Number</span>
+                            <span class="fw-medium" id="icdContactPhone"></span>
+                        </div>
+                        <a href="#" class="icd-btn icd-btn--primary icd-btn--sm rounded-pill" id="icdContactPhoneBtn">Copy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

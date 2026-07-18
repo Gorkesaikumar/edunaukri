@@ -1,0 +1,42 @@
+<tr data-vacancy-id="{{ vacancy.id }}">
+    <td>
+        <strong>{{ vacancy.title }}</strong>
+        <div class="icd-list__meta">{{ vacancy.employment_type }} • {{ vacancy.work_type }}</div>
+    </td>
+    <td>{{ vacancy.department }}</td>
+    <td>{{ vacancy.location }}</td>
+    <td><span class="icd-badge icd-badge--{{ vacancy.status_tone }}">{{ vacancy.status_label }}</span></td>
+    <td>
+        <a href="{{ vacancy.applications_url }}">{{ vacancy.application_count }}</a>
+    </td>
+    <td>{{ vacancy.published_label }}</td>
+    <td class="text-end">
+        <div class="icd-actions">
+            <a href="{{ vacancy.applications_url }}" class="icd-btn icd-btn--soft icd-btn--sm">Applications</a>
+            {% if vacancy.can_edit %}
+            <a href="{{ vacancy.edit_url }}" class="icd-btn icd-btn--soft icd-btn--sm">Edit</a>
+            {% endif %}
+            {% if vacancy.can_publish %}
+            <button type="button" class="icd-btn icd-btn--primary icd-btn--sm" data-vacancy-action="publish" data-url="{{ vacancy.publish_url }}">Publish</button>
+            {% endif %}
+            {% if vacancy.can_pause %}
+            <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" data-vacancy-action="pause" data-url="{{ vacancy.pause_url }}">Pause</button>
+            {% endif %}
+            {% if vacancy.can_reopen %}
+            <button type="button" class="icd-btn icd-btn--primary icd-btn--sm" data-vacancy-action="reopen" data-url="{{ vacancy.reopen_url }}">Reopen</button>
+            {% endif %}
+            {% if vacancy.can_close %}
+            <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" data-vacancy-action="close" data-url="{{ vacancy.close_url }}">Close</button>
+            {% endif %}
+            {% if vacancy.can_duplicate %}
+            <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" data-vacancy-action="duplicate" data-url="{{ vacancy.duplicate_url }}">Duplicate</button>
+            {% endif %}
+            {% if vacancy.can_archive %}
+            <button type="button" class="icd-btn icd-btn--soft icd-btn--sm" data-vacancy-action="archive" data-url="{{ vacancy.archive_url }}">Archive</button>
+            {% endif %}
+            {% if vacancy.can_delete %}
+            <button type="button" class="icd-btn icd-btn--soft icd-btn--sm text-danger" data-vacancy-action="delete" data-url="{{ vacancy.delete_url }}">Delete</button>
+            {% endif %}
+        </div>
+    </td>
+</tr>

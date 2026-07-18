@@ -1,0 +1,288 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- Configuration Form (Left Side) -->
+    <div class="lg:col-span-5 space-y-4">
+        <form id="invoiceConfigForm" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Business Details -->
+            <div class="bg-white border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-5 py-4 border-b border-outline-variant/20 bg-surface-container/30">
+                    <h2 class="text-sm font-bold text-on-surface">Business Details</h2>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Your official billing entity information.</p>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Business Name</label>
+                        {{ form.business_name }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Invoice Header</label>
+                        {{ form.invoice_header }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Business Address</label>
+                        {{ form.business_address }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">GSTIN</label>
+                            {{ form.gstin }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">PAN</label>
+                            {{ form.pan }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Phone</label>
+                            {{ form.phone }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Email</label>
+                            {{ form.email }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Website URL</label>
+                        {{ form.website }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing & Payment Configuration -->
+            <div class="bg-white border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-5 py-4 border-b border-outline-variant/20 bg-surface-container/30">
+                    <h2 class="text-sm font-bold text-on-surface">Billing & Payment Configuration</h2>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Recruitment invoices are calculated using the candidate's finalized Annual CTC.</p>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Pricing Method</label>
+                        {{ form.pricing_method }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Service Charge %</label>
+                            {{ form.service_charge_percentage }}
+                            <p class="text-[10px] text-on-surface-variant mt-1">Current recruitment fee charged on the candidate's Annual CTC.</p>
+                        </div>
+                        <div class="pt-5">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                {{ form.gst_enabled }}
+                                <span class="text-xs font-semibold text-on-surface">GST Enabled</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Fixed Recruitment Fee</label>
+                            {{ form.fixed_recruitment_fee }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">GST Rate %</label>
+                            {{ form.gst_percentage }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Tax Calculation Mode</label>
+                            {{ form.tax_calculation_mode }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface mb-1">Payment Due Days</label>
+                            {{ form.payment_due_days }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Currency</label>
+                        {{ form.currency }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content & Messages -->
+            <div class="bg-white border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-5 py-4 border-b border-outline-variant/20 bg-surface-container/30">
+                    <h2 class="text-sm font-bold text-on-surface">Content & Messages</h2>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Customize the text appearing on invoices.</p>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Thank You Message</label>
+                        {{ form.thank_you_message }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Payment Notes</label>
+                        {{ form.payment_notes }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Terms & Conditions</label>
+                        {{ form.terms_conditions }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface mb-1">Footer Text</label>
+                        {{ form.footer_text }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visibility Toggles -->
+            <div class="bg-white border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm">
+                <div class="px-5 py-4 border-b border-outline-variant/20 bg-surface-container/30">
+                    <h2 class="text-sm font-bold text-on-surface">Visibility Toggles</h2>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Control which elements are displayed.</p>
+                </div>
+                <div class="p-5 grid grid-cols-2 gap-4">
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_gstin }}
+                            <span class="text-xs font-semibold text-on-surface">Show GSTIN</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_pan }}
+                            <span class="text-xs font-semibold text-on-surface">Show PAN</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_phone }}
+                            <span class="text-xs font-semibold text-on-surface">Show Phone</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_email }}
+                            <span class="text-xs font-semibold text-on-surface">Show Email</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_website }}
+                            <span class="text-xs font-semibold text-on-surface">Show Website</span>
+                        </label>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_coupon_discount }}
+                            <span class="text-xs font-semibold text-on-surface">Show Discount</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_tax_breakdown }}
+                            <span class="text-xs font-semibold text-on-surface">Show Tax Breakdown</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_payment_method }}
+                            <span class="text-xs font-semibold text-on-surface">Show Payment Method</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_transaction_id }}
+                            <span class="text-xs font-semibold text-on-surface">Show Transaction ID</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            {{ form.show_terms }}
+                            <span class="text-xs font-semibold text-on-surface">Show Terms</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-2 pb-6">
+                <button type="button" class="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2" onclick="saveConfiguration()">
+                    <span class="material-symbols-outlined !text-sm">save</span>
+                    Save Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Live Preview (Right Side) -->
+    <div class="lg:col-span-7 sticky top-20">
+        <div class="bg-white border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm flex flex-col h-[calc(100vh-120px)]">
+            <div class="px-5 py-3 border-b border-outline-variant/20 bg-surface-container/30 flex justify-between items-center shrink-0">
+                <h2 class="text-sm font-bold text-on-surface">Live Preview</h2>
+                <span class="text-[10px] font-bold text-primary bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 uppercase tracking-wider">Auto-updating</span>
+            </div>
+            <div class="flex-1 bg-gray-100 relative">
+                <div id="previewLoader" class="hidden absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <iframe id="invoicePreviewIframe" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let previewTimeout;
+    const form = document.getElementById('invoiceConfigForm');
+    const iframe = document.getElementById('invoicePreviewIframe');
+
+    function updatePreview() {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Handle unchecked checkboxes
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            data[cb.name] = cb.checked;
+        });
+
+        fetch("{% url 'super_admin_invoice_configuration_preview' user_uuid=header_user.user_uuid %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.text())
+        .then(html => {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+        });
+    }
+
+    form.addEventListener('input', () => {
+        clearTimeout(previewTimeout);
+        previewTimeout = setTimeout(updatePreview, 500);
+    });
+
+    form.addEventListener('change', () => {
+        clearTimeout(previewTimeout);
+        previewTimeout = setTimeout(updatePreview, 500);
+    });
+
+    async function saveConfiguration() {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            data[cb.name] = cb.checked;
+        });
+
+        try {
+            const res = await fetch("{% url 'super_admin_invoice_configuration' user_uuid=header_user.user_uuid %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: new URLSearchParams(formData)
+            });
+            const json = await res.json();
+            if (json.success) {
+                EduNotify.success("Invoice configuration saved successfully.");
+            } else {
+                EduNotify.error("Failed to save configuration.");
+            }
+        } catch (e) {
+            EduNotify.error("An error occurred.");
+        }
+    }
+
+    // Initial preview load
+    updatePreview();
+</script>
+{% endblock %}

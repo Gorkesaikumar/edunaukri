@@ -1,0 +1,530 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}Institution Profile | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+/* Premium Dashboard Profile Styles */
+.icd-profile-header {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.icd-profile-banner {
+    height: 220px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #eef2ff 100%);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.icd-banner-edit {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.icd-banner-edit:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+.icd-profile-info-bar {
+    padding: 0 2.5rem 2.5rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: -56px;
+}
+.icd-profile-brand {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.75rem;
+}
+.icd-profile-avatar-wrap {
+    position: relative;
+    z-index: 2;
+}
+.icd-profile-avatar {
+    width: 140px;
+    height: 140px;
+    background: #fff;
+    border-radius: 12px;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    object-fit: contain;
+    padding: 0.75rem;
+}
+.icd-avatar-placeholder {
+    width: 140px;
+    height: 140px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: #cbd5e1;
+}
+.icd-avatar-edit {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    background: #4361ee;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.icd-avatar-edit:hover { transform: scale(1.1) rotate(5deg); }
+.icd-profile-titles h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 0.4rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.02em;
+}
+.icd-profile-titles p {
+    color: #64748b;
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+.icd-profile-stats {
+    display: flex;
+    gap: 2.5rem;
+    background: #f8fafc;
+    padding: 1.25rem 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+.icd-stat-item {
+    text-align: center;
+}
+.icd-stat-item strong {
+    display: block;
+    font-size: 1.5rem;
+    color: #0f172a;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.icd-stat-item span {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Forms and Cards */
+.icd-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+}
+@media (max-width: 1024px) {
+    .icd-grid-layout { grid-template-columns: 1fr; }
+}
+.icd-section-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 1.25rem;
+}
+.icd-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.icd-section-title i { color: #4361ee; background: #eef2ff; padding: 0.5rem; border-radius: 8px; font-size: 1.1rem; }
+
+.form-label {
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+.form-control, .form-select {
+    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.9rem;
+    color: #0f172a;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #4361ee;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+}
+
+/* Completion Widget */
+.icd-completion-widget {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 1.25rem;
+}
+.icd-completion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.icd-completion-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+.icd-completion-header span {
+    font-weight: 800;
+    color: #4361ee;
+    font-size: 1rem;
+}
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #f1f5f9;
+    margin-bottom: 1.5rem;
+}
+.progress-bar {
+    background: linear-gradient(90deg, #4361ee, #4cc9f0);
+    border-radius: 4px;
+}
+.icd-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.icd-checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+}
+.icd-checklist-item:last-child { border-bottom: none; }
+.icd-checklist-item i {
+    font-size: 1.1rem;
+}
+.icd-checklist-item.done i {
+    color: #10b981;
+}
+.icd-checklist-item.pending i {
+    color: #cbd5e1;
+}
+
+.icd-toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1050;
+}
+
+#imageUploadInput { display: none; }
+#bannerUploadInput { display: none; }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+{% if not profile_page.has_institution %}
+<div class="icd-card icd-empty-state text-center py-5">
+    <i class="bi bi-building display-4 text-muted mb-3"></i>
+    <h2>No institution linked</h2>
+    <p class="text-muted">Create your institution through the onboarding flow to unlock hiring features.</p>
+</div>
+{% else %}
+
+<div id="icdProfilePage" data-api-url="{{ profile_page.api_urls.institution }}" data-image-api-url="{% portal_url 'college_institution_image_api' image_type='placeholder' %}" data-csrf="{{ csrf_token }}">
+    
+    <!-- Header Area -->
+    <div class="icd-profile-header">
+        <div class="icd-profile-banner" id="bannerPreview" {% if profile_page.institution.banner_url %}style="background-image: url('{{ profile_page.institution.banner_url }}');"{% endif %}>
+            <button type="button" class="icd-banner-edit" id="btnEditBanner">
+                <i class="bi bi-camera"></i> Edit Banner
+            </button>
+            <input type="file" id="bannerUploadInput" accept="image/jpeg,image/png,image/webp">
+        </div>
+        <div class="icd-profile-info-bar">
+            <div class="icd-profile-brand">
+                <div class="icd-profile-avatar-wrap">
+                    {% if profile_page.institution.logo_url %}
+                    <img src="{{ profile_page.institution.logo_url }}" id="logoPreviewImg" alt="Logo" class="icd-profile-avatar">
+                    {% else %}
+                    <div class="icd-avatar-placeholder" id="logoPreviewImg">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    {% endif %}
+                    <button type="button" class="icd-avatar-edit" id="btnEditLogo">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <input type="file" id="imageUploadInput" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <div class="icd-profile-titles pb-2">
+                    <h1>
+                        {{ profile_page.institution.name }}
+                        {% if profile_page.institution.is_verified %}
+                        <i class="bi bi-patch-check-fill text-primary" title="Verified Institution"></i>
+                        {% endif %}
+                    </h1>
+                    <p>{{ profile_page.institution.city }}, {{ profile_page.institution.country }} • {{ profile_page.institution.member_role_label }}</p>
+                </div>
+            </div>
+            
+            <div class="icd-profile-stats">
+                <div class="icd-stat-item">
+                    <strong>{{ profile_page.institution.stats.vacancies|default:0 }}</strong>
+                    <span>Vacancies</span>
+                </div>
+                <div class="icd-stat-item">
+                    <strong>{{ profile_page.institution.stats.applications|default:0 }}</strong>
+                    <span>Applications</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="icd-grid-layout">
+        <!-- Forms Column -->
+        <div class="icd-form-column">
+            <form id="icdInstitutionForm">
+                
+                <!-- General Info -->
+                <section class="icd-section-card">
+                    <h2 class="icd-section-title"><i class="bi bi-info-circle"></i> General Information</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Institution Name</label>
+                            <input class="form-control bg-light" name="name" value="{{ profile_page.institution.name }}" disabled>
+                            <small class="text-muted">Contact support to change name.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Legal Entity Name</label>
+                            <input class="form-control" name="legal_name" value="{{ profile_page.institution.legal_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Institution Type</label>
+                            <select class="form-select" name="institution_type">
+                                <option value="">Select Type</option>
+                                <option value="university" {% if profile_page.institution.institution_type == 'university' %}selected{% endif %}>University</option>
+                                <option value="college" {% if profile_page.institution.institution_type == 'college' %}selected{% endif %}>College</option>
+                                <option value="school" {% if profile_page.institution.institution_type == 'school' %}selected{% endif %}>School</option>
+                                <option value="institute" {% if profile_page.institution.institution_type == 'institute' %}selected{% endif %}>Institute</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ownership Type</label>
+                            <select class="form-select" name="ownership_type">
+                                <option value="">Select Ownership</option>
+                                <option value="public" {% if profile_page.institution.ownership_type == 'public' %}selected{% endif %}>Public / Government</option>
+                                <option value="private" {% if profile_page.institution.ownership_type == 'private' %}selected{% endif %}>Private</option>
+                                <option value="deemed" {% if profile_page.institution.ownership_type == 'deemed' %}selected{% endif %}>Deemed to be University</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="4" placeholder="Brief overview of the institution...">{{ profile_page.institution.description|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Vision</label>
+                            <textarea class="form-control" name="vision" rows="3">{{ profile_page.institution.vision|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mission</label>
+                            <textarea class="form-control" name="mission" rows="3">{{ profile_page.institution.mission|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Accreditation & Stats -->
+                <section class="icd-section-card">
+                    <h2 class="icd-section-title"><i class="bi bi-award"></i> Accreditation & Statistics</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Established Year</label>
+                            <input class="form-control" type="number" name="established_year" value="{{ profile_page.institution.established_year|default:'' }}" min="1800" max="2100">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Accreditation (e.g. AICTE, UGC)</label>
+                            <input class="form-control" name="accreditation" value="{{ profile_page.institution.accreditation|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">NAAC Grade</label>
+                            <select class="form-select" name="naac_grade">
+                                <option value="">Not Applicable</option>
+                                <option value="A++" {% if profile_page.institution.naac_grade == 'A++' %}selected{% endif %}>A++</option>
+                                <option value="A+" {% if profile_page.institution.naac_grade == 'A+' %}selected{% endif %}>A+</option>
+                                <option value="A" {% if profile_page.institution.naac_grade == 'A' %}selected{% endif %}>A</option>
+                                <option value="B++" {% if profile_page.institution.naac_grade == 'B++' %}selected{% endif %}>B++</option>
+                                <option value="B+" {% if profile_page.institution.naac_grade == 'B+' %}selected{% endif %}>B+</option>
+                                <option value="B" {% if profile_page.institution.naac_grade == 'B' %}selected{% endif %}>B</option>
+                                <option value="C" {% if profile_page.institution.naac_grade == 'C' %}selected{% endif %}>C</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Total Faculty</label>
+                            <input class="form-control" type="number" name="number_of_faculty" value="{{ profile_page.institution.number_of_faculty|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Total Students</label>
+                            <input class="form-control" type="number" name="number_of_students" value="{{ profile_page.institution.number_of_students|default:'' }}">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Location & Contact -->
+                <section class="icd-section-card">
+                    <h2 class="icd-section-title"><i class="bi bi-geo-alt"></i> Location & Contact</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Email</label>
+                            <input class="form-control" name="contact_email" type="email" value="{{ profile_page.institution.contact_email|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Phone</label>
+                            <input class="form-control" name="contact_phone" value="{{ profile_page.institution.contact_phone|default:'' }}">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address Line</label>
+                            <input class="form-control" name="address_line" value="{{ profile_page.institution.address_line|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input class="form-control" name="city" value="{{ profile_page.institution.city|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input class="form-control" name="state" value="{{ profile_page.institution.state|default:'' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Pin Code</label>
+                            <input class="form-control" name="pin_code" value="{{ profile_page.institution.pin_code|default:'' }}">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Social Links -->
+                <section class="icd-section-card">
+                    <h2 class="icd-section-title"><i class="bi bi-link-45deg"></i> Social & Web Links</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Official Website</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-globe"></i></span>
+                                <input class="form-control" name="website_url" type="url" value="{{ profile_page.institution.website_url|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">LinkedIn</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-linkedin text-primary"></i></span>
+                                <input class="form-control" name="linkedin_url" type="url" value="{{ profile_page.institution.linkedin_url|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Twitter / X</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-twitter-x"></i></span>
+                                <input class="form-control" name="twitter_url" type="url" value="{{ profile_page.institution.twitter_url|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Facebook</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-facebook text-primary"></i></span>
+                                <input class="form-control" name="facebook_url" type="url" value="{{ profile_page.institution.facebook_url|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="d-flex justify-content-end gap-3 mt-4 mb-5">
+                    <button type="button" class="btn btn-outline-secondary fw-medium px-4" style="border-radius: 5px;" onclick="window.location.reload()">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-medium px-5 d-flex align-items-center gap-2" style="border-radius: 5px; background: #4361ee; border-color: #4361ee;" id="btnSaveProfile">
+                        <span class="spinner-border spinner-border-sm d-none" id="saveSpinner"></span>
+                        <i class="bi bi-check-circle" id="saveIcon"></i> Save Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="icd-sidebar">
+            <div class="icd-completion-widget sticky-top" style="top: 2rem;">
+                <div class="icd-completion-header">
+                    <h3>Profile Completion</h3>
+                    <span id="completionPercentage">{{ profile_page.profile_completion }}%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" id="completionBar" role="progressbar" style="width: {{ profile_page.profile_completion }}%"></div>
+                </div>
+                
+                <ul class="icd-checklist">
+                    {% for item in profile_page.verification_checklist %}
+                    <li class="icd-checklist-item {% if item.done %}done{% else %}pending{% endif %}">
+                        <i class="bi {% if item.done %}bi-check-circle-fill{% else %}bi-circle{% endif %}"></i>
+                        {{ item.label }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container icd-toast-container">
+    <div id="statusToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage">Changes saved successfully.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="{% static 'js/college-profile.js' %}"></script>
+{% endblock %}

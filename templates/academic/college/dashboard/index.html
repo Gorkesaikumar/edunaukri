@@ -1,0 +1,380 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}Institution Dashboard | {{ PLATFORM_NAME }}{% endblock %}
+
+
+{% block dashboard_content %}
+<div id="icdDashboardPage" data-insights-url="{{ insights_url }}">
+    {# Modern Header & Greeting #}
+    <header class="jsd-page-head jsd-page-head__row align-items-center mb-5">
+        <div>
+            <h1 class="jsd-page-head__title">{{ dashboard.greeting }}, {{ dashboard.display_name }} 👋</h1>
+            <p class="jsd-page-head__desc">
+                {{ dashboard.headline }}{% if dashboard.subheadline %} • {{ dashboard.subheadline }}{% endif %}
+            </p>
+        </div>
+        {% if dashboard.quick_actions %}
+        <div class="d-flex gap-2 flex-wrap" aria-label="Quick actions">
+            {% for action in dashboard.quick_actions %}
+            <a href="{{ action.url }}" class="jsd-btn {% if action.tone == 'primary' %}jsd-btn--primary{% else %}jsd-btn--outline{% endif %} px-4 rounded-pill">
+                <i class="bi {{ action.icon }} me-2" aria-hidden="true"></i>
+                {{ action.label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </header>
+
+    {# Profile Completion Banner #}
+    {% if not is_profile_completed %}
+    <div class="alert alert-warning border-warning border-opacity-50 bg-warning bg-opacity-10 rounded-3 d-flex align-items-center mb-4 p-3 shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 text-warning me-3"></i>
+        <div class="flex-grow-1">
+            <h6 class="alert-heading text-dark fw-bold mb-1 fs-6">Your institution profile is incomplete</h6>
+            <p class="mb-0 text-secondary small">You must complete your profile to post and publish faculty vacancies. <strong>{{ dashboard.institution_profile.profile_completion }}% completed.</strong></p>
+        </div>
+        <a href="{% portal_url 'college_profile' %}" class="btn btn-warning btn-sm fw-medium px-3 rounded-pill">Complete Profile</a>
+    </div>
+    {% endif %}
+
+    {# Primary KPI Row #}
+    <section class="icd-stats" id="icdStatsRow" aria-label="Dashboard statistics" data-insights-url="{{ insights_url }}">
+        {% for stat in dashboard.stats %}
+        <article class="jsd-card icd-stat rounded-4 shadow-sm" data-stat-key="{{ stat.key }}">
+            <div class="icd-stat__icon icd-stat__icon--{{ stat.tone }}">
+                <i class="bi {{ stat.icon }}" aria-hidden="true"></i>
+            </div>
+            <div>
+                <p class="icd-stat__label text-muted">{{ stat.label }}</p>
+                <p class="icd-stat__value fs-2 fw-bold text-dark" data-stat-value>{{ stat.value }}</p>
+            </div>
+        </article>
+        {% empty %}
+        <article class="jsd-card icd-empty p-5 text-center w-100">
+            <p class="text-muted">Set up your institution profile to unlock hiring metrics.</p>
+            <a href="{% portal_url 'college_profile' %}" class="jsd-btn jsd-btn--primary mt-3">Set Up Institution</a>
+        </article>
+        {% endfor %}
+    </section>
+
+    {# Secondary KPIs / Overview Stats #}
+    <section class="icd-frd-kpis mt-4" id="icdOverviewStatsGrid">
+        {% for stat in dashboard.overview_stats %}
+        <article class="jsd-card icd-frd-kpi p-4 rounded-4 shadow-sm" data-overview-key="{{ stat.key }}">
+            <p class="icd-frd-kpi__label text-muted mb-1">{{ stat.label }}</p>
+            <p class="icd-frd-kpi__value fs-3 fw-bold text-dark mb-1">{{ stat.value }}</p>
+            <p class="icd-frd-kpi__trend small {% if '+' in stat.trend %}text-success{% else %}text-secondary{% endif %} fw-medium">{{ stat.trend }}</p>
+        </article>
+        {% endfor %}
+    </section>
+
+    {# Institution Profile & Analytics #}
+    <section class="jsd-card rounded-4 shadow-sm mt-4 p-4" id="icdProfilePanel">
+        <div class="icd-section__head mb-4 border-bottom pb-3">
+            <h2 class="fs-5 fw-bold text-dark mb-0">Institution Profile</h2>
+            <a class="jsd-link" href="{% portal_url 'college_profile' %}">Edit Profile</a>
+        </div>
+        <div class="icd-frd-profile mb-4">
+            <p class="fs-5 fw-bold text-dark mb-1">{{ dashboard.institution_profile.name|default:"Institution profile pending" }}</p>
+            <p class="text-muted small mb-3">
+                <i class="bi bi-geo-alt me-1"></i>{{ dashboard.institution_profile.city|default:"City unavailable" }}
+                {% if dashboard.institution_profile.verification_label %} • {{ dashboard.institution_profile.verification_label }}{% endif %}
+            </p>
+            <div class="icd-frd-progress mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted small fw-medium">Profile Completion</span>
+                    <span class="text-primary small fw-bold">{{ dashboard.institution_profile.profile_completion }}%</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 8px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ dashboard.institution_profile.profile_completion }}%;" aria-valuenow="{{ dashboard.institution_profile.profile_completion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge {% if dashboard.institution_profile.verified %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} rounded-pill px-3 py-2 fw-medium border">
+                    <i class="bi {% if dashboard.institution_profile.verified %}bi-check-circle{% else %}bi-exclamation-circle{% endif %} me-1"></i>
+                    {% if dashboard.institution_profile.verified %}Verified{% else %}Verification Pending{% endif %}
+                </span>
+                <span class="badge {% if dashboard.institution_profile.can_publish %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill px-3 py-2 fw-medium border">
+                    <i class="bi bi-megaphone me-1"></i>
+                    {% if dashboard.institution_profile.can_publish %}Can Publish Jobs{% else %}Publishing Restricted{% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="icd-section__head mb-3 mt-4 pt-3 border-top">
+            <h3 class="fs-6 fw-bold text-dark mb-0">Profile Analytics</h3>
+            <a class="jsd-link" href="{% portal_url 'college_analytics' %}">Full Report</a>
+        </div>
+        <div class="icd-frd-analytics">
+            <div class="icd-frd-analytics__item bg-light border-0">
+                <span class="fw-medium">Completion</span>
+                <strong class="text-primary">{{ dashboard.profile_analytics.profile_completion }}%</strong>
+            </div>
+            <div class="icd-frd-analytics__item bg-light border-0">
+                <span class="fw-medium">Active Applications</span>
+                <strong class="text-dark">{{ dashboard.profile_analytics.active_applications }}</strong>
+            </div>
+            <div class="icd-frd-analytics__item bg-light border-0">
+                <span class="fw-medium">Interview Rate</span>
+                <strong class="text-accent">{{ dashboard.profile_analytics.interview_rate }}%</strong>
+            </div>
+            <div class="icd-frd-analytics__item bg-light border-0">
+                <span class="fw-medium">Offer Rate</span>
+                <strong class="text-success">{{ dashboard.profile_analytics.offer_rate }}%</strong>
+            </div>
+        </div>
+    </section>
+
+    {# Bento Layout for Lists #}
+    <div class="icd-bento mt-4">
+        <div class="icd-bento__main">
+            {# Premium Recent Applications #}
+            <section class="icd-section">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <h2 class="fs-4 fw-bold text-dark mb-0">Recent Applications</h2>
+                    <a class="jsd-link" href="{% portal_url 'college_applications' %}">View All <i class="bi bi-arrow-right"></i></a>
+                </div>
+                
+                {% if dashboard.recent_applications %}
+                <div class="d-flex flex-column gap-3">
+                    {% for row in dashboard.recent_applications %}
+                    <article class="jsd-card p-4 shadow-sm rounded-4 border-0 hover-lift transition-all">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h3 class="fs-5 fw-bold text-dark mb-0">{{ row.candidate }}</h3>
+                                    <span class="badge {{ row.status_class }} px-3 py-2 rounded-pill shadow-sm fs-7 fw-medium">{{ row.status_label }}</span>
+                                </div>
+                                <h4 class="fs-6 fw-semibold text-primary mb-1">{{ row.vacancy_title }}</h4>
+                                <div class="d-flex flex-wrap align-items-center gap-3 text-muted small mt-2">
+                                    <span class="fw-medium text-dark"><i class="bi bi-bullseye me-1 text-accent"></i>Match: {{ row.match_score }}%</span>
+                                    <span><i class="bi bi-building me-1"></i>{{ row.department|default:"Dept N/A" }}</span>
+                                    <span><i class="bi bi-calendar3 me-1"></i>Applied {{ row.applied_label }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex flex-column flex-sm-row flex-md-column gap-2 align-items-stretch align-items-md-end mt-2 mt-md-0 border-start-md ps-md-4 pt-3 pt-md-0">
+                                <a href="{{ row.url }}" class="jsd-btn jsd-btn--primary w-100 text-nowrap px-4 rounded-pill shadow-sm">
+                                    <i class="bi bi-person-lines-fill me-2"></i>Review
+                                </a>
+                                <a href="{{ row.list_url }}" class="jsd-btn jsd-btn--outline w-100 text-nowrap px-4 rounded-pill border-secondary text-secondary">
+                                    <i class="bi bi-briefcase me-2"></i>All Applicants
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="jsd-card icd-empty p-5 text-center border-0 bg-light rounded-4">
+                    <i class="bi bi-inbox fs-1 text-muted mb-3 d-block" aria-hidden="true"></i>
+                    <h3 class="fs-5 fw-bold text-dark">No applications yet</h3>
+                    <p class="text-muted">Publish a vacancy to start receiving faculty applications.</p>
+                    <a href="{% portal_url 'college_vacancy_create' %}" class="jsd-btn jsd-btn--primary mt-3 px-4 py-2 rounded-pill shadow-sm">Post Vacancy</a>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <aside class="icd-bento__aside">
+            <section class="icd-section mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2 class="fs-5 fw-bold text-dark mb-0">Active Vacancies</h2>
+                    <a class="jsd-link" href="{% portal_url 'college_vacancies' %}">Manage</a>
+                </div>
+                {% if dashboard.active_vacancies %}
+                <div class="d-flex flex-column gap-2">
+                    {% for vacancy in dashboard.active_vacancies %}
+                    <a href="{{ vacancy.url }}" class="jsd-card text-decoration-none p-3 shadow-sm rounded-4 border-0 hover-lift">
+                        <h3 class="fs-6 fw-bold text-dark mb-1">{{ vacancy.title }}</h3>
+                        <p class="text-muted small mb-1">{{ vacancy.department }} • {{ vacancy.location }}</p>
+                        <p class="text-primary small fw-medium mb-0"><i class="bi bi-people me-1"></i>{{ vacancy.applications_count }} Application{{ vacancy.applications_count|pluralize }}</p>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="jsd-card icd-empty p-4 text-center rounded-4 border-0 bg-light">
+                    <i class="bi bi-mortarboard fs-3 text-muted mb-2 d-block" aria-hidden="true"></i>
+                    <p class="text-muted small mb-0">No published vacancies</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="icd-section mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2 class="fs-5 fw-bold text-dark mb-0">Upcoming Interviews</h2>
+                    <a class="jsd-link" href="{% portal_url 'college_interviews' %}">Calendar</a>
+                </div>
+                {% if dashboard.upcoming_interviews %}
+                <div class="d-flex flex-column gap-2">
+                    {% for item in dashboard.upcoming_interviews %}
+                    <a href="{{ item.application_url }}" class="jsd-card text-decoration-none p-3 shadow-sm rounded-4 border-0 hover-lift border-start border-4 border-accent">
+                        <h3 class="fs-6 fw-bold text-dark mb-1">{{ item.candidate }}</h3>
+                        <p class="text-muted small mb-1">{{ item.vacancy_title }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="badge bg-light text-dark border">{{ item.interview_type }}</span>
+                            <span class="text-primary small fw-bold"><i class="bi bi-clock me-1"></i>{{ item.scheduled_label }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="jsd-card icd-empty p-4 text-center rounded-4 border-0 bg-light">
+                    <p class="text-muted small mb-0">No upcoming interviews scheduled.</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="icd-section">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2 class="fs-5 fw-bold text-dark mb-0">Offer Management</h2>
+                    <a class="jsd-link" href="{{ dashboard.offer_management.offers_url }}">Track Offers</a>
+                </div>
+                <div class="d-flex gap-2 mb-3">
+                    {% for item in dashboard.offer_management.summary %}
+                    <div class="flex-fill bg-light rounded-3 p-2 text-center border">
+                        <span class="d-block text-muted small" style="font-size: 0.7rem;">{{ item.label }}</span>
+                        <strong class="d-block fs-5 text-dark">{{ item.value }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if dashboard.offer_management.recent %}
+                <div class="d-flex flex-column gap-2">
+                    {% for item in dashboard.offer_management.recent %}
+                    <div class="jsd-card p-3 shadow-sm rounded-4 border-0">
+                        <h3 class="fs-6 fw-bold mb-1">
+                            <a href="{{ item.application_url }}" class="text-dark text-decoration-none hover-primary">{{ item.candidate }}</a>
+                        </h3>
+                        <p class="text-muted small mb-2 text-truncate">{{ item.vacancy_title }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{{ item.tone }}-subtle text-{{ item.tone }} rounded-pill px-2 py-1 border border-{{ item.tone }}-subtle">{{ item.status_label }}</span>
+                            <span class="text-muted small" style="font-size: 0.7rem;">{{ item.updated_label }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="jsd-card icd-empty p-4 text-center rounded-4 border-0 bg-light">
+                    <p class="text-muted small mb-0">No offers released yet.</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="icd-section">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h2 class="fs-5 fw-bold text-dark mb-0">Notifications</h2>
+                    <a class="jsd-link" href="{% portal_url 'college_notifications' %}">Open Center</a>
+                </div>
+                <div class="d-flex gap-2 mb-3">
+                    <a href="{% portal_url 'college_messages' %}" class="flex-fill bg-light text-decoration-none rounded-3 p-2 text-center border hover-lift">
+                        <span class="d-block text-muted small" style="font-size: 0.7rem;">Messages</span>
+                        <strong class="d-block fs-5 text-dark">{{ dashboard.messages.total }}</strong>
+                    </a>
+                    <a href="{% portal_url 'college_messages' %}" class="flex-fill bg-primary-subtle text-decoration-none rounded-3 p-2 text-center border border-primary-subtle hover-lift">
+                        <span class="d-block text-primary small" style="font-size: 0.7rem;">Unread</span>
+                        <strong class="d-block fs-5 text-primary">{{ dashboard.messages.unread }}</strong>
+                    </a>
+                </div>
+                {% if dashboard.notifications %}
+                <div class="d-flex flex-column gap-2">
+                    {% for note in dashboard.notifications|slice:":4" %}
+                    <a href="{{ note.url }}" class="jsd-card text-decoration-none p-3 shadow-sm rounded-4 border-0 hover-lift">
+                        <div class="d-flex align-items-start gap-2">
+                            {% if not note.is_read %}
+                            <div class="bg-primary rounded-circle mt-1 flex-shrink-0" style="width: 8px; height: 8px;"></div>
+                            {% endif %}
+                            <div>
+                                <h3 class="fs-6 fw-bold text-dark mb-1">{{ note.title }}</h3>
+                                <p class="text-muted small mb-1">{{ note.body|truncatechars:100 }}</p>
+                                <p class="text-muted small mb-0" style="font-size: 0.7rem;">{{ note.timestamp }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="jsd-card icd-empty p-4 text-center rounded-4 border-0 bg-light">
+                    <p class="text-muted small mb-0">No notifications yet.</p>
+                </div>
+                {% endif %}
+            </section>
+        </aside>
+    </div>
+</div>
+
+{% if dashboard.institution_profile.profile_completion_state.play_celebration %}
+<!-- Success Celebration Overlay -->
+<div id="celebrationOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></div>
+
+<!-- Success Popup Modal -->
+<div class="modal fade" id="completionSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg text-center p-4">
+            <div class="modal-body py-4">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-2">Profile Complete!</h3>
+                <p class="text-secondary mb-4">{{ dashboard.institution_profile.profile_completion_state.celebration_message }}</p>
+                <button type="button" class="btn btn-primary rounded-pill px-5 fw-medium" data-bs-dismiss="modal">Awesome</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if dashboard.institution_profile.profile_completion_state.play_celebration %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endif %}
+<script type="module" src="{% static 'js/institution-dashboard.js' %}"></script>
+<script type="module">
+    {% if dashboard.institution_profile.profile_completion_state.play_celebration %}
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fire confetti
+        var duration = 3000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: ['#4361ee', '#3f37c9', '#4cc9f0']
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: ['#4361ee', '#3f37c9', '#4cc9f0']
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+
+        // Show Modal
+        setTimeout(() => {
+            const modalEl = document.getElementById('completionSuccessModal');
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }, 1000);
+
+        // Mark as shown via API
+        fetch("{{ dashboard.institution_profile.profile_completion_state.mark_animation_url }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            }
+        }).catch(err => console.error("Failed to mark animation as shown", err));
+    });
+    {% endif %}
+</script>
+{% endblock %}

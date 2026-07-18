@@ -1,0 +1,59 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Notifications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Notifications</h1>
+            <p class="fjd-page-head__desc">Your latest alerts, updates, and activity.</p>
+        </div>
+        {% if notifications_page.unread_count %}
+        <form method="post" action="{% portal_url 'professor_notifications_mark_all_read' %}" id="fjdNotifMarkAllForm">
+            {% csrf_token %}
+            <button type="submit" class="fjd-btn fjd-btn--outline">Mark all read</button>
+        </form>
+        {% endif %}
+    </div>
+</header>
+
+{% if notifications_page.notifications %}
+<ul class="fjd-notif-list">
+    {% for note in notifications_page.notifications %}
+    <li class="fjd-card fjd-notif-list__item{% if not note.is_read %} fjd-notif-list__item--unread{% endif %}">
+        <div class="fjd-notification__icon fjd-notification__icon--{{ note.tone }}">
+            <i class="bi {{ note.icon }}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-grow-1">
+            <p class="fjd-notification__title">{{ note.title }}</p>
+            {% if note.body %}<p class="fjd-notification__body">{{ note.body }}</p>{% endif %}
+            <p class="fjd-notification__time">{{ note.created_at }}</p>
+        </div>
+        {% if not note.is_read %}
+        <form method="post" action="{{ note.mark_read_url }}" class="fjd-notif-page-mark-form">
+            {% csrf_token %}
+            <button type="submit" class="fjd-btn fjd-btn--outline">Mark read</button>
+        </form>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+{% if notifications_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Notification pages">
+    {% if notifications_page.page > 1 %}<a class="fjd-page-btn" href="?page={{ notifications_page.page|add:'-1' }}">Previous</a>{% endif %}
+    <span>Page {{ notifications_page.page }} of {{ notifications_page.total_pages }}</span>
+    {% if notifications_page.page < notifications_page.total_pages %}<a class="fjd-page-btn" href="?page={{ notifications_page.page|add:'1' }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="fjd-card fjd-empty">
+    <i class="bi bi-bell"></i>
+    <h2>You're all caught up</h2>
+    <p>New notifications about applications, interviews, and profile views will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

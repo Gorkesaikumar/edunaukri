@@ -1,0 +1,21 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <h1 class="jsd-page-head__title">{{ page_title }}</h1>
+    <p class="jsd-page-head__desc">{{ page_description }}</p>
+</header>
+
+<div class="jsd-jobs-grid">
+    {% for job in recommended_jobs %}
+    {% include "it/jobseeker/partials/job_card.html" with job=job %}
+    {% empty %}
+    <div class="jsd-card jsd-empty">
+        <i class="bi bi-search"></i>
+        <p>No published jobs match your profile yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

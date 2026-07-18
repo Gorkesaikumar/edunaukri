@@ -1,0 +1,104 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}Manage Vacancies | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/college-vacancies.js' %}" defer></script>
+{% endblock %}
+
+{% block dashboard_content %}
+{% if not vacancies_page %}
+<div class="icd-card icd-empty"><p>Unable to load vacancies.</p></div>
+{% else %}
+<header class="icd-section__head icd-page-head">
+    <div>
+        <h1 class="icd-page-head__title">Manage Vacancies</h1>
+        <p class="icd-page-head__desc">Create, publish, and track faculty hiring across your institution.</p>
+    </div>
+    {% if vacancies_page.has_institution %}
+    <a href="{% portal_url 'college_vacancy_create' %}" class="icd-btn icd-btn--primary">
+        <i class="bi bi-file-earmark-plus"></i> Post Vacancy
+    </a>
+    {% endif %}
+</header>
+
+{% if vacancy_created %}
+<div class="alert alert-success">Vacancy draft created successfully.</div>
+{% endif %}
+
+<section class="icd-stats" aria-label="Vacancy summary">
+    <article class="icd-card icd-stat"><p class="icd-stat__label">Total</p><p class="icd-stat__value">{{ vacancies_page.stats.total }}</p></article>
+    <article class="icd-card icd-stat"><p class="icd-stat__label">Published</p><p class="icd-stat__value">{{ vacancies_page.stats.published }}</p></article>
+    <article class="icd-card icd-stat"><p class="icd-stat__label">Paused</p><p class="icd-stat__value">{{ vacancies_page.stats.paused }}</p></article>
+    <article class="icd-card icd-stat"><p class="icd-stat__label">Closed</p><p class="icd-stat__value">{{ vacancies_page.stats.closed }}</p></article>
+</section>
+
+{% if not vacancies_page.has_institution %}
+<div class="alert alert-info">Set up your <a href="{% portal_url 'college_profile' %}">institution profile</a> before posting vacancies.</div>
+{% elif not vacancies_page.can_publish %}
+<div class="alert alert-warning">Complete <a href="{% portal_url 'college_profile' %}">institution verification</a> to publish vacancies to faculty candidates.</div>
+{% endif %}
+
+<form class="icd-filters" method="get" action="{% portal_url 'college_vacancies' %}">
+    <label class="icd-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ vacancies_page.filters.q }}" placeholder="Search title, department, location">
+    </label>
+    <button type="submit" class="icd-btn icd-btn--primary">Search</button>
+</form>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    {% for opt in vacancies_page.status_options %}
+    <a href="?{% if vacancies_page.filters.q %}q={{ vacancies_page.filters.q|urlencode }}&{% endif %}{% if opt.key %}status={{ opt.key }}{% endif %}"
+       class="icd-btn icd-btn--soft icd-btn--sm{% if vacancies_page.filters.status == opt.key %} icd-btn--primary{% endif %}">{{ opt.label }}</a>
+    {% endfor %}
+</div>
+
+<div id="icdVacanciesPage"
+     data-publish-template="{{ vacancies_page.api_urls.publish_template }}"
+     data-pause-template="{{ vacancies_page.api_urls.pause_template }}"
+     data-close-template="{{ vacancies_page.api_urls.close_template }}"
+     data-reopen-template="{{ vacancies_page.api_urls.reopen_template }}"
+     data-duplicate-template="{{ vacancies_page.api_urls.duplicate_template }}"
+     data-archive-template="{{ vacancies_page.api_urls.archive_template }}"
+     data-delete-template="{{ vacancies_page.api_urls.delete_template }}"
+     data-csrf="{{ csrf_token }}">
+
+    <div class="icd-table-wrap icd-card">
+        <table class="icd-table">
+            <thead>
+                <tr>
+                    <th>Vacancy</th>
+                    <th>Department</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Apps</th>
+                    <th>Published</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vacancy in vacancies_page.vacancies %}
+                {% include "academic/college/vacancies/partials/vacancy_row.html" with vacancy=vacancy %}
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-muted">No vacancies in this view.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if vacancies_page.pagination.total_pages > 1 %}
+<nav class="icd-pagination mt-3">
+    {% if vacancies_page.pagination.has_previous %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?page={{ vacancies_page.pagination.page|add:'-1' }}{% if vacancies_page.filters.status %}&status={{ vacancies_page.filters.status }}{% endif %}{% if vacancies_page.filters.q %}&q={{ vacancies_page.filters.q|urlencode }}{% endif %}">Previous</a>
+    {% endif %}
+    <span>Page {{ vacancies_page.pagination.page }} of {{ vacancies_page.pagination.total_pages }}</span>
+    {% if vacancies_page.pagination.has_next %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?page={{ vacancies_page.pagination.page|add:'1' }}{% if vacancies_page.filters.status %}&status={{ vacancies_page.filters.status }}{% endif %}{% if vacancies_page.filters.q %}&q={{ vacancies_page.filters.q|urlencode }}{% endif %}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endif %}
+{% endblock %}

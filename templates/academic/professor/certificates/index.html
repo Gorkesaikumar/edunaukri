@@ -1,0 +1,265 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Certificates | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-certificates.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">Certificate Management Center</h1>
+            <p class="jsd-page-head__desc">Upload, organize, preview, and manage your professional certifications.</p>
+        </div>
+        <button type="button" class="jsd-btn jsd-btn--primary" id="jsdCertOpenUpload">
+            <i class="bi bi-cloud-upload"></i> Upload Certificate
+        </button>
+    </div>
+</header>
+
+{% if cert_page %}
+<section class="jsd-cert-summary">
+    {% for stat in cert_page.summary %}
+    <article class="jsd-cert-stat jsd-cert-stat--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }}"></i>
+        <div>
+            <p class="jsd-cert-stat__value">{{ stat.value }}</p>
+            <p class="jsd-cert-stat__label">{{ stat.label }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="jsd-cert-filters" method="get" id="jsdCertFilters">
+    <label class="jsd-cert-filters__search">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ cert_page.filters.q }}" placeholder="Search name, organization, credential ID…">
+    </label>
+    <select name="category" class="jsd-cert-filters__select">
+        <option value="">All categories</option>
+        {% for value, label in cert_page.categories %}
+        <option value="{{ value }}"{% if cert_page.filters.category == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="status" class="jsd-cert-filters__select">
+        <option value="">All statuses</option>
+        <option value="active"{% if cert_page.filters.status == 'active' %} selected{% endif %}>Active</option>
+        <option value="expiring"{% if cert_page.filters.status == 'expiring' %} selected{% endif %}>Expiring Soon</option>
+        <option value="expired"{% if cert_page.filters.status == 'expired' %} selected{% endif %}>Expired</option>
+        <option value="lifetime"{% if cert_page.filters.status == 'lifetime' %} selected{% endif %}>Lifetime</option>
+        <option value="verified"{% if cert_page.filters.status == 'verified' %} selected{% endif %}>Verified</option>
+    </select>
+    <input type="text" name="organization" value="{{ cert_page.filters.organization }}" placeholder="Issuing organization" class="jsd-cert-filters__input">
+    <button type="submit" class="jsd-btn jsd-btn--primary">Filter</button>
+</form>
+
+<div id="jsdCertPage"
+     data-upload-url="{{ cert_page.upload_api_url }}"
+     data-csrf="{{ csrf_token }}">
+    {% if cert_page.certificates %}
+    <div class="jsd-cert-grid">
+        {% for cert in cert_page.certificates %}
+        {% include "academic/professor/certificates/partials/certificate_card.html" with cert=cert %}
+        {% endfor %}
+    </div>
+    {% if cert_page.total_pages > 1 %}
+    <nav class="jsd-pagination" aria-label="Certificate pages">
+        {% if cert_page.page > 1 %}
+        <a class="jsd-page-btn" href="?page={{ cert_page.page|add:'-1' }}&q={{ cert_page.filters.q|urlencode }}&category={{ cert_page.filters.category|urlencode }}&status={{ cert_page.filters.status|urlencode }}&organization={{ cert_page.filters.organization|urlencode }}">Previous</a>
+        {% endif %}
+        <span>Page {{ cert_page.page }} of {{ cert_page.total_pages }}</span>
+        {% if cert_page.page < cert_page.total_pages %}
+        <a class="jsd-page-btn" href="?page={{ cert_page.page|add:'1' }}&q={{ cert_page.filters.q|urlencode }}&category={{ cert_page.filters.category|urlencode }}&status={{ cert_page.filters.status|urlencode }}&organization={{ cert_page.filters.organization|urlencode }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="jsd-card">
+        <div class="jsd-card__body jsd-cert-empty">
+            <i class="bi bi-award"></i>
+            <h2>No certificates yet</h2>
+            <p>Upload your professional certifications to strengthen your profile and improve job matches.</p>
+            <button type="button" class="jsd-btn jsd-btn--primary mt-2" id="jsdCertEmptyUpload">
+                <i class="bi bi-cloud-upload"></i> Upload Your First Certificate
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{# Upload modal #}
+<div class="modal fade jsd-cert-modal" id="jsdCertUploadModal" tabindex="-1" aria-labelledby="jsdCertUploadTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jsdCertUploadTitle"><i class="bi bi-cloud-upload"></i> Upload Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="jsdCertUploadForm">
+                <div class="modal-body">
+                    <div class="jsd-cert-dropzone" id="jsdCertDropzone" tabindex="0" role="button" aria-label="Upload certificate file">
+                        <i class="bi bi-file-earmark-arrow-up"></i>
+                        <p class="mb-1 fw-semibold">Drag & drop certificate files here</p>
+                        <p class="jsd-cert-dropzone__hint mb-2">PDF, JPG, JPEG, PNG · Max 5 MB each</p>
+                        <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="jsdCertChooseBtn">Choose File</button>
+                        <input type="file" id="jsdCertFileInput" hidden accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                        <p class="jsd-cert-selected" id="jsdCertSelected" hidden></p>
+                        <p class="jsd-cert-error" id="jsdCertUploadError" role="alert" hidden></p>
+                        <div class="jsd-cert-progress" id="jsdCertProgress" hidden>
+                            <div class="jsd-cert-progress__track"><div class="jsd-cert-progress__bar" id="jsdCertProgressBar"></div></div>
+                            <span id="jsdCertProgressText">Uploading…</span>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertName">Certificate Name *</label>
+                            <input type="text" class="form-control" id="jsdCertName" name="name" required maxlength="300">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertOrg">Issuing Organization</label>
+                            <input type="text" class="form-control" id="jsdCertOrg" name="issuing_organization" maxlength="300">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertCategory">Category</label>
+                            <select class="form-select" id="jsdCertCategory" name="category">
+                                {% for value, label in cert_page.categories %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="jsdCertIssue">Issue Date</label>
+                            <input type="date" class="form-control" id="jsdCertIssue" name="issue_date">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="jsdCertExpiry">Expiry Date</label>
+                            <input type="date" class="form-control" id="jsdCertExpiry" name="expiry_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertCredentialId">Credential ID</label>
+                            <input type="text" class="form-control" id="jsdCertCredentialId" name="credential_id" maxlength="200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertCredentialUrl">Credential URL</label>
+                            <input type="url" class="form-control" id="jsdCertCredentialUrl" name="credential_url" placeholder="https://">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="jsd-btn jsd-btn--primary" id="jsdCertSubmitBtn">Upload Certificate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Edit modal #}
+<div class="modal fade jsd-cert-modal" id="jsdCertEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="jsdCertEditForm">
+                <input type="hidden" id="jsdCertEditId">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertEditName">Certificate Name *</label>
+                            <input type="text" class="form-control" id="jsdCertEditName" required maxlength="300">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertEditOrg">Issuing Organization</label>
+                            <input type="text" class="form-control" id="jsdCertEditOrg" maxlength="300">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertEditCategory">Category</label>
+                            <select class="form-select" id="jsdCertEditCategory">
+                                {% for value, label in cert_page.categories %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="jsdCertEditIssue">Issue Date</label>
+                            <input type="date" class="form-control" id="jsdCertEditIssue">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="jsdCertEditExpiry">Expiry Date</label>
+                            <input type="date" class="form-control" id="jsdCertEditExpiry">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertEditCredentialId">Credential ID</label>
+                            <input type="text" class="form-control" id="jsdCertEditCredentialId" maxlength="200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="jsdCertEditCredentialUrl">Credential URL</label>
+                            <input type="url" class="form-control" id="jsdCertEditCredentialUrl">
+                        </div>
+                    </div>
+                    <hr>
+                    <label class="form-label">Replace Certificate File (optional)</label>
+                    <input type="file" class="form-control" id="jsdCertReplaceInput" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                    <p class="jsd-cert-error mt-2" id="jsdCertEditError" role="alert" hidden></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="jsd-btn jsd-btn--primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# Preview modal #}
+<div class="modal fade jsd-cert-modal" id="jsdCertPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jsdCertPreviewTitle"><i class="bi bi-eye"></i> Certificate Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe class="jsd-cert-preview-frame" id="jsdCertPreviewFrame" title="Certificate preview" hidden></iframe>
+                <img class="jsd-cert-preview-img" id="jsdCertPreviewImg" alt="Certificate preview" hidden>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Delete confirm modal #}
+<div class="modal fade jsd-cert-modal" id="jsdCertDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger"><i class="bi bi-trash3"></i> Delete Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="jsdCertDeleteName"></strong>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="jsd-btn jsd-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="jsd-btn jsd-btn--danger" id="jsdCertConfirmDelete">Delete Certificate</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="jsd-card"><div class="jsd-card__body jsd-cert-empty"><p>Complete your profile to manage certificates.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JSD_CERTIFICATES = {
+    csrfToken: "{{ csrf_token|escapejs }}"
+  };
+</script>
+<script src="{% static 'js/jobseeker-certificates.js' %}"></script>
+{% endblock %}

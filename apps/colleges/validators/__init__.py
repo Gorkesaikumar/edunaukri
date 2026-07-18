@@ -1,0 +1,31 @@
+from apps.colleges.validators.college_validators import (
+    validate_accreditation_number,
+    validate_banner_file,
+    validate_branding_file,
+    validate_campus_image_file,
+    validate_established_year,
+    validate_institution_email,
+    validate_institution_phone,
+    validate_institution_website,
+    validate_latitude,
+    validate_logo_file,
+    validate_longitude,
+    validate_postal_code,
+    validate_social_link,
+)
+
+__all__ = [
+    "validate_accreditation_number",
+    "validate_banner_file",
+    "validate_branding_file",
+    "validate_campus_image_file",
+    "validate_established_year",
+    "validate_institution_email",
+    "validate_institution_phone",
+    "validate_institution_website",
+    "validate_latitude",
+    "validate_logo_file",
+    "validate_longitude",
+    "validate_postal_code",
+    "validate_social_link",
+]

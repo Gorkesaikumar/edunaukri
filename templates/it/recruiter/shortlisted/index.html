@@ -1,0 +1,504 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Shortlisted Candidates | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 0.25rem;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        font-size: 1.5rem;
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+        color: #fbbf24;
+    }
+    .candidate-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .candidate-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <h1 class="rcd-section-head__title">Shortlisted Candidates</h1>
+        <p class="mb-0 text-muted">Review and manage shortlisted IT candidates. Schedule and evaluate interview rounds to drive selection.</p>
+    </div>
+</header>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="rcd-bento d-flex align-items-center p-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary me-3 d-flex align-items-center justify-content-center">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">bookmark_check</span>
+            </div>
+            <div>
+                <p class="text-muted small mb-0">Total Shortlisted</p>
+                <h4 class="fw-bold mb-0">{{ pagination.total_count }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form class="rcd-filters mb-4" method="get">
+    <label class="rcd-filters__search w-100 me-2">
+        <span class="material-symbols-outlined">search</span>
+        <input type="search" name="q" value="{{ q }}" placeholder="Search candidate, job, skills...">
+    </label>
+    <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Filter</button>
+</form>
+
+{% if candidates %}
+<div class="row g-4">
+    {% for candidate in candidates %}
+    <div class="col-md-6 col-lg-4">
+        <article class="rcd-bento candidate-card h-100 d-flex flex-column justify-content-between p-4">
+            <div>
+                <div class="d-flex align-items-start justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icd-list-card__avatar-wrap">
+                            {% if candidate.candidate_photo_url %}
+                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.candidate_photo_url }}" alt="{{ candidate.applicant_name }}" style="width: 48px; height: 48px; object-fit: cover;">
+                            {% else %}
+                            <div class="icd-list-card__avatar rounded-circle bg-light d-flex align-items-center justify-content-center fw-semibold text-primary" style="width: 48px; height: 48px;">
+                                {{ candidate.candidate_initials }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold mb-0">{{ candidate.applicant_name }}</h3>
+                            <span class="badge bg-light text-primary border mt-1" style="font-size: 0.75rem;">Shortlisted</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">briefcase</span> Applied for: <strong>{{ candidate.vacancy_title }}</strong></p>
+                    {% if candidate.department %}
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">corporate_fare</span> Dept: {{ candidate.department }}</p>
+                    {% endif %}
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">school</span> Degree: {{ candidate.qualification_label }}</p>
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">calendar_today</span> Applied: {{ candidate.applied_label }}</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                {% if candidate.cv_file_url %}
+                <a href="{{ candidate.cv_file_url }}" target="_blank" class="rcd-btn rcd-btn--soft rcd-btn--xs flex-grow-1 text-center">
+                    Resume
+                </a>
+                {% endif %}
+                <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs flex-grow-1 btn-schedule-interview" 
+                        data-app-id="{{ candidate.id }}" 
+                        data-name="{{ candidate.applicant_name }}"
+                        data-initials="{{ candidate.candidate_initials }}"
+                        data-photo="{{ candidate.candidate_photo_url }}">
+                    Schedule
+                </button>
+                <button type="button" class="rcd-btn rcd-btn--primary rcd-btn--xs flex-grow-1 btn-evaluate-interview" 
+                        data-app-id="{{ candidate.id }}"
+                        data-name="{{ candidate.applicant_name }}"
+                        data-initials="{{ candidate.candidate_initials }}"
+                        data-photo="{{ candidate.candidate_photo_url }}">
+                    Evaluate
+                </button>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+
+{% if pagination.total_pages > 1 %}
+<nav class="rcd-pagination mt-4" aria-label="Shortlisted candidates pagination">
+    {% if pagination.page > 1 %}
+    <a class="rcd-btn rcd-btn--soft rcd-btn--xs" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'-1' }}">Previous</a>
+    {% endif %}
+    <span class="rcd-pagination__page">Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
+    {% if pagination.page < pagination.total_pages %}
+    <a class="rcd-btn rcd-btn--soft rcd-btn--xs" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'1' }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="rcd-bento rcd-empty py-5">
+    <span class="material-symbols-outlined">group_off</span>
+    <h2>No shortlisted candidates</h2>
+    <p>Shortlist candidates from your incoming applications pipeline first.</p>
+</div>
+{% endif %}
+
+{# ── Schedule Interview Modal ── #}
+<div class="modal fade" id="scheduleInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded">
+                    <div id="modal-candidate-avatar" class="icd-list-card__avatar rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 48px; height: 48px;">
+                        --
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0" id="modal-candidate-name">--</h6>
+                        <span class="badge bg-secondary">Awaiting Schedule</span>
+                    </div>
+                </div>
+                <form id="scheduleInterviewForm" class="row g-3">
+                    <input type="hidden" name="application_id" id="modal-application-id">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intDate">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="intDate" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intTime">Time <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="intTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intType">Interview Type / Round</label>
+                        <input type="text" class="form-control" id="intType" placeholder="e.g. Technical Round 1, HR Interview">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intChannel">Mode</label>
+                        <select class="form-select" id="intChannel">
+                            <option value="online">Online Meeting</option>
+                            <option value="offline">Offline / Walk-in</option>
+                            <option value="phone">Phone Call</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold" for="intLink">Meeting Link / Location</label>
+                        <input type="text" class="form-control" id="intLink" placeholder="https://meet.google.com/xyz or Conference Room 4">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intPanel">Interviewer Panel</label>
+                        <input type="text" class="form-control" id="intPanel" placeholder="e.g. Tech Lead, HR Manager">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="intDuration">Duration (mins)</label>
+                        <input type="number" class="form-control" id="intDuration" value="45">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" for="intNotes">Notes / Preparation Guidelines</label>
+                        <textarea class="form-control" id="intNotes" rows="2" placeholder="Bring original documents, laptop for coding round etc."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="btnSubmitSchedule">Schedule Round</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Interview Evaluation Modal ── #}
+<div class="modal fade" id="evaluateInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Interview Evaluation & Decision</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded">
+                    <div id="eval-candidate-avatar" class="icd-list-card__avatar rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 48px; height: 48px;">
+                        --
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0" id="eval-candidate-name">--</h6>
+                        <span class="badge bg-info">Evaluation Round</span>
+                    </div>
+                </div>
+
+                <form id="evaluateForm">
+                    <input type="hidden" name="eval_application_id" id="eval-application-id">
+                    
+                    <div class="row g-4 mb-4">
+                        <!-- Rating Fields -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Technical Rating <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="tech-5" name="technical_rating" value="5"><label for="tech-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="tech-4" name="technical_rating" value="4"><label for="tech-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="tech-3" name="technical_rating" value="3"><label for="tech-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="tech-2" name="technical_rating" value="2"><label for="tech-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="tech-1" name="technical_rating" value="1" required><label for="tech-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Communication Rating <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="comm-5" name="communication_rating" value="5"><label for="comm-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="comm-4" name="communication_rating" value="4"><label for="comm-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="comm-3" name="communication_rating" value="3"><label for="comm-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="comm-2" name="communication_rating" value="2"><label for="comm-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="comm-1" name="communication_rating" value="1" required><label for="comm-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Subject Knowledge <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="sub-5" name="subject_knowledge" value="5"><label for="sub-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="sub-4" name="subject_knowledge" value="4"><label for="sub-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="sub-3" name="subject_knowledge" value="3"><label for="sub-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="sub-2" name="subject_knowledge" value="2"><label for="sub-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="sub-1" name="subject_knowledge" value="1" required><label for="sub-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">IT/Industry Skills <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="ind-5" name="industry_skills" value="5"><label for="ind-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="ind-4" name="industry_skills" value="4"><label for="ind-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="ind-3" name="industry_skills" value="3"><label for="ind-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="ind-2" name="industry_skills" value="2"><label for="ind-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="ind-1" name="industry_skills" value="1" required><label for="ind-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Culture Fit <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="cult-5" name="culture_fit" value="5"><label for="cult-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="cult-4" name="culture_fit" value="4"><label for="cult-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="cult-3" name="culture_fit" value="3"><label for="cult-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="cult-2" name="culture_fit" value="2"><label for="cult-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="cult-1" name="culture_fit" value="1" required><label for="cult-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Overall Rating <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" id="over-5" name="overall_rating" value="5"><label for="over-5" class="bi bi-star-fill"></label>
+                                <input type="radio" id="over-4" name="overall_rating" value="4"><label for="over-4" class="bi bi-star-fill"></label>
+                                <input type="radio" id="over-3" name="overall_rating" value="3"><label for="over-3" class="bi bi-star-fill"></label>
+                                <input type="radio" id="over-2" name="overall_rating" value="2"><label for="over-2" class="bi bi-star-fill"></label>
+                                <input type="radio" id="over-1" name="overall_rating" value="1" required><label for="over-1" class="bi bi-star-fill"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-4">
+                        <label class="form-label fw-semibold" for="evalNotes">Interview Notes / Review <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="evalNotes" rows="3" required placeholder="Describe candidate strengths, weaknesses, coding skills, and recommendation detail..."></textarea>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold" for="evalRecommendation">Final Recommendation <span class="text-danger">*</span></label>
+                        <select class="form-select" id="evalRecommendation" required>
+                            <option value="">-- Choose recommendation --</option>
+                            <option value="select">SELECT</option>
+                            <option value="hold">HOLD</option>
+                            <option value="reject">REJECT</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="btnSubmitEvaluation">Submit Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const scheduleModal = new bootstrap.Modal(document.getElementById("scheduleInterviewModal"));
+    const evaluateModal = new bootstrap.Modal(document.getElementById("evaluateInterviewModal"));
+
+    // Star rating selection
+    document.querySelectorAll('.star-rating label').forEach(label => {
+        label.addEventListener('click', function() {
+            const container = this.closest('.star-rating');
+            container.querySelectorAll('label').forEach(l => l.classList.replace('bi-star-fill', 'bi-star'));
+            this.classList.replace('bi-star', 'bi-star-fill');
+            let prev = this.nextElementSibling;
+            while(prev && prev.tagName === 'LABEL') {
+                prev.classList.replace('bi-star', 'bi-star-fill');
+                prev = prev.nextElementSibling;
+            }
+        });
+    });
+
+    // Schedule Click
+    document.querySelectorAll(".btn-schedule-interview").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const appId = this.dataset.appId;
+            const name = this.dataset.name;
+            const initials = this.dataset.initials;
+            const photo = this.dataset.photo;
+
+            document.getElementById("modal-application-id").value = appId;
+            document.getElementById("modal-candidate-name").textContent = name;
+            
+            const avatarDiv = document.getElementById("modal-candidate-avatar");
+            if (photo && photo !== "None" && photo !== "") {
+                avatarDiv.innerHTML = `<img src="${photo}" class="rounded-circle" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                avatarDiv.textContent = initials || "--";
+            }
+
+            scheduleModal.show();
+        });
+    });
+
+    // Submit Schedule
+    document.getElementById("btnSubmitSchedule").addEventListener("click", function () {
+        const appId = document.getElementById("modal-application-id").value;
+        const urlTemplate = "{{ api_urls.schedule_template }}";
+        const url = urlTemplate.replace("00000000-0000-0000-0000-000000000000", appId);
+
+        const date = document.getElementById("intDate").value;
+        const time = document.getElementById("intTime").value;
+
+        if (!date || !time) {
+            alert("Date and time are required.");
+            return;
+        }
+
+        const scheduled_at = `${date}T${time}:00`;
+        const channel = document.getElementById("intChannel").value;
+        const link = document.getElementById("intLink").value || "";
+
+        const data = {
+            scheduled_at: scheduled_at,
+            interview_type: document.getElementById("intType").value || "Technical Interview",
+            mode: channel === "offline" ? "offline" : "online",
+            meet_url: channel !== "offline" ? link : "",
+            location: channel === "offline" ? link : "",
+            notes: document.getElementById("intNotes").value || "",
+            round_label: document.getElementById("intType").value || "Technical Interview"
+        };
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.error || "An error occurred.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error scheduling interview.");
+        });
+    });
+
+    // Evaluate Click
+    document.querySelectorAll(".btn-evaluate-interview").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const appId = this.dataset.appId;
+            const name = this.dataset.name;
+            const initials = this.dataset.initials;
+            const photo = this.dataset.photo;
+
+            document.getElementById("eval-application-id").value = appId;
+            document.getElementById("eval-candidate-name").textContent = name;
+            
+            const avatarDiv = document.getElementById("eval-candidate-avatar");
+            if (photo && photo !== "None" && photo !== "") {
+                avatarDiv.innerHTML = `<img src="${photo}" class="rounded-circle" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                avatarDiv.textContent = initials || "--";
+            }
+
+            evaluateModal.show();
+        });
+    });
+
+    // Submit Evaluation
+    document.getElementById("btnSubmitEvaluation").addEventListener("click", function () {
+        const appId = document.getElementById("eval-application-id").value;
+        const urlTemplate = "{{ api_urls.complete_template }}";
+        const url = urlTemplate.replace("00000000-0000-0000-0000-000000000000", appId);
+
+        const getVal = (name) => {
+            const checked = document.querySelector(`input[name="${name}"]:checked`);
+            return checked ? parseInt(checked.value) : 1;
+        };
+
+        const rec = document.getElementById("evalRecommendation").value;
+        const notes = document.getElementById("evalNotes").value;
+
+        if (!rec) {
+            alert("Final recommendation is required.");
+            return;
+        }
+        if (!notes) {
+            alert("Interview notes are required.");
+            return;
+        }
+
+        const data = {
+            technical_rating: getVal("technical_rating"),
+            communication_rating: getVal("communication_rating"),
+            subject_knowledge: getVal("subject_knowledge"),
+            industry_skills: getVal("industry_skills"),
+            culture_fit: getVal("culture_fit"),
+            overall_rating: getVal("overall_rating"),
+            notes: notes,
+            recommendation: rec.toUpperCase()
+        };
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.error || "An error occurred.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error submitting evaluation.");
+        });
+    });
+});
+</script>
+{% endblock %}

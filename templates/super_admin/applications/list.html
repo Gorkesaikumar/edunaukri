@@ -1,0 +1,394 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="?domain=it" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_domain == 'it' %}bg-primary text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %}">IT Placements</a>
+    <a href="?domain=faculty" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_domain == 'faculty' %}bg-amber-600 text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %}">Faculty Applications</a>
+    <a href="?export=csv&domain={{ current_domain }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition-all">
+        <span class="material-symbols-outlined !text-sm">download</span> Export CSV
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Controls -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <form method="get" class="flex items-center gap-3 w-full md:w-auto flex-1">
+        <input type="hidden" name="domain" value="{{ current_domain }}">
+        <div class="relative w-full max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant/50 !text-lg">search</span>
+            <input type="text" name="q" value="{{ current_search }}" placeholder="Search candidate name, title, or employer..." class="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Search</button>
+    </form>
+    
+    <div class="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+        <span>Showing <strong class="text-on-surface">{{ applications|length }}</strong> applications</span>
+    </div>
+</div>
+
+<!-- High-Density Applications Registry Table -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Candidate Name</th>
+                    <th class="p-3.5">Target Posting & Organization</th>
+                    <th class="p-3.5">Domain</th>
+                    <th class="p-3.5">Pipeline Status</th>
+                    <th class="p-3.5">Applied Timestamp</th>
+                    <th class="p-3.5 text-right">Audit Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for app in applications %}
+                <tr class="hover:bg-gray-50/80 transition-colors">
+                    <td class="p-3.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg {% if current_domain == 'faculty' %}bg-amber-600{% else %}bg-indigo-600{% endif %} text-white font-extrabold text-[10px] flex items-center justify-center shrink-0">
+                                {{ app.applicant_name_snapshot|slice:":2"|upper|default:"CA" }}
+                            </div>
+                            <div>
+                                <span class="font-bold text-on-surface block">{{ app.applicant_name_snapshot|default:"Anonymous Candidate" }}</span>
+                                <span class="text-[10px] text-on-surface-variant/60 font-mono">ID: {{ app.id|slice:":8" }}...</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3.5">
+                        {% if current_domain == 'faculty' %}
+                        <span class="font-extrabold text-on-surface block">{{ app.vacancy_title_snapshot|default:"Position Application" }}</span>
+                        <span class="text-[11px] text-on-surface-variant/70">{{ app.college_name_snapshot|default:"Institution" }}</span>
+                        {% else %}
+                        <span class="font-extrabold text-on-surface block">{{ app.job_title_snapshot|default:"Position Application" }}</span>
+                        <span class="text-[11px] text-on-surface-variant/70">{{ app.company_name_snapshot|default:"Organization" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if current_domain == 'faculty' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ current_domain }}</span>
+                    </td>
+                    <td class="p-3.5">
+                        {% if app.status == 'hired' or app.status == 'joined' or app.status == 'accepted' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">Placed / Joined</span>
+                        {% elif app.status == 'shortlisted' or app.status == 'interviewing' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold uppercase">{{ app.status }}</span>
+                        {% elif app.status == 'rejected' %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase">Rejected</span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase">{{ app.status|default:"Applied" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[11px]">{{ app.applied_at|slice:":16"|default:"Recently" }}</td>
+                    <td class="p-3.5 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                            <button onclick="openResumeModal('{{ app.id }}', '{{ current_domain }}');" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-on-surface-variant transition-colors" title="Preview Resume Snapshot">
+                                <span class="material-symbols-outlined !text-base">description</span>
+                            </button>
+                            <button onclick="openHistoryModal('{{ app.id }}', '{{ current_domain }}');" class="p-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-on-surface-variant transition-colors" title="View History">
+                                <span class="material-symbols-outlined !text-base">history</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs">No candidate applications registered for the selected domain.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Resume Preview Modal -->
+<div id="resumePreviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+            <div>
+                <h3 class="font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">description</span>
+                    Resume Snapshot Preview
+                </h3>
+                <p id="resumeModalSubtitle" class="text-[10px] text-on-surface-variant/60 mt-1 uppercase tracking-wider"></p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a id="btnDownloadResume" href="#" class="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded shadow-sm hover:bg-primary/90 flex items-center gap-1.5 transition-all hidden" download>
+                    <span class="material-symbols-outlined !text-sm">download</span> Download
+                </a>
+                <button type="button" onclick="closeModal('resumePreviewModal')" class="text-on-surface-variant hover:text-on-surface bg-gray-100 hover:bg-gray-200 rounded p-1 transition-colors">
+                    <span class="material-symbols-outlined !text-lg">close</span>
+                </button>
+            </div>
+        </div>
+        <!-- Body -->
+        <div class="p-0 flex-1 overflow-hidden relative bg-gray-100 flex items-center justify-center min-h-[400px]">
+            <!-- Loading Skeleton -->
+            <div id="resumeLoadingState" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
+                <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-xs text-on-surface-variant mt-4 font-medium animate-pulse">Retrieving secure document...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="resumeEmptyState" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 hidden">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined !text-3xl text-gray-400">description_off</span>
+                </div>
+                <h4 class="text-sm font-bold text-on-surface">No Document Available</h4>
+                <p class="text-xs text-on-surface-variant/70 mt-1 max-w-xs text-center">This applicant did not upload a resume file, or the file has been securely purged.</p>
+            </div>
+
+            <!-- Iframe for PDF -->
+            <iframe id="resumeIframe" class="w-full h-full border-0 hidden"></iframe>
+            
+            <!-- Non-PDF State (Word docs usually force download) -->
+            <div id="resumeNonPdfState" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 hidden">
+                <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined !text-3xl text-indigo-500">file_download</span>
+                </div>
+                <h4 class="text-sm font-bold text-on-surface">Document Requires Download</h4>
+                <p class="text-xs text-on-surface-variant/70 mt-1 max-w-xs text-center mb-4">This file format cannot be previewed natively in the browser. Please download to view.</p>
+                <a id="btnDownloadResumeAlt" href="#" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded shadow-sm hover:bg-indigo-700 flex items-center gap-2 transition-all" download>
+                    <span class="material-symbols-outlined !text-sm">download</span> Download File
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Application History Modal -->
+<div id="applicationHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+            <div>
+                <h3 class="font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">history</span>
+                    Applicant History & Pipeline Timeline
+                </h3>
+            </div>
+            <button type="button" onclick="closeModal('applicationHistoryModal')" class="text-on-surface-variant hover:text-on-surface bg-gray-100 hover:bg-gray-200 rounded p-1 transition-colors">
+                <span class="material-symbols-outlined !text-lg">close</span>
+            </button>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="historyLoadingState" class="p-12 flex flex-col items-center justify-center bg-white">
+            <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs text-on-surface-variant mt-4 font-medium animate-pulse">Loading audit trail...</p>
+        </div>
+
+        <!-- Body -->
+        <div id="historyBody" class="p-6 overflow-y-auto custom-scrollbar hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Candidate Info -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-outline-variant/20">
+                    <h4 class="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider mb-3">Candidate Info</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Name:</span> <span id="histCandidateName" class="font-bold text-on-surface"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Email:</span> <span id="histCandidateEmail" class="font-medium text-on-surface"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Phone:</span> <span id="histCandidatePhone" class="font-medium text-on-surface"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant">UUID:</span> <span id="histCandidateUuid" class="font-mono text-[10px] text-on-surface-variant mt-0.5"></span></div>
+                    </div>
+                </div>
+                <!-- Job Info -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-outline-variant/20">
+                    <h4 class="text-xs font-extrabold text-on-surface-variant uppercase tracking-wider mb-3">Target Opportunity</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Posting:</span> <span id="histJobTitle" class="font-bold text-on-surface"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Organization:</span> <span id="histJobCompany" class="font-medium text-on-surface"></span></div>
+                        <div class="flex justify-between"><span class="text-on-surface-variant">Domain:</span> <span id="histJobDomain" class="font-bold uppercase text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded"></span></div>
+                        <div class="flex justify-between mt-2 pt-2 border-t border-outline-variant/20">
+                            <span class="text-on-surface-variant">Current Status:</span> 
+                            <span id="histCurrentStatus" class="font-extrabold text-on-surface"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="text-xs font-extrabold text-on-surface uppercase tracking-wider mb-4">Pipeline Audit Trail</h4>
+            
+            <div id="timelineContainer" class="relative border-l-2 border-gray-200 ml-3 pl-6 space-y-6">
+                <!-- Timeline items injected here -->
+            </div>
+            
+            <div id="historyEmptyState" class="hidden py-8 text-center text-sm text-on-surface-variant">
+                No pipeline history events found.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Helper to get Super Admin base URL prefix
+    function getApiBaseUrl() {
+        return window.location.pathname.split('/applications')[0];
+    }
+
+    async function fetchApplicationDetail(appId, domain) {
+        const url = `${getApiBaseUrl()}/applications/${appId}/detail/?domain=${domain}`;
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            return await response.json();
+        } catch (err) {
+            console.error("Failed to fetch application detail:", err);
+            return { success: false, error: "Network error" };
+        }
+    }
+
+    async function openResumeModal(appId, domain) {
+        const modal = document.getElementById('resumePreviewModal');
+        const loading = document.getElementById('resumeLoadingState');
+        const empty = document.getElementById('resumeEmptyState');
+        const nonPdf = document.getElementById('resumeNonPdfState');
+        const iframe = document.getElementById('resumeIframe');
+        const btnDownload = document.getElementById('btnDownloadResume');
+        const btnDownloadAlt = document.getElementById('btnDownloadResumeAlt');
+        const subtitle = document.getElementById('resumeModalSubtitle');
+
+        // Reset state
+        loading.classList.remove('hidden');
+        empty.classList.add('hidden');
+        nonPdf.classList.add('hidden');
+        iframe.classList.add('hidden');
+        btnDownload.classList.add('hidden');
+        iframe.src = '';
+        subtitle.textContent = `Loading...`;
+        
+        modal.classList.remove('hidden');
+
+        const data = await fetchApplicationDetail(appId, domain);
+        
+        loading.classList.add('hidden');
+
+        if (!data.success) {
+            showToast(data.error || 'Failed to load resume details.', 'error');
+            closeModal('resumePreviewModal');
+            return;
+        }
+
+        subtitle.textContent = `${data.candidate.name} — ${data.job.title} (${data.job.company})`;
+
+        if (!data.resume || !data.resume.url) {
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        const fileUrl = data.resume.url;
+        const filename = data.resume.filename.toLowerCase();
+        
+        btnDownload.href = fileUrl;
+        btnDownloadAlt.href = fileUrl;
+        btnDownload.classList.remove('hidden');
+
+        if (filename.endsWith('.pdf')) {
+            iframe.src = fileUrl;
+            iframe.classList.remove('hidden');
+        } else {
+            nonPdf.classList.remove('hidden');
+        }
+    }
+
+    async function openHistoryModal(appId, domain) {
+        const modal = document.getElementById('applicationHistoryModal');
+        const loading = document.getElementById('historyLoadingState');
+        const body = document.getElementById('historyBody');
+        const container = document.getElementById('timelineContainer');
+        const emptyState = document.getElementById('historyEmptyState');
+
+        // Reset state
+        loading.classList.remove('hidden');
+        body.classList.add('hidden');
+        container.innerHTML = '';
+        emptyState.classList.add('hidden');
+
+        modal.classList.remove('hidden');
+
+        const data = await fetchApplicationDetail(appId, domain);
+        
+        loading.classList.add('hidden');
+
+        if (!data.success) {
+            showToast(data.error || 'Failed to load history details.', 'error');
+            closeModal('applicationHistoryModal');
+            return;
+        }
+
+        // Populate Info
+        document.getElementById('histCandidateName').textContent = data.candidate.name || 'N/A';
+        document.getElementById('histCandidateEmail').textContent = data.candidate.email || 'N/A';
+        document.getElementById('histCandidatePhone').textContent = data.candidate.phone || 'N/A';
+        document.getElementById('histCandidateUuid').textContent = data.candidate.uuid || 'N/A';
+        
+        document.getElementById('histJobTitle').textContent = data.job.title || 'N/A';
+        document.getElementById('histJobCompany').textContent = data.job.company || 'N/A';
+        document.getElementById('histJobDomain').textContent = data.job.domain || 'N/A';
+        document.getElementById('histCurrentStatus').textContent = data.application.status || 'N/A';
+
+        // Build Timeline
+        if (data.history && data.history.length > 0) {
+            data.history.forEach((item, index) => {
+                const isLatest = index === 0;
+                
+                const dotColor = isLatest ? 'bg-primary border-white' : 'bg-gray-300 border-white';
+                const textColor = isLatest ? 'text-primary' : 'text-on-surface-variant';
+                
+                let dateStr = new Date(item.date).toLocaleString([], {
+                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                const html = `
+                    <div class="relative">
+                        <div class="absolute -left-[31px] w-3.5 h-3.5 rounded-full ${dotColor} border-2 mt-1 z-10 shadow-sm"></div>
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-4">
+                            <div>
+                                <h5 class="text-sm font-bold ${textColor}">${item.status}</h5>
+                                ${item.notes ? `<p class="text-xs text-on-surface-variant/80 mt-1 italic">"${item.notes}"</p>` : ''}
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="block text-xs font-mono text-on-surface-variant/70">${dateStr}</span>
+                                <span class="block text-[10px] text-on-surface-variant/50 mt-0.5">By ${item.updated_by}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        } else {
+            // Add a synthetic "Applied" event if history is empty
+            let dateStr = data.application.applied_at ? new Date(data.application.applied_at).toLocaleString() : 'N/A';
+            const html = `
+                <div class="relative">
+                    <div class="absolute -left-[31px] w-3.5 h-3.5 rounded-full bg-primary border-white border-2 mt-1 z-10 shadow-sm"></div>
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-1 md:gap-4">
+                        <div>
+                            <h5 class="text-sm font-bold text-primary">APPLIED</h5>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="block text-xs font-mono text-on-surface-variant/70">${dateStr}</span>
+                            <span class="block text-[10px] text-on-surface-variant/50 mt-0.5">By System</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        body.classList.remove('hidden');
+    }
+
+    // Close modals on overlay click
+    window.addEventListener('click', function(e) {
+        if (e.target.id === 'resumePreviewModal') closeModal('resumePreviewModal');
+        if (e.target.id === 'applicationHistoryModal') closeModal('applicationHistoryModal');
+    });
+</script>
+{% endblock %}

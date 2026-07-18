@@ -1,0 +1,147 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+
+{% load static %}
+
+
+
+{% block title %}Saved Candidates | {{ PLATFORM_NAME }}{% endblock %}
+
+
+
+{% block dashboard_content %}
+
+<header class="rcd-section-head mb-4">
+
+    <div>
+
+        <h1 class="rcd-section-head__title">Saved Candidates</h1>
+
+        <p class="mb-0 text-muted">{{ page_description }}</p>
+
+    </div>
+
+    <a href="{% url 'recruiter_candidates' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--soft rcd-btn--sm">All Applicants</a>
+
+</header>
+
+
+
+{% if saved_page %}
+
+<section class="rcd-stats mb-4">
+
+    <article class="rcd-bento rcd-stat">
+
+        <p class="rcd-stat__label">Saved Pipeline</p>
+
+        <p class="rcd-stat__value">{{ saved_page.stats.saved_total }}</p>
+
+    </article>
+
+    <article class="rcd-bento rcd-stat">
+
+        <p class="rcd-stat__label">Shortlisted</p>
+
+        <p class="rcd-stat__value">{{ saved_page.stats.shortlisted }}</p>
+
+    </article>
+
+    <article class="rcd-bento rcd-stat">
+
+        <p class="rcd-stat__label">Interviews</p>
+
+        <p class="rcd-stat__value">{{ saved_page.stats.interviews }}</p>
+
+    </article>
+
+    <article class="rcd-bento rcd-stat">
+
+        <p class="rcd-stat__label">Offers</p>
+
+        <p class="rcd-stat__value">{{ saved_page.stats.offers }}</p>
+
+    </article>
+
+</section>
+
+
+
+<form class="rcd-filters mb-4" method="get" action="{% url 'recruiter_saved_candidates' user_uuid=portal_user_uuid %}">
+
+    <label class="rcd-filters__search">
+
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+
+        <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search saved candidates..." aria-label="Search saved candidates">
+
+    </label>
+
+    <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Search</button>
+
+</form>
+
+
+
+<div id="recCandidatesPage"
+
+     data-status-template="{{ saved_page.api_urls.status_template }}"
+
+     data-notes-template="{{ saved_page.api_urls.notes_template }}"
+
+     data-resume-template="{{ saved_page.api_urls.resume_template }}">
+
+
+
+    {% if saved_page.applications %}
+
+    <div class="rcd-stack">
+
+        {% for app in saved_page.applications %}
+
+        {% include "it/recruiter/partials/candidate_card.html" with app=app %}
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="rcd-bento rcd-empty">
+
+        <span class="material-symbols-outlined d-block">bookmark</span>
+
+        <h2>No saved candidates yet</h2>
+
+        <p>Shortlist applicants from your pipeline to track them here.</p>
+
+        <a href="{% url 'recruiter_candidates' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--primary mt-2">Browse Applicants</a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% else %}
+
+<div class="rcd-bento rcd-empty"><p>Saved candidates could not be loaded.</p></div>
+
+{% endif %}
+
+{% endblock %}
+
+
+
+{% block extra_scripts %}
+
+<script>
+
+  window.REC_PORTAL = window.REC_PORTAL || { csrfToken: "{{ csrf_token|escapejs }}" };
+
+</script>
+
+<script src="{% static 'js/recruiter-portal.js' %}"></script>
+
+{% endblock %}
+
+

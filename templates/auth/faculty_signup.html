@@ -1,0 +1,170 @@
+{% extends "auth/base.html" %}
+{% load static %}
+
+{% block auth_back_href %}{% url 'signup_domain_selection' %}{% endblock %}
+
+{% block title %}Create Account | {{ PLATFORM_NAME }} — Faculty Portal{% endblock %}
+{% block meta_description %}Create your {{ PLATFORM_NAME }} Faculty account for teaching jobs, schools, colleges, and institutions.{% endblock %}
+
+{% block content %}
+<div class="ed-auth-wrap ed-auth-wrap--signup">
+    <div class="ed-auth-card ed-auth-card--signup">
+        <header class="ed-auth-card__header ed-auth-card__header--compact text-center">
+            <img class="ed-auth-card__logo ed-auth-card__logo--signup" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
+                 onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY';">
+            <h1 class="ed-auth-card__title">Create Account</h1>
+            <p class="ed-auth-card__subtitle ed-auth-card__subtitle--compact">Join {{ PLATFORM_NAME }} Faculty Recruitment</p>
+        </header>
+
+        <div class="ed-auth-segmented" role="tablist" aria-label="Select account type">
+            <button type="button" class="ed-auth-segmented__btn{% if active_role == 'seeker' %} is-active{% endif %}"
+                    role="tab" data-auth-role="seeker"
+                    aria-selected="{% if active_role == 'seeker' %}true{% else %}false{% endif %}">Faculty Job Seeker</button>
+            <button type="button" class="ed-auth-segmented__btn{% if active_role == 'institution' %} is-active{% endif %}"
+                    role="tab" data-auth-role="institution"
+                    aria-selected="{% if active_role == 'institution' %}true{% else %}false{% endif %}">Institution</button>
+        </div>
+
+        <form class="ed-auth-form ed-auth-form--compact" id="signup-panel" method="post" novalidate
+              data-signup-seeker="{{ signup_endpoints.seeker }}"
+              data-signup-institution="{{ signup_endpoints.institution }}"
+              data-check-email="{{ check_email_url }}"
+              data-login-seeker="{{ login_urls.seeker }}"
+              data-login-institution="{{ login_urls.institution }}"
+              data-page-seeker="{% url 'faculty_signup_professor' %}"
+              data-page-institution="{% url 'faculty_signup_institution' %}"
+              data-oauth-google="{{ oauth_endpoints.google }}"
+              data-oauth-linkedin="{{ oauth_endpoints.linkedin }}">
+            {% csrf_token %}
+            <input type="hidden" name="role" id="authRoleInput" value="{{ active_role }}">
+
+            <div class="ed-auth-form-error d-none" id="formError" role="alert" aria-live="polite"></div>
+            <div class="ed-auth-form-success d-none" id="formSuccess" role="status" aria-live="polite"></div>
+
+            <div class="ed-auth-role-panel{% if active_role != 'seeker' %} d-none{% endif %}" data-role-panel="seeker">
+                <div class="ed-auth-field">
+                    <label class="ed-auth-label" for="full_name">Full Name</label>
+                    <input class="form-control ed-auth-input" type="text" id="full_name" name="full_name"
+                           placeholder="Dr. Jane Smith" autocomplete="name" aria-describedby="full_nameError">
+                    <div class="ed-auth-field-error" id="full_nameError" role="alert"></div>
+                </div>
+                <div class="ed-auth-field">
+                    <label class="ed-auth-label" for="email">Email Address</label>
+                    <input class="form-control ed-auth-input" type="email" id="email" name="email"
+                           placeholder="name@university.edu" autocomplete="email"
+                           aria-describedby="emailError" inputmode="email">
+                    <div class="ed-auth-field-error" id="emailError" role="alert"></div>
+                </div>
+            </div>
+
+            <div class="ed-auth-role-panel{% if active_role != 'institution' %} d-none{% endif %}" data-role-panel="institution">
+                <div class="ed-auth-field">
+                    <label class="ed-auth-label" for="institution_name">Institution Name</label>
+                    <input class="form-control ed-auth-input" type="text" id="institution_name" name="institution_name"
+                           placeholder="Springfield College" aria-describedby="institution_nameError">
+                    <div class="ed-auth-field-error" id="institution_nameError" role="alert"></div>
+                </div>
+                <div class="ed-auth-field">
+                    <label class="ed-auth-label" for="rep_name">Representative Name</label>
+                    <input class="form-control ed-auth-input" type="text" id="rep_name" name="rep_name"
+                           placeholder="Dr. John Doe" autocomplete="name" aria-describedby="rep_nameError">
+                    <div class="ed-auth-field-error" id="rep_nameError" role="alert"></div>
+                </div>
+                <div class="ed-auth-field">
+                    <label class="ed-auth-label" for="institution_email">Email Address</label>
+                    <input class="form-control ed-auth-input" type="email" id="institution_email" name="institution_email"
+                           placeholder="hr@university.edu" autocomplete="email"
+                           aria-describedby="institution_emailError" inputmode="email">
+                    <div class="ed-auth-field-error" id="institution_emailError" role="alert"></div>
+                </div>
+            </div>
+
+            <div class="ed-auth-field">
+                <label class="ed-auth-label" for="mobile">Mobile Number</label>
+                <input class="form-control ed-auth-input" type="tel" id="mobile" name="mobile"
+                       placeholder="+91 98765 43210" autocomplete="tel"
+                       aria-describedby="mobileError" inputmode="tel">
+                <div class="ed-auth-field-error" id="mobileError" role="alert"></div>
+            </div>
+
+            <div class="ed-auth-field">
+                <label class="ed-auth-label" for="password">Password</label>
+                <div class="ed-auth-password">
+                    <input class="form-control ed-auth-input" type="password" id="password" name="password"
+                           placeholder="Create a strong password" autocomplete="new-password"
+                           aria-describedby="passwordError passwordStrength">
+                    <button type="button" class="ed-auth-password__toggle" aria-label="Show password"
+                            data-auth-toggle-password data-target="password">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="ed-auth-strength ed-auth-strength--compact" id="passwordStrength" aria-live="polite">
+                    <div class="ed-auth-strength__bar" aria-hidden="true">
+                        <span class="ed-auth-strength__fill" id="passwordStrengthFill"></span>
+                    </div>
+                    <ul class="ed-auth-strength__reqs" id="passwordRequirements">
+                        <li data-req="length">8+ characters</li>
+                        <li data-req="upper">Uppercase</li>
+                        <li data-req="lower">Lowercase</li>
+                        <li data-req="number">Number</li>
+                        <li data-req="special">Special char</li>
+                    </ul>
+                </div>
+                <div class="ed-auth-field-error" id="passwordError" role="alert"></div>
+            </div>
+
+            <div class="ed-auth-field ed-auth-field--last">
+                <label class="ed-auth-label" for="confirm_password">Confirm Password</label>
+                <div class="ed-auth-password">
+                    <input class="form-control ed-auth-input" type="password" id="confirm_password"
+                           name="confirm_password" placeholder="Re-enter your password"
+                           autocomplete="new-password" aria-describedby="confirm_passwordError">
+                    <button type="button" class="ed-auth-password__toggle" aria-label="Show password"
+                            data-auth-toggle-password data-target="confirm_password">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="ed-auth-field-error" id="confirm_passwordError" role="alert"></div>
+            </div>
+
+            <button type="submit" class="btn ed-auth-btn ed-auth-btn--primary w-100" id="registerBtn">
+                <span class="ed-auth-btn__label">Create Account</span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+
+            <div class="ed-auth-divider" role="separator" aria-label="Or continue with">OR</div>
+
+            <button type="button" class="ed-auth-btn ed-auth-btn--social w-100" id="googleBtn"
+                    data-oauth-provider="google">
+                <span class="ed-auth-btn__label d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-google ed-auth-btn__icon" aria-hidden="true"></i>
+                    Continue with Google
+                </span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+            <button type="button" class="ed-auth-btn ed-auth-btn--social w-100" id="linkedinBtn"
+                    data-oauth-provider="linkedin">
+                <span class="ed-auth-btn__label d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-linkedin ed-auth-btn__icon ed-auth-btn__icon--linkedin" aria-hidden="true"></i>
+                    Continue with LinkedIn
+                </span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <p class="ed-auth-footer ed-auth-footer--compact">
+        Already have an account? <a href="#" id="signupLoginLink">Sign In</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/auth/faculty-signup.js' %}?v=2"></script>
+{% endblock %}

@@ -1,0 +1,12 @@
+<aside class="fjd-sidebar" aria-label="Sidebar navigation">
+    <div class="fjd-sidebar__profile">
+        <p class="fjd-sidebar__profile-label">Academic Profile</p>
+        <p class="fjd-sidebar__profile-name">{{ sidebar_profile.display_name }}</p>
+        <p class="fjd-sidebar__profile-headline">{{ sidebar_profile.headline }}</p>
+    </div>
+    {% include "academic/professor/partials/sidebar_nav.html" %}
+    <a class="fjd-sidebar__logout" href="{{ logout_url }}">
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+        <span>Logout</span>
+    </a>
+</aside>

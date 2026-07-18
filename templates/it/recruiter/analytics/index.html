@@ -1,0 +1,343 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Analytics | {{ PLATFORM_NAME }} Recruiter{% endblock %}
+
+{% block dashboard_content %}
+<div id="recAnalyticsPage" data-insights-url="{% portal_url 'recruiter_dashboard_insights_api' %}">
+    <header class="rcd-section-head rcd-analytics-page__head mb-4">
+        <div>
+            <h1 class="rcd-section-head__title">Analytics Intelligence</h1>
+            <p class="mb-0 text-muted">
+                Enterprise hiring analytics with live pipeline, source, interview, and conversion visibility.
+            </p>
+        </div>
+        <div class="rcd-analytics-page__response">
+            <span>Recruiter Response Rate</span>
+            <strong id="recAnalyticsResponseRate">{{ analytics_page.response_rate|default:0 }}%</strong>
+        </div>
+    </header>
+
+    {% if dashboard and dashboard.analytics %}
+    <section class="rcd-stats rcd-stats--analytics mb-4" aria-label="Analytics KPI summary">
+        {% for stat in dashboard.stats %}
+        <article class="rcd-bento rcd-stat">
+            <div class="rcd-stat__top">
+                <div class="rcd-stat__icon rcd-stat__icon--{{ stat.tone }}">
+                    <span class="material-symbols-outlined">{{ stat.icon }}</span>
+                </div>
+                {% if stat.trend.tone != 'muted' and stat.trend.label != 'No Change' %}
+                <span class="rcd-stat__trend rcd-stat__trend--{{ stat.trend.tone }}">{{ stat.trend.label }}</span>
+                {% else %}
+                <span class="rcd-stat__trend rcd-stat__trend--muted">No Change</span>
+                {% endif %}
+            </div>
+            <div class="rcd-stat__body">
+                <p class="rcd-stat__label">{{ stat.label }}</p>
+                <p class="rcd-stat__value">{{ stat.value }}</p>
+                {% if stat.subtitle %}<p class="rcd-stat__subtitle">{{ stat.subtitle }}</p>{% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="rcd-analytics-v3" id="recAnalyticsPanel" data-export-url="{{ dashboard.api_urls.analytics_export }}">
+        <div class="rcd-analytics-v3__head">
+            <div>
+                <h2 class="rcd-analytics-v3__title">Recruitment Analytics Dashboard</h2>
+                <p class="rcd-analytics-v3__subtitle" id="recAnalyticsPeriodLabel">{{ dashboard.analytics.period_label|default:"Last 7 Days" }}</p>
+            </div>
+            <div class="rcd-analytics-v3__actions">
+                <div class="rcd-analytics-v3__periods" id="recAnalyticsPeriods" role="tablist" aria-label="Analytics period">
+                    {% for opt in dashboard.analytics.period_options %}
+                    <button type="button"
+                            class="rcd-analytics-v3__period{% if dashboard.analytics.period == opt.key %} is-active{% endif %}"
+                            data-period="{{ opt.key }}"
+                            role="tab"
+                            aria-selected="{% if dashboard.analytics.period == opt.key %}true{% else %}false{% endif %}">
+                        {{ opt.label }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <div class="rcd-analytics-v3__export">
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-analytics-export" data-format="csv">CSV</button>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-analytics-export" data-format="xlsx">Excel</button>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-analytics-export" data-format="pdf">PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="rcd-analytics-v3__skeleton" id="recAnalyticsSkeleton" hidden aria-hidden="true">
+            <div class="rcd-analytics-v3__skeleton-grid"></div>
+        </div>
+
+        {% if dashboard.analytics.has_data %}
+        <div class="rcd-analytics-v3__body" id="recAnalyticsBody">
+            <div class="rcd-analytics-v3__highlights" id="recAnalyticsHighlights">
+                <div class="rcd-analytics-v3__chip"><span>Active Jobs</span><strong data-hl="active_jobs">{{ dashboard.analytics.highlights.active_jobs }}</strong></div>
+                <div class="rcd-analytics-v3__chip"><span>Pending Reviews</span><strong data-hl="pending_reviews">{{ dashboard.analytics.highlights.pending_reviews }}</strong></div>
+                <div class="rcd-analytics-v3__chip"><span>Upcoming Interviews</span><strong data-hl="upcoming_interviews">{{ dashboard.analytics.highlights.upcoming_interviews }}</strong></div>
+                <div class="rcd-analytics-v3__chip"><span>Pending Offers</span><strong data-hl="pending_offers">{{ dashboard.analytics.highlights.pending_offers }}</strong></div>
+                <div class="rcd-analytics-v3__chip"><span>Open Positions</span><strong data-hl="open_positions">{{ dashboard.analytics.highlights.open_positions }}</strong></div>
+            </div>
+
+            <div class="rcd-analytics-v3__grid">
+                <article class="rcd-analytics-v3__card rcd-analytics-v3__card--wide">
+                    <div class="rcd-analytics-v3__card-head">
+                        <h3>Application Trend</h3>
+                        <span class="rcd-analytics-v3__total" id="recAnalyticsTrendTotal">{{ dashboard.analytics.application_trend.total }} total</span>
+                    </div>
+                    <div class="rcd-analytics-v3__chart" id="recAppsChart" role="img" aria-label="Application trend chart">
+                        {% for point in dashboard.analytics.application_trend.points %}
+                        <div class="rcd-analytics-v3__bar-col" data-value="{{ point.value }}" data-label="{{ point.label }}" data-date="{{ point.date }}">
+                            <div class="rcd-analytics-v3__bar-wrap">
+                                <div class="rcd-analytics-v3__bar" style="height: {{ point.bar_pct }}%"></div>
+                                <span class="rcd-analytics-v3__tooltip">{{ point.value }} applications</span>
+                            </div>
+                            <span class="rcd-analytics-v3__bar-label">{{ point.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rcd-analytics-v3__card">
+                    <div class="rcd-analytics-v3__card-head">
+                        <h3>Hiring Funnel</h3>
+                    </div>
+                    <div class="rcd-analytics-v3__funnel" id="recFunnelList">
+                        {% for step in dashboard.analytics.funnel %}
+                        <div class="rcd-analytics-v3__funnel-row" data-key="{{ step.key }}">
+                            <div class="rcd-analytics-v3__funnel-meta">
+                                <span class="rcd-analytics-v3__funnel-label">{{ step.label }}</span>
+                                <span class="rcd-analytics-v3__funnel-stats">
+                                    <strong>{{ step.value }}</strong>
+                                    <small>{{ step.pct }}%</small>
+                                    {% if step.drop_off %}<small class="rcd-analytics-v3__drop">−{{ step.drop_off }}%</small>{% endif %}
+                                </span>
+                            </div>
+                            <div class="rcd-analytics-v3__funnel-track">
+                                <div class="rcd-analytics-v3__funnel-fill rcd-analytics-v3__funnel-fill--{{ step.tone }}" style="width: {{ step.bar_pct }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rcd-analytics-v3__card rcd-analytics-v3__card--metrics">
+                    <div class="rcd-analytics-v3__card-head">
+                        <h3>Hiring Metrics</h3>
+                    </div>
+                    <div class="rcd-analytics-v3__metrics" id="recAnalyticsMetrics">
+                        {% for metric in dashboard.analytics.metrics %}
+                        <div class="rcd-analytics-v3__metric" data-metric-key="{{ metric.key }}">
+                            <span class="material-symbols-outlined">{{ metric.icon }}</span>
+                            <div>
+                                <span class="rcd-analytics-v3__metric-label">{{ metric.label }}</span>
+                                <strong class="rcd-analytics-v3__metric-value">{{ metric.value }}{% if metric.unit %}<small>{{ metric.unit }}</small>{% endif %}</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rcd-analytics-v3__card">
+                    <div class="rcd-analytics-v3__card-head">
+                        <h3>Hiring by Department</h3>
+                    </div>
+                    <div class="rcd-analytics-v3__depts" id="recAnalyticsDepts">
+                        {% for dept in dashboard.analytics.departments %}
+                        <div class="rcd-analytics-v3__dept-row">
+                            <div class="rcd-analytics-v3__dept-head">
+                                <span>{{ dept.label }}</span>
+                                <span class="rcd-analytics-v3__dept-counts">{{ dept.applicants }} applicants · {{ dept.hired }} hired</span>
+                            </div>
+                            <div class="rcd-analytics-v3__dept-track">
+                                <div class="rcd-analytics-v3__dept-fill" style="width: {{ dept.bar_pct }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ dept.jobs }} job{{ dept.jobs|pluralize }}</small>
+                        </div>
+                        {% empty %}
+                        <p class="rcd-analytics-v3__empty-inline">No department data for this period.</p>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="rcd-analytics-v3__card">
+                    <div class="rcd-analytics-v3__card-head"><h3>Top Performing Jobs</h3></div>
+                    <ul class="rcd-analytics-v3__list" id="recAnalyticsTopJobs">
+                        {% for job in dashboard.analytics.top_jobs %}
+                        <li><span>{{ job.title }}</span><strong>{{ job.applications }} apps</strong></li>
+                        {% empty %}
+                        <li class="rcd-analytics-v3__empty-inline">No job performance data yet.</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+
+                <article class="rcd-analytics-v3__card">
+                    <div class="rcd-analytics-v3__card-head"><h3>Top Applicant Sources</h3></div>
+                    <ul class="rcd-analytics-v3__list" id="recAnalyticsTopSources">
+                        {% for src in dashboard.analytics.top_sources %}
+                        <li><span>{{ src.label }}</span><strong>{{ src.pct }}% ({{ src.count }})</strong></li>
+                        {% empty %}
+                        <li class="rcd-analytics-v3__empty-inline">No source data yet.</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            </div>
+        </div>
+        <div class="rcd-analytics-v3__empty" id="recAnalyticsEmpty" hidden>
+            <span class="material-symbols-outlined">analytics</span>
+            <h3>No hiring activity yet</h3>
+            <p>Create your first job posting to start collecting analytics and track your recruitment pipeline.</p>
+            <a href="{{ dashboard.urls.post_job }}" class="rcd-btn rcd-btn--primary">Post New Job</a>
+        </div>
+        {% else %}
+        <div class="rcd-analytics-v3__empty" id="recAnalyticsEmpty">
+            <span class="material-symbols-outlined">analytics</span>
+            <h3>No hiring activity yet</h3>
+            <p>Create your first job posting to start collecting analytics and track your recruitment pipeline.</p>
+            <a href="{{ dashboard.urls.post_job }}" class="rcd-btn rcd-btn--primary">Post New Job</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="rcd-grid-2-1 mt-4">
+        <article class="rcd-bento rcd-interview-panel rcd-analytics-page__donut-card">
+            <div class="rcd-section-head mb-3">
+                <h2 class="rcd-section-head__title">Application Sources</h2>
+            </div>
+            <div class="rcd-donut-wrap">
+                <div class="rcd-donut" role="img" aria-label="Application sources distribution">
+                    <svg viewBox="0 0 36 36" id="recDonutSvg"></svg>
+                    <div class="rcd-donut__center">
+                        <strong class="rcd-donut__total" id="recDonutTotal">{{ dashboard.candidate_sources.total|default:0 }}</strong>
+                        <span class="rcd-donut__label">Applications</span>
+                    </div>
+                </div>
+                <div class="rcd-donut-legend" id="recDonutLegend">
+                    {% for seg in dashboard.candidate_sources.segments %}
+                    <div class="rcd-donut-legend__row">
+                        <span><span class="rcd-donut-legend__dot rcd-donut-legend__dot--{{ seg.tone }}"></span>{{ seg.label }}</span>
+                        <strong>{{ seg.pct }}% ({{ seg.count }})</strong>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small mb-0">No source data yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </article>
+
+        <article class="rcd-bento rcd-interview-panel">
+            <div class="rcd-section-head mb-3">
+                <h2 class="rcd-section-head__title">Hiring Trend</h2>
+                <span class="small text-muted" id="recHiringMonthlyTotal">This month: {{ dashboard.analytics.hiring_trends.monthly_total|default:0 }}</span>
+            </div>
+            <div class="rcd-analytics-page__mini-chart" id="recHiringTrendChart"></div>
+        </article>
+    </section>
+
+    <section class="rcd-bento rcd-interview-panel mt-4">
+        <div class="rcd-section-head mb-3">
+            <h2 class="rcd-section-head__title">Interview Trend</h2>
+        </div>
+        <div class="rcd-analytics-page__interview-grid" id="recInterviewTrendGrid">
+            <div class="rcd-reporting-card"><span>Scheduled</span><strong id="recInterviewScheduled">0</strong></div>
+            <div class="rcd-reporting-card"><span>Completed</span><strong id="recInterviewCompleted">0</strong></div>
+            <div class="rcd-reporting-card"><span>Cancelled</span><strong id="recInterviewCancelled">0</strong></div>
+            <div class="rcd-reporting-card"><span>No Show</span><strong id="recInterviewNoShow">0</strong></div>
+            <div class="rcd-reporting-card"><span>Success Rate</span><strong id="recInterviewSuccessRate">0%</strong></div>
+        </div>
+    </section>
+
+    <section class="rcd-bento mt-4 overflow-hidden">
+        <div class="rcd-section-head px-3 pt-3 mb-2">
+            <h2 class="rcd-section-head__title">Vacancy Performance</h2>
+            <div class="rcd-filters">
+                <div class="rcd-filters__search">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="search" id="recVacancySearch" placeholder="Search vacancy">
+                </div>
+                <select id="recVacancyStatusFilter" class="rcd-filters__select">
+                    <option value="">All statuses</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                    <option value="paused">Paused</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+        </div>
+        <div class="rcd-table-wrap">
+            <table class="rcd-table" id="recVacancyTable">
+                <thead>
+                    <tr>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="title">Vacancy</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="application_count">Applications</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="views">Views</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="shortlisted_count">Shortlisted</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="interview_count">Interviews</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="offer_count">Offers</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="hired_count">Hires</button></th>
+                        <th><button type="button" class="rcd-table__sort-btn" data-sort-key="conversion_rate">Conversion</button></th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recVacancyPerformanceBody">
+                    {% for job in dashboard.active_jobs %}
+                    {% if job.application_count %}
+                    {% widthratio job.hired_count job.application_count 100 as conversion_rate %}
+                    {% endif %}
+                    <tr data-title="{{ job.title|lower }}"
+                        data-status="{{ job.status }}"
+                        data-title-sort="{{ job.title }}"
+                        data-application_count="{{ job.application_count }}"
+                        data-views="{{ job.views|default:0 }}"
+                        data-shortlisted_count="{{ job.shortlisted_count }}"
+                        data-interview_count="{{ job.interview_count }}"
+                        data-offer_count="{{ job.offer_count }}"
+                        data-hired_count="{{ job.hired_count }}"
+                        data-conversion_rate="{% if job.application_count %}{{ conversion_rate }}{% else %}0{% endif %}">
+                        <td>{{ job.title }}</td>
+                        <td>{{ job.application_count }}</td>
+                        <td>{{ job.views|default:0 }}</td>
+                        <td>{{ job.shortlisted_count }}</td>
+                        <td>{{ job.interview_count }}</td>
+                        <td>{{ job.offer_count }}</td>
+                        <td>{{ job.hired_count }}</td>
+                        <td>{% if job.application_count %}{{ conversion_rate }}%{% else %}0%{% endif %}</td>
+                        <td><span class="rcd-status-pill">{{ job.status_label }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="rcd-empty rcd-empty--compact">
+                                <span class="material-symbols-outlined">work_off</span>
+                                <h3>No vacancies to analyze</h3>
+                                <p>Publish jobs to unlock vacancy-level conversion analytics.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{ dashboard.candidate_sources|json_script:"recAnalyticsSourceData" }}
+    {{ dashboard.active_jobs|json_script:"recAnalyticsVacancyData" }}
+    {{ dashboard.analytics.hiring_trends|json_script:"recAnalyticsHiringTrendData" }}
+    {{ dashboard.analytics.interview_trends|default:"{}"|json_script:"recAnalyticsInterviewTrendData" }}
+    {% else %}
+    <div class="rcd-bento rcd-empty">
+        <span class="material-symbols-outlined">error</span>
+        <p>Analytics could not be loaded.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="{% static 'js/recruiter-analytics-section.js' %}"></script>
+<script src="{% static 'js/recruiter-analytics-page.js' %}"></script>
+{% endblock %}
+

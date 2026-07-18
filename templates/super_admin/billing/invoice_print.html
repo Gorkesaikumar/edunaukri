@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ invoice.invoice_number }} | {{ PLATFORM_NAME }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { background: white !important; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .print-border { border-color: #e5e7eb !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans p-8 md:p-16">
+    <div class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-gray-200 print:shadow-none print:border-none print:p-0">
+        <!-- Print / Action Header -->
+        <div class="no-print flex justify-between items-center pb-6 mb-8 border-b border-gray-200">
+            <button onclick="window.close()" class="px-4 py-2 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300">← Close Window</button>
+            <button onclick="window.print()" class="px-5 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg shadow hover:bg-indigo-700">🖨️ Print / Download PDF</button>
+        </div>
+
+        <!-- Invoice Header -->
+        <div class="flex justify-between items-start border-b border-gray-200 pb-8">
+            <div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-indigo-900">{{ PLATFORM_NAME }} Platform</h1>
+                <p class="text-xs text-gray-500 mt-1">Enterprise Placement & Academic Recruitment Services</p>
+                <p class="text-xs text-gray-500 font-mono mt-0.5">Tax ID: EN-99283-GLOBAL</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-3xl font-black text-gray-900 tracking-tighter uppercase">INVOICE</h2>
+                <p class="text-sm font-bold font-mono text-indigo-600 mt-1">{{ invoice.invoice_number }}</p>
+                <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold uppercase {% if invoice.status == 'paid' %}bg-emerald-100 text-emerald-800{% elif invoice.status == 'overdue' %}bg-red-100 text-red-800{% else %}bg-amber-100 text-amber-800{% endif %}">{{ invoice.status|default:"Issued" }}</span>
+            </div>
+        </div>
+
+        <!-- Bill To & Dates Grid -->
+        <div class="grid grid-cols-2 gap-8 py-8 border-b border-gray-200">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Bill To Organization</p>
+                <h3 class="text-base font-bold text-gray-900 mt-1">{{ invoice.bill_to_name_snapshot|default:"Client Employer / College" }}</h3>
+                <p class="text-xs text-gray-600 mt-0.5 capitalize">Domain Service: {{ invoice.domain|default:"IT Recruitment" }}</p>
+            </div>
+            <div class="text-right font-mono text-xs space-y-1">
+                <p><span class="text-gray-400 font-sans">Issue Date:</span> {{ invoice.issued_at|slice:":10"|default:"N/A" }}</p>
+                <p><span class="text-gray-400 font-sans">Due Date:</span> {{ invoice.due_at|slice:":10"|default:"Immediate" }}</p>
+                <p><span class="text-gray-400 font-sans">Reference:</span> UUID-{{ invoice.id|slice:":8" }}</p>
+            </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <div class="py-8">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-gray-900 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                        <th class="py-3">Description / Service Rendered</th>
+                        <th class="py-3 text-right">Fee Rate</th>
+                        <th class="py-3 text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-200">
+                    <tr>
+                        <td class="py-4">
+                            <p class="font-bold text-gray-900">Placement Fee & Platform Commission</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Successful candidate hiring verification and guarantee coverage</p>
+                        </td>
+                        <td class="py-4 text-right font-mono text-gray-600">Standard</td>
+                        <td class="py-4 text-right font-mono font-bold text-gray-900">₹{{ invoice.total_amount }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="border-t-2 border-gray-900 font-mono text-sm">
+                        <td colspan="2" class="py-3 text-right font-bold text-gray-700">Total Invoiced:</td>
+                        <td class="py-3 text-right font-bold text-gray-900">₹{{ invoice.total_amount }}</td>
+                    </tr>
+                    <tr class="font-mono text-sm">
+                        <td colspan="2" class="py-2 text-right font-bold text-emerald-700">Amount Paid:</td>
+                        <td class="py-2 text-right font-bold text-emerald-700">-₹{{ invoice.amount_paid|default:"0.00" }}</td>
+                    </tr>
+                    <tr class="border-t border-gray-200 font-mono text-base font-extrabold">
+                        <td colspan="2" class="py-3 text-right text-indigo-900">Balance Due:</td>
+                        <td class="py-3 text-right text-indigo-900">₹{{ invoice.total_amount }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer / Remittance Notes -->
+        <div class="mt-8 pt-8 border-t border-gray-200 text-center text-xs text-gray-500 space-y-1">
+            <p class="font-bold text-gray-700">Thank you for partnering with {{ PLATFORM_NAME }} Platform.</p>
+            <p>Please remit payment via wire transfer to {{ PLATFORM_NAME }} Global Accounts within the specified due date.</p>
+            <p class="text-[10px] text-gray-400 font-mono pt-4">Generated automatically by {{ PLATFORM_NAME }} Super Admin Executive Billing Engine.</p>
+        </div>
+    </div>
+</body>
+</html>

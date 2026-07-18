@@ -1,0 +1,159 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Messages | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .fjd-msgs-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+  }
+  .fjd-msgs-hero__left h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+  .fjd-msgs-hero__left p  { font-size: .875rem; color: var(--fjd-text-muted, #64748b); margin: .25rem 0 0; }
+
+  .fjd-msg-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .fjd-msg-list { display: flex; flex-direction: column; gap: .75rem; }
+
+  .fjd-msg-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    transition: box-shadow .18s, border-color .18s;
+    position: relative;
+  }
+  .fjd-msg-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.07); border-color: #6ee7b7; }
+  .fjd-msg-card--unread {
+    border-left: 4px solid #059669;
+    background: linear-gradient(to right, #f0fdf4 0%, #fff 80%);
+  }
+
+  .fjd-msg-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+  }
+  .fjd-msg-icon--success  { background: #d1fae5; color: #059669; }
+  .fjd-msg-icon--primary  { background: #e0e7ff; color: #4f46e5; }
+  .fjd-msg-icon--info     { background: #e0f2fe; color: #0284c7; }
+  .fjd-msg-icon--secondary{ background: #f1f5f9; color: #64748b; }
+
+  .fjd-msg-body { flex: 1; min-width: 0; }
+  .fjd-msg-title {
+    font-size: .95rem; font-weight: 700; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: .25rem; flex-wrap: wrap;
+  }
+  .fjd-msg-unread-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #059669; flex-shrink: 0;
+  }
+  .fjd-msg-text { font-size: .875rem; color: #475569; line-height: 1.55; margin: 0; }
+  .fjd-msg-time { font-size: .78rem; color: #94a3b8; margin-top: .35rem; }
+
+  .fjd-msgs-empty {
+    text-align: center; padding: 5rem 2rem;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+  }
+  .fjd-msgs-empty__icon { font-size: 3.5rem; color: #6ee7b7; margin-bottom: 1rem; }
+  .fjd-msgs-empty h2 { font-size: 1.25rem; font-weight: 700; color: #064e3b; }
+  .fjd-msgs-empty p { color: #64748b; font-size: .9rem; margin-top: .5rem; }
+
+  .fjd-msgs-pager {
+    display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1.5rem;
+  }
+  .fjd-msgs-pager a, .fjd-msgs-pager span {
+    font-size: .85rem; font-weight: 600; padding: .45rem 1rem;
+    border-radius: 8px; border: 1px solid #e2e8f0; color: #059669;
+    background: #fff; text-decoration: none;
+    transition: background .15s;
+  }
+  .fjd-msgs-pager a:hover { background: #d1fae5; border-color: #059669; }
+  .fjd-msgs-pager span   { color: #94a3b8; cursor: default; }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="fjd-msgs-hero">
+  <div class="fjd-msgs-hero__left">
+    <h1>Messages</h1>
+    <p>Institution notifications and selection alerts for your applications.</p>
+  </div>
+  {% if messages_page.unread_count > 0 %}
+  <span class="fjd-msg-badge">
+    <i class="bi bi-envelope-fill"></i>
+    {{ messages_page.unread_count }} unread
+  </span>
+  {% endif %}
+</div>
+
+{% if messages_page.notifications %}
+<ul class="fjd-msg-list list-unstyled">
+  {% for msg in messages_page.notifications %}
+  <li class="fjd-msg-card{% if not msg.is_read %} fjd-msg-card--unread{% endif %}">
+    <div class="fjd-msg-icon fjd-msg-icon--{{ msg.tone }}">
+      <i class="bi {{ msg.icon }}" aria-hidden="true"></i>
+    </div>
+    <div class="fjd-msg-body">
+      <div class="fjd-msg-title">
+        {% if not msg.is_read %}<span class="fjd-msg-unread-dot" title="Unread"></span>{% endif %}
+        {{ msg.title }}
+      </div>
+      {% if msg.body %}<p class="fjd-msg-text">{{ msg.body }}</p>{% endif %}
+      <p class="fjd-msg-time"><i class="bi bi-clock me-1"></i>{{ msg.created_at }}</p>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+{% if messages_page.total_pages > 1 %}
+<nav class="fjd-msgs-pager" aria-label="Message pages">
+  {% if messages_page.page > 1 %}
+  <a href="?page={{ messages_page.page|add:'-1' }}"><i class="bi bi-chevron-left"></i> Previous</a>
+  {% else %}
+  <span><i class="bi bi-chevron-left"></i> Previous</span>
+  {% endif %}
+
+  <span>Page {{ messages_page.page }} of {{ messages_page.total_pages }}</span>
+
+  {% if messages_page.page < messages_page.total_pages %}
+  <a href="?page={{ messages_page.page|add:'1' }}">Next <i class="bi bi-chevron-right"></i></a>
+  {% else %}
+  <span>Next <i class="bi bi-chevron-right"></i></span>
+  {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="fjd-msgs-empty">
+  <div class="fjd-msgs-empty__icon"><i class="bi bi-chat-left-heart"></i></div>
+  <h2>No messages yet</h2>
+  <p>When an institution selects you or reaches out, messages will appear here.</p>
+  <a href="{% portal_url 'professor_applications' %}" class="fjd-btn fjd-btn--primary mt-3">
+    <i class="bi bi-briefcase me-1"></i>View My Applications
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

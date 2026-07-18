@@ -1,0 +1,288 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Selected Candidates | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head icd-page-head--split">
+    <div>
+        <h1 class="icd-page-head__title">Selected Candidates</h1>
+        <p class="icd-page-head__desc">Track placement offer acceptances, joining stages, and invoice statuses for selected faculty members.</p>
+    </div>
+</header>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="icd-card d-flex align-items-center p-3">
+            <div class="rounded-circle bg-success bg-opacity-10 p-3 text-success me-3">
+                <i class="bi bi-award" style="font-size: 1.5rem;"></i>
+            </div>
+            <div>
+                <p class="text-muted small mb-0">Total Selected</p>
+                <h4 class="fw-bold mb-0">{{ pagination.total_count }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form class="icd-filters mb-4" method="get">
+    <label class="icd-filters__search w-100 me-2">
+        <i class="bi bi-search"></i>
+        <input type="search" name="q" value="{{ q }}" placeholder="Search by candidate name, designation or status...">
+    </label>
+    <button type="submit" class="icd-btn icd-btn--primary">Filter</button>
+</form>
+
+{% if candidates %}
+<div class="row g-4">
+    {% for candidate in candidates %}
+    <div class="col-md-12">
+        <article class="icd-card p-4">
+            <div class="row align-items-center g-3">
+                <!-- Candidate Info -->
+                <div class="col-lg-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icd-list-card__avatar-wrap">
+                            {% if candidate.app.candidate_photo_url %}
+                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.app.candidate_photo_url }}" alt="{{ candidate.app.candidate_name }}" style="width: 52px; height: 52px; object-fit: cover;">
+                            {% else %}
+                            <div class="icd-list-card__avatar rounded-circle bg-light d-flex align-items-center justify-content-center fw-semibold text-primary" style="width: 52px; height: 52px; font-size: 1.2rem;">
+                                {{ candidate.app.candidate_initials }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="h6 fw-bold mb-0">{{ candidate.app.candidate_name }}</h3>
+                            <p class="small text-muted mb-1">{{ candidate.app.vacancy_title }}</p>
+                            {% if candidate.app.status == 'joining_in_progress' %}
+                            <span class="badge bg-warning text-dark border">Joining in Progress</span>
+                            {% else %}
+                            <span class="badge bg-success text-white">Offer Accepted</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placement Details -->
+                <div class="col-lg-4 border-start border-end px-4">
+                    <h6 class="fw-bold mb-2 text-primary"><i class="bi bi-info-circle me-1"></i> Offer & Placement Details</h6>
+                    {% if candidate.placement %}
+                        <p class="small mb-1"><strong>Designation:</strong> {{ candidate.placement.offered_designation|default:"--" }}</p>
+                        <p class="small mb-1"><strong>Salary/CTC:</strong> ₹{{ candidate.placement.agreed_salary|default:"--" }}</p>
+                        <p class="small mb-1"><strong>Expected Joining:</strong> {{ candidate.placement.expected_joining_date|default:"--" }}</p>
+                        <p class="small mb-0"><strong>Offer Reference:</strong> {{ candidate.placement.offer_reference_number|default:"--" }}</p>
+                    {% else %}
+                        <p class="small text-muted mb-0">Offer details not updated yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Invoice & Billing -->
+                <div class="col-lg-3 px-4">
+                    <h6 class="fw-bold mb-2 text-secondary"><i class="bi bi-receipt me-1"></i> Invoicing status</h6>
+                    {% if candidate.invoice %}
+                        <p class="small mb-1"><strong>Invoice #:</strong> {{ candidate.invoice.invoice_number }}</p>
+                        <p class="small mb-1"><strong>Amount:</strong> ₹{{ candidate.invoice.amount }}</p>
+                        <p class="small mb-0">
+                            <strong>Status:</strong> 
+                            {% if candidate.invoice.payment_status == 'paid' %}
+                            <span class="badge bg-success-subtle text-success">Paid</span>
+                            {% elif candidate.invoice.payment_status == 'overdue' %}
+                            <span class="badge bg-danger-subtle text-danger">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-warning-subtle text-warning">{{ candidate.invoice.payment_status|title }}</span>
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <p class="small text-muted mb-0">Invoicing details pending.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="col-lg-2 text-end d-flex flex-column gap-2">
+                    <button type="button" class="icd-btn icd-btn--soft icd-btn--sm btn-update-joining"
+                            data-app-id="{{ candidate.app.id }}"
+                            data-name="{{ candidate.app.candidate_name }}"
+                            data-designation="{% if candidate.placement.offered_designation %}{{ candidate.placement.offered_designation }}{% else %}{{ candidate.vacancy.title|default:'' }}{% endif %}"
+                            data-dept="{% if candidate.placement.department %}{{ candidate.placement.department }}{% else %}{{ candidate.vacancy.department|default:'' }}{% endif %}"
+                            data-location="{{ candidate.placement.work_location|default:'' }}"
+                            data-emp-type="{% if candidate.placement.employment_type %}{{ candidate.placement.employment_type }}{% else %}{{ candidate.vacancy.employment_type|default:'' }}{% endif %}"
+                            data-salary="{% if candidate.placement.agreed_salary %}{{ candidate.placement.agreed_salary }}{% else %}{{ candidate.vacancy.salary_max|default:'' }}{% endif %}"
+                            data-ref="{{ candidate.placement.offer_reference_number|default:'' }}"
+                            data-date="{% if candidate.placement.expected_joining_date %}{{ candidate.placement.expected_joining_date|date:'Y-m-d' }}{% else %}{{ candidate.vacancy.joining_date|date:'Y-m-d'|default:'' }}{% endif %}"
+                            data-notes="{{ candidate.placement.joining_notes|default:'' }}">
+                        Update Offer / Joining
+                    </button>
+                    <button type="button" class="icd-btn icd-btn--primary icd-btn--sm btn-confirm-joined"
+                            data-app-id="{{ candidate.app.id }}"
+                            data-name="{{ candidate.app.candidate_name }}">
+                        Confirm Joined
+                    </button>
+                </div>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+
+{% if pagination.total_pages > 1 %}
+<nav class="icd-pagination mt-4" aria-label="Selected candidates pagination">
+    {% if pagination.page > 1 %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'-1' }}">Previous</a>
+    {% endif %}
+    <span>Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
+    {% if pagination.page < pagination.total_pages %}
+    <a class="icd-btn icd-btn--soft icd-btn--sm" href="?q={{ q|urlencode }}&page={{ pagination.page|add:'1' }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-award-fill text-muted" style="font-size: 3rem;"></i>
+    <h3 class="mt-3">No selected candidates</h3>
+    <p class="text-muted">Once candidates are evaluated and marked as selected, they will appear here to manage onboarding.</p>
+</div>
+{% endif %}
+
+{# ── Update Joining Details Modal ── #}
+<div class="modal fade" id="updateJoiningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Offer & Joining Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="joiningForm" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_joining">
+                    <input type="hidden" name="application_id" id="join-application-id">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="offeredDesignation">Offered Designation <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="offered_designation" id="offeredDesignation" required placeholder="e.g. Assistant Professor">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="joiningDept">Department <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="department" id="joiningDept" required placeholder="e.g. Computer Science">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="workLocation">Work Location</label>
+                            <input type="text" class="form-control" name="work_location" id="workLocation" placeholder="e.g. Main Campus">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="empType">Employment Type</label>
+                            <select class="form-select" name="employment_type" id="empType">
+                                <option value="full_time">Full-Time Permanent</option>
+                                <option value="contract">Contractual</option>
+                                <option value="part_time">Part-Time / Visiting</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="agreedSalary">Offered Salary/CTC (Annual) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="agreed_salary" id="agreedSalary" required placeholder="e.g. 800000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="offerRef">Offer Reference Number</label>
+                            <input type="text" class="form-control" name="offer_reference_number" id="offerRef" placeholder="e.g. EDU/2026/CS-09">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="expectedJoiningDate">Expected Joining Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="expected_joining_date" id="expectedJoiningDate" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="joiningNotes">Notes</label>
+                            <textarea class="form-control" name="joining_notes" id="joiningNotes" rows="2" placeholder="Any internal details or communication logs..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="icd-btn icd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="joiningForm" class="icd-btn icd-btn--primary">Save Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Confirm Joined Modal ── #}
+<div class="modal fade" id="confirmJoinedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Candidate Joined</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark <strong id="confirm-candidate-name">--</strong> as joined? This will transition status to <strong>Joined</strong>, activate billing records, and start the 90-day recruitment guarantee protection period.</p>
+                <form id="confirmJoinedForm" method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="confirm_joined">
+                    <input type="hidden" name="application_id" id="confirm-application-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="actualJoiningDate">Actual Joining Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="actual_joining_date" id="actualJoiningDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="employeeId">Employee ID / Code</label>
+                        <input type="text" class="form-control" name="employee_id" id="employeeId" placeholder="e.g. EMP-109">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="confirmNotes">Joining Notes</label>
+                        <textarea class="form-control" name="notes" id="confirmNotes" rows="2" placeholder="Joining onboarding notes..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="icd-btn icd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="confirmJoinedForm" class="icd-btn icd-btn--primary">Confirm Joining</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const updateModal = new bootstrap.Modal(document.getElementById("updateJoiningModal"));
+    const confirmModal = new bootstrap.Modal(document.getElementById("confirmJoinedModal"));
+
+    // Update Joining Click
+    document.querySelectorAll(".btn-update-joining").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.getElementById("join-application-id").value = this.dataset.appId;
+            document.getElementById("offeredDesignation").value = this.dataset.designation;
+            document.getElementById("joiningDept").value = this.dataset.dept;
+            document.getElementById("workLocation").value = this.dataset.location;
+            if (this.dataset.empType) {
+                document.getElementById("empType").value = this.dataset.empType;
+            }
+            document.getElementById("agreedSalary").value = this.dataset.salary;
+            document.getElementById("offerRef").value = this.dataset.ref;
+            document.getElementById("expectedJoiningDate").value = this.dataset.date;
+            document.getElementById("joiningNotes").value = this.dataset.notes;
+
+            updateModal.show();
+        });
+    });
+
+    // Confirm Joined Click
+    document.querySelectorAll(".btn-confirm-joined").forEach(btn => {
+        btn.addEventListener("click", function () {
+            document.getElementById("confirm-application-id").value = this.dataset.appId;
+            document.getElementById("confirm-candidate-name").textContent = this.dataset.name;
+            
+            // Default to today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("actualJoiningDate").value = today;
+
+            confirmModal.show();
+        });
+    });
+});
+</script>
+{% endblock %}

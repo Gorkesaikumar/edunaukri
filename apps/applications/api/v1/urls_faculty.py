@@ -1,0 +1,75 @@
+from django.urls import path
+
+from apps.applications.api.v1.views_faculty import (
+    CollegeFacultyApplicationListView,
+    CollegeFacultyApplicationSearchView,
+    FacultyApplicationDetailView,
+    FacultyApplicationListCreateView,
+    FacultyApplicationNotesView,
+    FacultyApplicationStatisticsView,
+    FacultyApplicationStatusHistoryView,
+    FacultyApplicationStatusView,
+    FacultyApplicationTimelineView,
+    FacultyApplicationWithdrawView,
+    InstitutionFacultyApplicationListView,
+    VacancyApplicationInboxView,
+)
+
+urlpatterns = [
+    path("", FacultyApplicationListCreateView.as_view(), name="faculty-applications"),
+    path(
+        "college/",
+        CollegeFacultyApplicationListView.as_view(),
+        name="college-faculty-applications",
+    ),
+    path(
+        "college/search/",
+        CollegeFacultyApplicationSearchView.as_view(),
+        name="college-faculty-application-search",
+    ),
+    path(
+        "statistics/",
+        FacultyApplicationStatisticsView.as_view(),
+        name="faculty-application-statistics",
+    ),
+    path(
+        "institution/<uuid:college_id>/",
+        InstitutionFacultyApplicationListView.as_view(),
+        name="institution-faculty-applications",
+    ),
+    path(
+        "vacancies/<uuid:vacancy_id>/",
+        VacancyApplicationInboxView.as_view(),
+        name="faculty-vacancy-applications-inbox",
+    ),
+    path(
+        "<uuid:application_id>/",
+        FacultyApplicationDetailView.as_view(),
+        name="faculty-application-detail",
+    ),
+    path(
+        "<uuid:application_id>/status/",
+        FacultyApplicationStatusView.as_view(),
+        name="faculty-application-status",
+    ),
+    path(
+        "<uuid:application_id>/withdraw/",
+        FacultyApplicationWithdrawView.as_view(),
+        name="faculty-application-withdraw",
+    ),
+    path(
+        "<uuid:application_id>/notes/",
+        FacultyApplicationNotesView.as_view(),
+        name="faculty-application-notes",
+    ),
+    path(
+        "<uuid:application_id>/history/",
+        FacultyApplicationStatusHistoryView.as_view(),
+        name="faculty-application-history",
+    ),
+    path(
+        "<uuid:application_id>/timeline/",
+        FacultyApplicationTimelineView.as_view(),
+        name="faculty-application-timeline",
+    ),
+]

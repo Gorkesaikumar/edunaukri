@@ -1,0 +1,236 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ application_detail.job_title }} | Applied Jobs | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-applications.css' %}" rel="stylesheet">
+<style>
+  .jsd-joining-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .78rem; font-weight: 600;
+    padding: .25rem .6rem; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .jsd-joining-badge--joined   { background: #d1fae5; color: #065f46; }
+  .jsd-joining-badge--progress { background: #fef3c7; color: #92400e; }
+  .jsd-joining-badge--confirmed{ background: #dbeafe; color: #1e40af; }
+  .jsd-joining-badge--accepted { background: #ede9fe; color: #5b21b6; }
+  .jsd-joining-badge--abscond  { background: #fee2e2; color: #991b1b; }
+  .jsd-joining-badge--exited   { background: #f1f5f9; color: #475569; }
+  .jsd-joining-badge--pending  { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+{% with d=application_detail %}
+<header class="jsd-page-head">
+    <nav class="jsd-app-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}">Applied Jobs</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ d.job_title }}</span>
+    </nav>
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">{{ d.job_title }}</h1>
+            <p class="jsd-page-head__desc">
+                {{ d.company_name }}
+                {% if d.company_verified %}<i class="bi bi-patch-check-fill jsd-verified"></i>{% endif %}
+            </p>
+        </div>
+        <span class="jsd-app-badge {{ d.status_badge }} jsd-app-badge--lg">
+            <i class="bi {{ d.status_icon }}"></i> {{ d.status_label }}
+        </span>
+    </div>
+</header>
+
+<div id="jsdApplicationDetail"
+     data-application-id="{{ d.application_id }}"
+     data-withdraw-url="{% url 'jobseeker_application_withdraw_api' user_uuid=portal_user_uuid application_id=d.application_id %}"
+     data-offer-url="{% url 'jobseeker_application_offer_api' user_uuid=portal_user_uuid application_id=d.application_id %}">
+
+    <div class="jsd-app-detail-grid">
+        <div class="jsd-app-detail-main">
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <p class="jsd-app-next-step"><i class="bi bi-signpost-split"></i> Next step: <strong>{{ d.next_step }}</strong></p>
+                    <p class="text-muted mb-0">{{ d.status_description }}</p>
+                </div>
+            </section>
+
+            {% if d.interview %}
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <div class="jsd-app-panel__head">
+                        <h2><i class="bi bi-calendar-event"></i> Interview Details</h2>
+                        {% if d.interview.countdown_label %}
+                        <span class="jsd-app-countdown">{{ d.interview.countdown_label }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="jsd-app-info-grid">
+                        <div><span>Type</span><strong>{{ d.interview.interview_type }}</strong></div>
+                        <div><span>Date</span><strong>{{ d.interview.date_label }}</strong></div>
+                        <div><span>Time</span><strong>{{ d.interview.time_label }} ({{ d.interview.timezone_label }})</strong></div>
+                        <div><span>Mode</span><strong>{{ d.interview.mode }}</strong></div>
+                        <div><span>Panel</span><strong>{{ d.interview.panel }}</strong></div>
+                    </div>
+                    <p class="mb-2">{{ d.interview.instructions }}</p>
+                    {% if d.interview.meet_url %}
+                    <a href="{{ d.interview.meet_url }}" class="jsd-btn jsd-btn--primary" target="_blank" rel="noopener">Join Meeting</a>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if d.offer %}
+            <section class="jsd-card jsd-app-panel jsd-app-panel--offer">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-envelope-open-heart"></i> Offer Details</h2>
+                    <div class="jsd-app-info-grid">
+                        <div><span>Offered Salary</span><strong>{{ d.offer.salary_display }}</strong></div>
+                        <div><span>Designation</span><strong>{{ d.offer.designation }}</strong></div>
+                        <div>
+                            <span>Joining</span>
+                            {% with joining=d.offer.joining_date %}
+                            {% if "Joined" in joining and "awaiting" not in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--joined"><i class="bi bi-trophy-fill me-1"></i>{{ joining }}</span>
+                            {% elif "Joining in Progress" in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--progress"><i class="bi bi-arrow-repeat me-1"></i>{{ joining }}</span>
+                            {% elif "Confirmed" in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--confirmed"><i class="bi bi-calendar-check me-1"></i>{{ joining }}</span>
+                            {% elif "Accepted" in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--accepted"><i class="bi bi-hand-thumbs-up me-1"></i>{{ joining }}</span>
+                            {% elif "Absconded" in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--abscond"><i class="bi bi-exclamation-triangle me-1"></i>{{ joining }}</span>
+                            {% elif "Exited" in joining %}
+                            <span class="jsd-joining-badge jsd-joining-badge--exited"><i class="bi bi-box-arrow-right me-1"></i>{{ joining }}</span>
+                            {% else %}
+                            <span class="jsd-joining-badge jsd-joining-badge--pending">{{ joining }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% if d.offer.expiry_label %}
+                        <div><span>Offer Expiry</span><strong>{{ d.offer.expiry_label }}</strong></div>
+                        {% endif %}
+                    </div>
+                    {% if d.offer.letter_url %}
+                    <a href="{{ d.offer.letter_url }}" class="jsd-btn jsd-btn--outline" target="_blank" rel="noopener">Download Offer Letter</a>
+                    {% endif %}
+                    {% if d.can_accept_offer or d.can_decline_offer %}
+                    <div class="jsd-app-offer-actions">
+                        {% if d.can_accept_offer %}
+                        <button type="button" class="jsd-btn jsd-btn--primary" data-offer-action="accept">Accept Offer</button>
+                        {% endif %}
+                        {% if d.can_decline_offer %}
+                        <button type="button" class="jsd-btn jsd-btn--outline" data-offer-action="decline">Decline Offer</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <h2>Job Information</h2>
+                    <div class="jsd-app-info-grid">
+                        <div><span>Department</span><strong>{{ d.department|default:"—" }}</strong></div>
+                        <div><span>Salary</span><strong>{{ d.salary_display|default:"Not disclosed" }}</strong></div>
+                        <div><span>Experience</span><strong>{{ d.experience_label|default:"—" }}</strong></div>
+                        <div><span>Location</span><strong>{{ d.location|default:"—" }}</strong></div>
+                        <div><span>Employment</span><strong>{{ d.employment_type }}</strong></div>
+                        <div><span>Work Mode</span><strong>{{ d.work_mode }}</strong></div>
+                    </div>
+                    <div class="jsd-app-description">{{ d.job_description|linebreaks }}</div>
+                    <a href="{{ d.job_detail_url }}" class="jsd-link">View job posting</a>
+                    {% if d.company_profile_url %}
+                    <a href="{{ d.company_profile_url }}" class="jsd-link ms-3">Company profile</a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <h2>Application Timeline</h2>
+                    <ol class="jsd-app-timeline">
+                        {% for event in d.timeline %}
+                        <li class="jsd-app-timeline__item jsd-app-timeline__item--{{ event.tone }}">
+                            <div class="jsd-app-timeline__icon"><i class="bi {{ event.icon }}"></i></div>
+                            <div>
+                                <p class="jsd-app-timeline__title">{{ event.title }}</p>
+                                <p class="jsd-app-timeline__desc">{{ event.description }}</p>
+                                <p class="jsd-app-timeline__meta">{{ event.actor_name }} · {{ event.occurred_at }} · {{ event.occurred_time }}</p>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">Timeline events will appear as your application progresses.</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </section>
+        </div>
+
+        <aside class="jsd-app-detail-side">
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <h2>Application Info</h2>
+                    <dl class="jsd-app-dl">
+                        <div><dt>Application ID</dt><dd><code>{{ d.application_id }}</code></dd></div>
+                        <div><dt>Applied</dt><dd>{{ d.applied_date }}</dd></div>
+                        <div><dt>Last Updated</dt><dd>{{ d.last_updated }}</dd></div>
+                        {% if d.match_percent %}<div><dt>Match Score</dt><dd>{{ d.match_percent }}%</dd></div>{% endif %}
+                        {% if d.resume_filename %}
+                        <div><dt>Resume</dt><dd>{{ d.resume_filename }}{% if d.resume_download_url %} · <a href="{{ d.resume_download_url }}">Download</a>{% endif %}</dd></div>
+                        {% endif %}
+                    </dl>
+                    {% if d.cover_letter %}
+                    <h3 class="h6 mt-3">Cover Letter</h3>
+                    <p class="small text-muted">{{ d.cover_letter|linebreaksbr }}</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body">
+                    <h2>Recruiter</h2>
+                    <div class="jsd-app-card__recruiter">
+                        <div class="jsd-app-card__avatar">
+                            {% if d.recruiter_avatar %}
+                            <img src="{{ d.recruiter_avatar }}" alt="{{ d.recruiter_name }}">
+                            {% else %}
+                            <i class="bi bi-person-badge"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-semibold">{{ d.recruiter_name }}</p>
+                            <p class="mb-0 text-muted small">Hiring contact</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-app-panel">
+                <div class="jsd-card__body d-grid gap-2">
+                    <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--outline">Back to Applied Jobs</a>
+                    {% if d.can_withdraw %}
+                    <button type="button" class="jsd-btn jsd-btn--danger-outline" data-withdraw-application>Withdraw Application</button>
+                    {% endif %}
+                    {% if d.show_similar_jobs %}
+                    <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--soft">Apply to Similar Jobs</a>
+                    {% endif %}
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JSD_APPLICATIONS = {
+    csrfToken: "{{ csrf_token|escapejs }}"
+  };
+</script>
+<script src="{% static 'js/jobseeker-applications.js' %}"></script>
+{% endblock %}

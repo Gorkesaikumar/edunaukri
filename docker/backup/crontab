@@ -1,0 +1,5 @@
+# Daily backup at 02:00 UTC every day
+0 2 * * * /app/docker/backup/backup.sh daily >> /backups/logs/cron.log 2>&1
+
+# Weekly backup at 03:00 UTC every Sunday
+0 3 * * 0 /app/docker/backup/backup.sh weekly >> /backups/logs/cron.log 2>&1

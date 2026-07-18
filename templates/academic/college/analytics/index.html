@@ -1,0 +1,323 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Analytics | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+/* Custom premium styles for analytics */
+.icd-analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.icd-analytics-filters select {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.icd-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.icd-kpi-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: transform 0.2s ease;
+}
+.icd-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+.icd-kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.icd-kpi-icon.primary { background: #eff6ff; color: #3b82f6; }
+.icd-kpi-icon.secondary { background: #f3e8ff; color: #a855f7; }
+.icd-kpi-icon.accent { background: #fef2f2; color: #ef4444; }
+.icd-kpi-icon.tertiary { background: #ecfdf5; color: #10b981; }
+.icd-kpi-icon.success { background: #f0fdf4; color: #22c55e; }
+.icd-kpi-content h3 {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+.icd-kpi-content p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.icd-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 1024px) {
+    .icd-charts-grid { grid-template-columns: 1fr; }
+}
+
+.icd-chart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+.icd-chart-card h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+.icd-chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.icd-funnel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.icd-funnel-step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.icd-funnel-label {
+    width: 120px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+.icd-funnel-bar-wrap {
+    flex-grow: 1;
+    height: 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.icd-funnel-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    border-radius: 6px;
+    transition: width 1s ease-in-out;
+}
+.icd-funnel-value {
+    width: 60px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.icd-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+}
+.icd-empty-state i {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+.icd-empty-state h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+.icd-empty-state p {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div id="collegeAnalyticsPage" data-api-url="{% portal_url 'college_analytics_insights_api' %}">
+    <header class="icd-analytics-header">
+        <div>
+            <h1 class="icd-page-head__title">Analytics Intelligence</h1>
+            <p class="icd-page-head__desc">Faculty recruitment funnel, vacancy performance, and pipeline intelligence.</p>
+        </div>
+        <div class="icd-analytics-filters">
+            <select id="timePeriodFilter">
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="8w" selected>Last 8 Weeks</option>
+                <option value="3m">Last 3 Months</option>
+                <option value="1y">Last Year</option>
+            </select>
+        </div>
+    </header>
+
+    <div id="analyticsContentWrapper">
+        {% if analytics_page %}
+        <section class="icd-kpi-grid" aria-label="Recruitment metrics">
+            {% for stat in analytics_page.stats %}
+            <article class="icd-kpi-card">
+                <div class="icd-kpi-icon {{ stat.tone }}">
+                    <i class="bi {{ stat.icon }}" aria-hidden="true"></i>
+                </div>
+                <div class="icd-kpi-content">
+                    <h3>{{ stat.label }}</h3>
+                    <p id="kpi-{{ stat.key }}">{{ stat.value }}</p>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <div class="icd-charts-grid">
+            <!-- Hiring Funnel -->
+            <section class="icd-chart-card">
+                <h2>Hiring Funnel</h2>
+                <div class="icd-funnel-container" id="funnelContainer">
+                    {% for step in analytics_page.funnel %}
+                    <div class="icd-funnel-step">
+                        <div class="icd-funnel-label">{{ step.label }}</div>
+                        <div class="icd-funnel-bar-wrap">
+                            <div class="icd-funnel-bar" style="width: {{ step.pct }}%"></div>
+                        </div>
+                        <div class="icd-funnel-value">{{ step.value }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Application Sources -->
+            <section class="icd-chart-card">
+                <h2>Application Sources</h2>
+                <div class="icd-chart-container">
+                    <canvas id="sourceDonutChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Applications Trend -->
+            <section class="icd-chart-card">
+                <h2>Applications Trend</h2>
+                <div class="icd-chart-container">
+                    <canvas id="applicationsLineChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Interview Trend -->
+            <section class="icd-chart-card">
+                <h2>Interview Trend</h2>
+                <div class="icd-chart-container">
+                    <canvas id="interviewBarChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Hiring Trend -->
+            <section class="icd-chart-card">
+                <h2>Hiring Trend</h2>
+                <div class="icd-chart-container">
+                    <canvas id="hiringAreaChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Department-wise Hiring -->
+            <section class="icd-chart-card">
+                <h2>Department-wise Hiring</h2>
+                <div class="icd-chart-container">
+                    <canvas id="departmentBarChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- Vacancy Performance Table -->
+        <section class="icd-chart-card mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Vacancy Performance</h2>
+                <div class="d-flex gap-3">
+                    <input type="search" id="vacancySearch" class="form-control" placeholder="Search vacancy...">
+                    <a href="{% portal_url 'college_vacancies' %}" class="btn btn-outline-primary whitespace-nowrap">Manage</a>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle icd-table" id="vacancyPerformanceTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th role="button" data-sort="title">Vacancy <i class="bi bi-arrow-down-up ms-1 text-muted"></i></th>
+                            <th role="button" data-sort="applications">Applications <i class="bi bi-arrow-down-up ms-1 text-muted"></i></th>
+                            <th role="button" data-sort="views">Views <i class="bi bi-arrow-down-up ms-1 text-muted"></i></th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vacancyTableBody">
+                        {% for row in analytics_page.vacancy_performance %}
+                        <tr data-title="{{ row.title|lower }}" data-applications="{{ row.applications }}" data-views="{{ row.views }}">
+                            <td class="fw-medium">{{ row.title }}</td>
+                            <td>{{ row.applications }}</td>
+                            <td>{{ row.views }}</td>
+                            <td><span class="badge bg-success-subtle text-success">{{ row.status }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="icd-empty-state">
+                                    <i class="bi bi-folder-x"></i>
+                                    <h3>No Vacancies Found</h3>
+                                    <p>Publish a vacancy to start collecting performance analytics.</p>
+                                    <a href="{% portal_url 'college_vacancy_create' %}" class="btn btn-primary mt-3">Post Vacancy</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {{ analytics_page.application_sources|json_script:"initSourcesData" }}
+        {{ analytics_page.trends|json_script:"initTrendsData" }}
+        {{ analytics_page.department_hiring|json_script:"initDepartmentData" }}
+        {{ analytics_page.vacancy_performance|json_script:"initVacancyData" }}
+        {{ analytics_page.funnel|json_script:"initFunnelData" }}
+        {% else %}
+        <div class="icd-empty-state">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h3>Analytics Unavailable</h3>
+            <p>We could not load your dashboard analytics at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<!-- Load Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/college-analytics.js' %}"></script>
+{% endblock %}

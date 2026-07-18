@@ -1,0 +1,460 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>EduNaukri | Faculty Dashboard</title>
+<!-- Font: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS (Source of Truth for Styling) -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f5f2ff",
+                    "background": "#fcf8ff",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fcf8ff",
+                    "on-tertiary-container": "#ffd2be",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "on-surface-variant": "#464555",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "surface": "#fcf8ff",
+                    "outline": "#777587",
+                    "tertiary-fixed": "#ffdbcc",
+                    "surface-container-high": "#eae6f4",
+                    "secondary-container": "#8a4cfc",
+                    "tertiary": "#7e3000",
+                    "on-primary-container": "#dad7ff",
+                    "surface-tint": "#4d44e3",
+                    "on-background": "#1b1b24",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "on-secondary-fixed": "#25005a",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#eaddff",
+                    "secondary": "#712ae2",
+                    "on-secondary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "primary": "#3525cd",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#dcd8e5",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary-container": "#a44100",
+                    "on-tertiary-fixed": "#351000",
+                    "on-surface": "#1b1b24",
+                    "inverse-surface": "#302f39",
+                    "surface-variant": "#e4e1ee",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-primary-fixed": "#0f0069",
+                    "inverse-on-surface": "#f3effc",
+                    "surface-container": "#f0ecf9",
+                    "primary-container": "#4f46e5",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "outline-variant": "#c7c4d8",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "primary-fixed": "#e2dfff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "1.5rem",
+                    "margin_mobile": "20px",
+                    "gutter": "24px",
+                    "container_max": "1280px",
+                    "lg": "2.5rem",
+                    "unit": "4px",
+                    "xl": "4rem",
+                    "sm": "1rem",
+                    "2xl": "8rem",
+                    "xs": "0.5rem"
+            },
+            "fontFamily": {
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-xl": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.03em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FCFCFD;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-elevation {
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .apple-progress {
+            height: 8px;
+            background-color: #F1F5F9;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .apple-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #4F46E5 0%, #712ae2 100%);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-center px-md py-xs max-w-container_max mx-auto h-16">
+<div class="flex items-center gap-md">
+<span class="font-display-lg text-headline-md tracking-tight text-primary"><img src="https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY" alt="EduNaukri Logo" class="h-10 w-auto object-contain"></span>
+<div class="hidden md:flex items-center bg-surface-variant/30 px-sm py-1.5 rounded-full gap-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-body-md">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md w-64 p-0 placeholder:text-on-surface-variant/60" placeholder="Search academic roles..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex gap-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 text-on-surface-variant">
+<span class="material-symbols-outlined">mail</span>
+</button>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A professional academic headshot of a middle-aged male professor with a friendly expression, wearing a tailored navy blazer and white shirt. The background is a softly blurred modern office or university corridor with light coming from large windows. Minimalist and high-quality photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArl9fp6iixmhYXJZGHPrUVJOBRI8X0ngYQqlDJhnVyq0yr61RArNYLKVwHtKJ1LgXw6Aao5ODH3OSGXw5m2QR44oNBMa-ARi4w2xxX3pV4_k38Dki2idgbNZk5qf4o6I_16WquNE6H5Q1nS_QN7kMuo8SqVVvuKBzJ_RVpE1L2-Nq8RtdZrbtbbiIYBoBW_V7stRUkJEwI3giBHuE4oFxaB_lP_8YlNr4yihN3p6Wvjma3bVu1bI3Gpw">
+</div>
+</div>
+</div>
+</nav>
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface rounded-r-xl shadow-md p-md flex flex-col gap-xs z-40 hidden md:flex">
+<div class="mb-lg px-xs">
+<h2 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-xs">Academic Profile</h2>
+<div class="flex items-center gap-sm">
+<div class="flex-1">
+<p class="font-headline-md text-body-lg text-on-surface font-bold">Dr. Aris Thorne</p>
+<p class="text-caption text-on-surface-variant">Professor of Computer Science</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 gap-xs">
+<a class="flex items-center gap-sm px-sm py-2 bg-secondary-container text-on-secondary-container font-bold rounded-xl transition-transform active:scale-[0.98]" href="#"><span class="material-symbols-outlined">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">search</span><span class="font-label-md text-label-md">Job Search</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">description</span><span class="font-label-md text-label-md">Applications</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">bookmark</span><span class="font-label-md text-label-md">Saved Jobs</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">calendar_today</span><span class="font-label-md text-label-md">Interviews</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">person</span><span class="font-label-md text-label-md">Profile</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">menu_book</span><span class="font-label-md text-label-md">Research &amp; Publications</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors" href="#"><span class="material-symbols-outlined">settings</span><span class="font-label-md text-label-md">Settings</span></a>
+<a class="flex items-center gap-sm px-sm py-2 text-error hover:bg-error-container/30 rounded-lg transition-colors mt-md" href="#"><span class="material-symbols-outlined">logout</span><span class="font-label-md text-label-md">Logout</span></a></nav>
+
+</aside>
+<!-- Main Content Area -->
+<main class="pt-24 pb-xl md:ml-64 px-md md:px-lg max-w-container_max mx-auto">
+<!-- Welcome Header -->
+<header class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Good Morning, Dr. Aris Thorne 👋</h1>
+<p class="font-body-lg text-on-surface-variant">Professor of Computer Science • Senior Research Fellow</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Dashboard Stats -->
+<div class="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-md">
+<div class="bg-surface-container-lowest p-md rounded-2xl soft-elevation card-hover flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">send</span>
+</div>
+<div>
+<p class="text-caption text-on-surface-variant uppercase tracking-wider">Applied Jobs</p>
+<p class="text-headline-md font-bold">24</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-2xl soft-elevation card-hover flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">bookmark</span>
+</div>
+<div>
+<p class="text-caption text-on-surface-variant uppercase tracking-wider">Saved Jobs</p>
+<p class="text-headline-md font-bold">12</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-2xl soft-elevation card-hover flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+<div>
+<p class="text-caption text-on-surface-variant uppercase tracking-wider">Profile Views</p>
+<p class="text-headline-md font-bold">482</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-2xl soft-elevation card-hover flex items-center gap-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">forum</span>
+</div>
+<div>
+<p class="text-caption text-on-surface-variant uppercase tracking-wider">Interviews</p>
+<p class="text-headline-md font-bold">06</p>
+</div>
+</div>
+</div>
+<!-- Left Column: Main Dashboard Features -->
+<div class="lg:col-span-8 space-y-lg">
+<!-- Recommended Jobs -->
+<section>
+<div class="flex justify-between items-end mb-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recommended Faculty Jobs</h2>
+<a class="text-primary font-label-md text-label-md hover:underline" href="#">View All Jobs</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Job Card 1 -->
+<div class="bg-white p-md rounded-2xl soft-elevation card-hover border border-outline-variant/10">
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden">
+<img class="w-8 h-8 object-contain" data-alt="Official crest logo of a prestigious university, featuring classic heraldic symbols like a book and laurels, in a refined navy and gold color scheme. High-end institutional branding aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1P8-baVajYmTml1av69wEbfgt9LxaIWxs8k3n2RSaQN4KoM2aBcbkEQIVrQX07qhIxarD81ysePBBX3ll5lE5J-neiOddSibLR8bwrdjZxDtwstXReHXbMSYnXsH0450p0f5CfFzB-dsOBOldI09Yy-g_gzEayJxqQcPl_gpLgJ2CLgFR4VemKxTwEjZziedYuvj0oKmeNvIMnHoxul-pk6VtyAHGOGcHvGyd5ZkheUT96bV0w0dr1g">
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">bookmark</span></button>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold mb-xs">Professor of Physics</h3>
+<p class="text-on-surface-variant text-label-md mb-md">Oxford Global University • London, UK</p>
+<div class="flex flex-wrap gap-xs mb-lg">
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">£85k - £110k</span>
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">Full-time</span>
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">10+ yrs Exp</span>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 bg-primary text-white py-2 rounded-xl font-label-md text-label-md hover:shadow-md transition-all">Apply Now</button>
+<button class="px-md py-2 border border-outline-variant/30 rounded-xl font-label-md text-label-md hover:bg-surface-variant/20 transition-all text-on-surface-variant">Details</button>
+</div>
+</div>
+<!-- Job Card 2 -->
+<div class="bg-white p-md rounded-2xl soft-elevation card-hover border border-outline-variant/10">
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden">
+<img class="w-8 h-8 object-contain" data-alt="Modern geometric abstract logo for an academic institution, featuring interlocking lines forming a stylized 'M', clean and professional, monochromatic dark slate color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJL9L6alWyxYyk-ZiC-OdL3R8bXeSx-RIKBL0aFKcUOlt0qkxSKSNnxrdD3xwM6klp9_aetRZdwyTpqP10dCJBhcITRgI2b6IVh6ZxTKBGf1y51JdVqcnK15OCYbkmiuh12pLREHl0Te7eCdb4skKhNMcn5vnctuu_zFhfcBLEqW5JRubvE3t3KGatUG-7aUy7rhbOjVx50jK44BzFCuwnwA2qxWPlee8fVqaNhct3kqfV_gJrxosg6g">
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">bookmark</span></button>
+</div>
+<h3 class="font-headline-md text-body-lg font-bold mb-xs">HOD Mathematics</h3>
+<p class="text-on-surface-variant text-label-md mb-md">Heritage Academy • Singapore</p>
+<div class="flex flex-wrap gap-xs mb-lg">
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">$95k SGD</span>
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">Permanent</span>
+<span class="px-xs py-1 bg-primary/5 text-primary rounded-full text-caption">On-site</span>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 bg-primary text-white py-2 rounded-xl font-label-md text-label-md hover:shadow-md transition-all">Apply Now</button>
+<button class="px-md py-2 border border-outline-variant/30 rounded-xl font-label-md text-label-md hover:bg-surface-variant/20 transition-all text-on-surface-variant">Details</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Applications Table -->
+<section>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md">Recent Applications</h2>
+<div class="bg-white rounded-2xl soft-elevation overflow-hidden border border-outline-variant/10">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-md py-md text-caption uppercase text-on-surface-variant">Institution</th>
+<th class="px-md py-md text-caption uppercase text-on-surface-variant">Position</th>
+<th class="px-md py-md text-caption uppercase text-on-surface-variant">Date</th>
+<th class="px-md py-md text-caption uppercase text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr>
+<td class="px-md py-md font-label-md text-on-surface">Stanford Institute</td>
+<td class="px-md py-md text-body-md">Assistant Researcher</td>
+<td class="px-md py-md text-body-md text-on-surface-variant">Oct 12, 2024</td>
+<td class="px-md py-md">
+<span class="px-xs py-1 bg-primary/10 text-primary rounded-full text-caption">Shortlisted</span>
+</td>
+</tr>
+<tr>
+<td class="px-md py-md font-label-md text-on-surface">ETH Zurich</td>
+<td class="px-md py-md text-body-md">AI Lead Professor</td>
+<td class="px-md py-md text-body-md text-on-surface-variant">Oct 08, 2024</td>
+<td class="px-md py-md">
+<span class="px-xs py-1 bg-secondary/10 text-secondary rounded-full text-caption">Under Review</span>
+</td>
+</tr>
+<tr>
+<td class="px-md py-md font-label-md text-on-surface">MIT Media Lab</td>
+<td class="px-md py-md text-body-md">Guest Lecturer</td>
+<td class="px-md py-md text-body-md text-on-surface-variant">Sep 28, 2024</td>
+<td class="px-md py-md">
+<span class="px-xs py-1 bg-outline-variant/30 text-on-surface-variant rounded-full text-caption">Applied</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Empty State: Saved Jobs -->
+<section class="bg-surface-container/30 border-2 border-dashed border-outline-variant/40 rounded-2xl p-xl text-center">
+<div class="max-w-sm mx-auto">
+<div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-md">
+<span class="material-symbols-outlined text-display-lg text-primary/30">bookmark_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Your Saved Jobs will appear here</h3>
+<p class="text-on-surface-variant mb-lg">Start exploring the best faculty positions and save them for later application.</p>
+<button class="bg-primary text-white px-lg py-md rounded-xl font-label-md text-label-md hover:shadow-lg transition-all">Browse All Jobs</button>
+</div>
+</section>
+</div>
+<!-- Right Column: Contextual Widgets -->
+<div class="lg:col-span-4 space-y-lg">
+<!-- Profile Completion -->
+<div class="bg-white p-lg rounded-2xl soft-elevation border border-primary/10">
+<h3 class="font-headline-md text-body-lg font-bold mb-md">Profile Completion</h3>
+<div class="flex items-center justify-between mb-xs">
+<span class="font-label-md text-primary">85% Complete</span>
+<span class="text-caption text-on-surface-variant">Excellent</span>
+</div>
+<div class="apple-progress mb-lg">
+<div class="apple-progress-fill w-[85%]"></div>
+</div>
+<ul class="space-y-sm mb-lg">
+<li class="flex items-center gap-xs text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-body-md">check_circle</span> Verified Ph.D. Documents
+                        </li>
+<li class="flex items-center gap-xs text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-body-md">check_circle</span> Teaching Philosophy
+                        </li>
+<li class="flex items-center gap-xs text-label-md text-on-surface">
+<span class="material-symbols-outlined text-on-surface-variant/40 text-body-md">add_circle</span> Add Research Publications
+                        </li>
+</ul>
+<button class="w-full bg-primary-container text-white py-md rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity">Complete Profile</button>
+</div>
+<!-- Interview Schedule -->
+<div class="bg-white p-lg rounded-2xl soft-elevation border border-outline-variant/10">
+<h3 class="font-headline-md text-body-lg font-bold mb-md">Upcoming Interviews</h3>
+<div class="space-y-md">
+<div class="flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container text-primary rounded-xl flex flex-col items-center justify-center">
+<span class="text-caption font-bold">OCT</span>
+<span class="text-body-md font-bold">24</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-on-surface">Technical Assessment</p>
+<p class="text-caption text-on-surface-variant">Oxford Global • 10:30 AM</p>
+<button class="mt-xs text-primary font-label-md text-caption flex items-center gap-xs">
+<span class="material-symbols-outlined text-body-md">video_call</span> Join via Zoom
+                                </button>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-container text-primary rounded-xl flex flex-col items-center justify-center">
+<span class="text-caption font-bold">OCT</span>
+<span class="text-body-md font-bold">28</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-on-surface">Final HR Round</p>
+<p class="text-caption text-on-surface-variant">Heritage Academy • 02:00 PM</p>
+<span class="mt-xs inline-flex items-center gap-xs text-caption text-on-surface-variant">
+<span class="material-symbols-outlined text-body-md">location_on</span> In-person (Singapore)
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div>
+<h3 class="font-headline-md text-body-lg font-bold mb-md">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-md">
+<button class="bg-white p-md rounded-2xl soft-elevation card-hover flex flex-col items-center gap-xs text-center border border-outline-variant/5">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+<span class="text-caption font-label-md text-on-surface">Upload Resume</span>
+</button>
+<button class="bg-white p-md rounded-2xl soft-elevation card-hover flex flex-col items-center gap-xs text-center border border-outline-variant/5">
+<span class="material-symbols-outlined text-secondary">school</span>
+<span class="text-caption font-label-md text-on-surface">Add Exp.</span>
+</button>
+<button class="bg-white p-md rounded-2xl soft-elevation card-hover flex flex-col items-center gap-xs text-center border border-outline-variant/5">
+<span class="material-symbols-outlined text-tertiary">search</span>
+<span class="text-caption font-label-md text-on-surface">Search Jobs</span>
+</button>
+<button class="bg-white p-md rounded-2xl soft-elevation card-hover flex flex-col items-center gap-xs text-center border border-outline-variant/5">
+<span class="material-symbols-outlined text-on-surface-variant">share</span>
+<span class="text-caption font-label-md text-on-surface">Share Profile</span>
+</button>
+</div>
+</div>
+<!-- Notifications Panel -->
+<div class="bg-surface-container-low p-lg rounded-2xl border border-outline-variant/10">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-label-md text-label-md text-on-surface font-bold">Notifications</h3>
+<span class="w-2 h-2 bg-error rounded-full"></span>
+</div>
+<div class="space-y-md">
+<div class="flex gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-body-md">visibility</span>
+</div>
+<div class="text-caption">
+<p class="text-on-surface"><span class="font-bold">Stanford Institute</span> viewed your profile.</p>
+<p class="text-on-surface-variant">2 hours ago</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-body-md">campaign</span>
+</div>
+<div class="text-caption">
+<p class="text-on-surface">New position: <span class="font-bold">Physics Professor</span> at Cambridge.</p>
+<p class="text-on-surface-variant">5 hours ago</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-md text-label-md text-primary text-center">See all activity</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+
+<!-- Micro-interactions Script -->
+<script>
+        // Subtle hover sounds or light interactive effects can go here
+        document.querySelectorAll('.card-hover').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential for haptic or visual feedback
+            });
+        });
+    </script>
+
+
+</body></html>

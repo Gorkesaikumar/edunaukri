@@ -1,0 +1,44 @@
+<article class="rcd-bento rcd-bento--press rcd-job-card-v2" data-job-id="{{ job.id }}">
+    <div class="rcd-job-card-v2__head">
+        <div class="rcd-job-card-v2__badges">
+            {% for badge in job.badges %}
+            <span class="rcd-job-badge rcd-job-badge--{{ badge }}">{{ badge|title }}</span>
+            {% endfor %}
+            <span class="rcd-job-badge rcd-job-badge--status">{{ job.status_label }}</span>
+        </div>
+        <h3 class="rcd-job-card-v2__title">{{ job.title }}</h3>
+        <p class="rcd-job-card-v2__dept">{{ job.department }} · {{ job.employment_type }}</p>
+    </div>
+    <div class="rcd-job-card-v2__meta">
+        <span><span class="material-symbols-outlined">location_on</span>{{ job.location }}</span>
+        {% if job.salary_range %}<span><span class="material-symbols-outlined">payments</span>{{ job.salary_range }}</span>{% endif %}
+        <span><span class="material-symbols-outlined">event</span>Posted {{ job.posted_label }}</span>
+        {% if job.deadline_label != "—" %}<span><span class="material-symbols-outlined">hourglass_top</span>Deadline {{ job.deadline_label }}</span>{% endif %}
+    </div>
+    <div class="rcd-job-card-v2__stats">
+        <div><strong>{{ job.application_count }}</strong><span>Applicants</span></div>
+        <div><strong>{{ job.shortlisted_count }}</strong><span>Shortlisted</span></div>
+        <div><strong>{{ job.interview_count }}</strong><span>Interviews</span></div>
+        <div><strong>{{ job.offer_count }}</strong><span>Offers</span></div>
+        <div><strong>{{ job.hired_count }}</strong><span>Hired</span></div>
+    </div>
+    <div class="rcd-job-card-v2__actions">
+        <a href="{{ job.url }}" class="rcd-btn rcd-btn--soft rcd-btn--xs">View</a>
+        <a href="{{ job.edit_url }}" class="rcd-btn rcd-btn--soft rcd-btn--xs">Edit</a>
+        {% if job.can_duplicate %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-job-duplicate" data-url="{{ job.duplicate_url }}">Duplicate</button>
+        {% endif %}
+        {% if job.can_publish %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-job-publish" data-url="{{ job.publish_url }}">Publish</button>
+        {% endif %}
+        {% if job.can_pause %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-job-pause" data-url="{{ job.pause_url }}">Pause</button>
+        {% endif %}
+        {% if job.can_close %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-job-close" data-url="{{ job.close_url }}">Close</button>
+        {% endif %}
+        {% if job.can_delete %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-job-delete" data-url="{{ job.delete_url }}">Delete</button>
+        {% endif %}
+    </div>
+</article>

@@ -1,0 +1,90 @@
+<tr class="rcd-jobs-table__row" data-job-id="{{ job.id }}">
+    <td>
+        <div class="rcd-jobs-table__title-cell">
+            <strong class="rcd-jobs-table__title">{{ job.title }}</strong>
+            <span class="text-muted small d-block">{{ job.company_name }}{% if job.department %} · {{ job.department }}{% endif %}</span>
+            {% for badge in job.badges %}
+            <span class="rcd-job-badge rcd-job-badge--{{ badge }}">{{ badge|title }}</span>
+            {% endfor %}
+        </div>
+    </td>
+    <td class="rcd-jobs-table__hide-sm">
+        <span class="d-block small">{{ job.employment_type }}</span>
+        <span class="text-muted small">{{ job.work_mode }}</span>
+    </td>
+    <td class="rcd-jobs-table__hide-md"><span class="small">{{ job.location }}</span></td>
+    <td class="rcd-jobs-table__hide-lg"><span class="small">{{ job.salary_range }}</span></td>
+    <td><span class="rcd-status-pill rcd-status-pill--{{ job.status_tone }}">{{ job.status_label }}</span></td>
+    <td>
+        <button type="button" class="rcd-jobs-table__apps-btn rec-view-applicants" data-job-id="{{ job.id }}" data-job-title="{{ job.title }}" data-applicants-url="{{ job.applicants_api_url }}" title="View applicants">
+            <strong>{{ job.application_count }}</strong>
+        </button>
+    </td>
+    <td class="rcd-jobs-table__hide-md">
+        <div class="rcd-jobs-pipeline-mini" title="Shortlisted · Interviews · Offers · Hired">
+            <span>{{ job.shortlisted_count }}</span>
+            <span>{{ job.interview_count }}</span>
+            <span>{{ job.offer_count }}</span>
+            <span>{{ job.hired_count }}</span>
+        </div>
+    </td>
+    <td class="rcd-jobs-table__hide-lg">
+        <span class="small">{{ job.view_count }}</span>
+        {% if job.saved_count %}<span class="text-muted small d-block">{{ job.saved_count }} saves</span>{% endif %}
+    </td>
+    <td class="rcd-jobs-table__hide-sm">
+        <span class="small">{{ job.published_label }}</span>
+        {% if job.expiry_label != "—" %}<span class="text-muted small d-block">Exp {{ job.expiry_label }}</span>{% endif %}
+    </td>
+    <td class="text-end">
+        <div class="dropdown rcd-jobs-actions">
+            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
+            <ul class="dropdown-menu dropdown-menu-end rcd-jobs-actions__menu">
+                <li><a class="dropdown-item" href="{{ job.applicants_url }}"><span class="material-symbols-outlined">group</span>View Applicants</a></li>
+                <li><a class="dropdown-item" href="{{ job.edit_url }}"><span class="material-symbols-outlined">edit</span>Edit Job</a></li>
+                {% if job.can_duplicate %}
+                <li><button type="button" class="dropdown-item rec-job-duplicate" data-url="{{ job.duplicate_url }}"><span class="material-symbols-outlined">content_copy</span>Duplicate</button></li>
+                {% endif %}
+                {% if job.can_publish %}
+                <li><button type="button" class="dropdown-item rec-job-publish" data-url="{{ job.publish_url }}"><span class="material-symbols-outlined">publish</span>Publish</button></li>
+                {% endif %}
+                {% if job.can_pause %}
+                <li><button type="button" class="dropdown-item rec-job-pause" data-url="{{ job.pause_url }}"><span class="material-symbols-outlined">pause_circle</span>Pause</button></li>
+                {% endif %}
+                {% if job.can_reopen %}
+                <li><button type="button" class="dropdown-item rec-job-reopen" data-url="{{ job.reopen_url }}"><span class="material-symbols-outlined">play_circle</span>Reopen</button></li>
+                {% endif %}
+                {% if job.can_close %}
+                <li><button type="button" class="dropdown-item rec-job-close" data-url="{{ job.close_url }}"><span class="material-symbols-outlined">block</span>Close</button></li>
+                {% endif %}
+                {% if job.can_archive %}
+                <li><button type="button" class="dropdown-item rec-job-archive" data-url="{{ job.archive_url }}"><span class="material-symbols-outlined">archive</span>Archive</button></li>
+                {% endif %}
+                {% if job.can_delete %}
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item text-danger rec-job-delete" data-url="{{ job.delete_url }}"><span class="material-symbols-outlined">delete</span>Delete</button></li>
+                {% endif %}
+            </ul>
+        </div>
+    </td>
+</tr>
+<tr class="rcd-jobs-table__analytics-row rcd-jobs-table__hide-analytics-mobile" data-job-id="{{ job.id }}">
+    <td colspan="10">
+        <div class="rcd-jobs-analytics-bar">
+            <div class="rcd-jobs-analytics-bar__item"><span>Apps</span><strong>{{ job.analytics.applications }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Views</span><strong>{{ job.analytics.views }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Saves</span><strong>{{ job.analytics.saves }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Shortlisted</span><strong>{{ job.analytics.shortlisted }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Interviews</span><strong>{{ job.analytics.interviews }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Offers</span><strong>{{ job.analytics.offers }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Hired</span><strong>{{ job.analytics.hired }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item"><span>Rejected</span><strong>{{ job.analytics.rejected }}</strong></div>
+            <div class="rcd-jobs-analytics-bar__item rcd-jobs-analytics-bar__item--rate">
+                <span>Conversion</span>
+                <strong>{{ job.analytics.conversion_rate }}%</strong>
+                <div class="rcd-jobs-analytics-bar__track"><div class="rcd-jobs-analytics-bar__fill" style="width: {{ job.analytics.conversion_rate }}%"></div></div>
+            </div>
+            <span class="text-muted small ms-auto">{{ job.experience_label }} experience</span>
+        </div>
+    </td>
+</tr>

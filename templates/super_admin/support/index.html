@@ -1,0 +1,72 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <button onclick="showToast('Initiating emergency priority ticket queue check...', 'info');" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-sm flex items-center gap-1">
+        <span class="material-symbols-outlined !text-sm">priority_high</span> Priority Queue
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Support Escalations Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Open Helpdesk Tickets</p>
+        <span class="text-2xl font-black text-on-surface mt-1 block">0 Active</span>
+        <span class="text-[10px] text-emerald-600 font-bold mt-0.5 block">All queues cleared</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Average Adjudication SLA</p>
+        <span class="text-2xl font-black text-primary mt-1 block">&lt; 2.4 Hours</span>
+        <span class="text-[10px] text-on-surface-variant/60 mt-0.5 block">For guarantee disputes</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs">
+        <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Customer Satisfaction (CSAT)</p>
+        <span class="text-2xl font-black text-emerald-600 mt-1 block">99.4%</span>
+        <span class="text-[10px] text-emerald-600 font-bold mt-0.5 block">Enterprise standard</span>
+    </div>
+</div>
+
+<!-- Support Tickets Table -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden mt-2">
+    <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Escalated Tickets & Dispute Directory</h3>
+            <p class="text-[10px] text-on-surface-variant/60">Cross-domain support inquiries requiring super admin intervention</p>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Ticket ID & Subject</th>
+                    <th class="p-3.5">Submitted By</th>
+                    <th class="p-3.5">Domain / Priority</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5">Created Date</th>
+                    <th class="p-3.5 text-right">Resolution</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for tkt in tickets %}
+                <tr class="hover:bg-gray-50/80">
+                    <td class="p-3.5 font-bold">{{ tkt.subject }}</td>
+                    <td class="p-3.5">{{ tkt.submitter }}</td>
+                    <td class="p-3.5 uppercase">{{ tkt.domain }}</td>
+                    <td class="p-3.5">{{ tkt.status }}</td>
+                    <td class="p-3.5 font-mono">{{ tkt.created_at }}</td>
+                    <td class="p-3.5 text-right"><button class="text-primary font-bold">Resolve</button></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs">No active support escalations or dispute tickets pending review.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

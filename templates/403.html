@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied (403) | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 text-center">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden p-5 bg-white">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle p-4" style="width: 90px; height: 90px;">
+                        <i class="bi bi-lock-fill fs-1"></i>
+                    </div>
+                </div>
+                <h1 class="display-4 fw-bold mb-3 text-dark">403</h1>
+                <h3 class="fw-semibold text-secondary mb-3">Access Denied</h3>
+                <p class="text-muted fs-6 mb-5">
+                    You do not have permission to access this page or resource. Please ensure you are logged in with the correct account.
+                </p>
+                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Go Back
+                    </a>
+                    <a href="/" class="btn btn-primary btn-lg px-4 rounded-pill shadow-sm">
+                        <i class="bi bi-house-door me-2"></i>Home Page
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

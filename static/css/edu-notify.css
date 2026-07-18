@@ -1,0 +1,312 @@
+/* EduNaukri — global notification system */
+
+:root {
+  --en-primary: var(--jsd-primary, var(--ed-primary, #3525cd));
+  --en-on-primary: var(--jsd-on-primary, #ffffff);
+  --en-surface: var(--jsd-surface-container-lowest, #ffffff);
+  --en-on-surface: var(--jsd-on-surface, var(--ed-on-surface, #1b1b24));
+  --en-muted: var(--jsd-on-surface-variant, #464555);
+  --en-outline: var(--jsd-outline-variant, #c7c4d8);
+  --en-success: var(--jsd-success, #16a34a);
+  --en-error: var(--jsd-error, #ba1a1a);
+  --en-warning: #d97706;
+  --en-info: #0284c7;
+  --en-radius: var(--jsd-radius-lg, 1rem);
+  --en-shadow: var(--jsd-shadow-lg, 0 20px 40px -4px rgba(15, 23, 42, 0.12));
+  --en-font: var(--jsd-font, "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif);
+}
+
+.edu-notify-host {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.edu-notify {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--en-radius);
+  background: var(--en-surface);
+  border: 1px solid var(--en-outline);
+  box-shadow: var(--en-shadow);
+  font-family: var(--en-font);
+  pointer-events: auto;
+  animation: eduNotifyIn 0.28s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.edu-notify.edu-notify--hide {
+  animation: eduNotifyOut 0.24s ease forwards;
+}
+
+.edu-notify__icon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  margin-top: 0.05rem;
+}
+
+.edu-notify--success .edu-notify__icon { color: var(--en-success); }
+.edu-notify--error .edu-notify__icon { color: var(--en-error); }
+.edu-notify--warning .edu-notify__icon { color: var(--en-warning); }
+.edu-notify--info .edu-notify__icon { color: var(--en-info); }
+
+.edu-notify__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.edu-notify__title {
+  margin: 0 0 0.15rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--en-on-surface);
+}
+
+.edu-notify__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--en-muted);
+}
+
+.edu-notify__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+}
+
+.edu-notify__action {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--en-primary);
+  cursor: pointer;
+}
+
+.edu-notify__close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--en-muted);
+  font-size: 1.125rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.edu-notify__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(53, 37, 205, 0.15);
+  transform-origin: left center;
+  animation: eduNotifyProgress var(--edu-notify-duration, 3000ms) linear forwards;
+}
+
+.edu-notify--success { border-left: 4px solid var(--en-success); }
+.edu-notify--error { border-left: 4px solid var(--en-error); }
+.edu-notify--warning { border-left: 4px solid var(--en-warning); }
+.edu-notify--info { border-left: 4px solid var(--en-info); }
+
+.edu-dialog-open {
+  overflow: hidden;
+}
+
+.edu-dialog-host {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.edu-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 16, 34, 0.5);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.edu-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(36rem, calc(100vw - 2rem));
+  background: var(--en-surface);
+  border: 1px solid var(--en-outline);
+  border-radius: 1rem;
+  box-shadow: var(--en-shadow);
+  padding: 1.25rem;
+  transform: translateY(14px) scale(0.985);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.edu-dialog-host.is-open .edu-dialog-backdrop {
+  opacity: 1;
+}
+
+.edu-dialog-host.is-open .edu-dialog {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.edu-dialog__close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  border: none;
+  background: transparent;
+  color: var(--en-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.edu-dialog__icon-wrap {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.edu-dialog__icon-wrap--danger { background: rgba(186, 26, 26, 0.1); color: var(--en-error); }
+.edu-dialog__icon-wrap--warning { background: rgba(217, 119, 6, 0.12); color: var(--en-warning); }
+.edu-dialog__icon-wrap--success { background: rgba(22, 163, 74, 0.1); color: var(--en-success); }
+.edu-dialog__icon-wrap--info { background: rgba(2, 132, 199, 0.12); color: var(--en-info); }
+
+.edu-dialog__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.14rem;
+  font-weight: 800;
+  color: var(--en-on-surface);
+}
+
+.edu-dialog__message {
+  margin: 0;
+  color: var(--en-muted);
+  line-height: 1.55;
+}
+
+.edu-dialog__input-wrap {
+  margin-top: 0.95rem;
+}
+
+.edu-dialog__input {
+  width: 100%;
+  border: 1px solid var(--en-outline);
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  color: var(--en-on-surface);
+}
+
+.edu-dialog__input:focus {
+  outline: none;
+  border-color: var(--en-primary);
+  box-shadow: 0 0 0 3px rgba(53, 37, 205, 0.16);
+}
+
+.edu-dialog__actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.edu-btn {
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  padding: 0.58rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.edu-btn--ghost {
+  border-color: var(--en-outline);
+  background: transparent;
+  color: var(--en-on-surface);
+}
+
+.edu-btn--primary {
+  background: var(--en-primary);
+  border-color: var(--en-primary);
+  color: #fff;
+}
+
+.edu-btn--warning {
+  background: var(--en-warning);
+  border-color: var(--en-warning);
+  color: #fff;
+}
+
+.edu-btn--danger {
+  background: var(--en-error);
+  border-color: var(--en-error);
+  color: #fff;
+}
+
+@keyframes eduNotifyIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eduNotifyOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes eduNotifyProgress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 575.98px) {
+  .edu-notify-host {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+
+  .edu-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .edu-btn {
+    width: 100%;
+  }
+}

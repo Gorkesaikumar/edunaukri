@@ -1,0 +1,64 @@
+<tr class="rcd-applicants-table__row" data-application-id="{{ app.id }}">
+    <td>
+        <div class="rcd-applicants-table__candidate">
+            {% if app.photo_url %}
+            <img src="{{ app.photo_url }}" alt="" class="rcd-applicants-table__photo">
+            {% else %}
+            <span class="rcd-pipeline-card__avatar"><span>{{ app.initials }}</span></span>
+            {% endif %}
+            <div>
+                <strong class="rcd-applicants-table__name">{{ app.applicant_name }}</strong>
+                {% if app.has_resume %}
+                <span class="rcd-applicants-table__resume-dot" title="Resume available"><span class="material-symbols-outlined">description</span></span>
+                {% endif %}
+                <span class="text-muted small d-block rcd-applicants-table__hide-sm-inline">{{ app.email }}</span>
+            </div>
+        </div>
+    </td>
+    <td class="rcd-applicants-table__hide-sm"><span class="small">{{ app.job_title }}</span></td>
+    <td class="rcd-applicants-table__hide-md"><span class="small">{{ app.experience_years }}{% if app.experience_years != "—" %} yrs{% endif %}</span></td>
+    <td class="rcd-applicants-table__hide-lg"><span class="small text-truncate d-inline-block" style="max-width:10rem" title="{{ app.skills_label }}">{{ app.skills_label }}</span></td>
+    <td class="rcd-applicants-table__hide-md"><span class="small">{{ app.current_company }}</span></td>
+    <td class="rcd-applicants-table__hide-sm"><span class="small">{{ app.location }}</span></td>
+    <td><span class="small">{{ app.applied_label }}</span></td>
+    <td><span class="rcd-status-pill rcd-status-pill--{{ app.status_tone }}">{{ app.stage_label }}</span></td>
+    <td class="text-end">
+        <div class="dropdown rcd-applicant-actions">
+            <button type="button"
+                    class="rcd-btn rcd-btn--soft rcd-btn--xs dropdown-toggle rec-applicant-actions-btn"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="true"
+                    aria-expanded="false"
+                    data-app-id="{{ app.id }}"
+                    data-app-name="{{ app.applicant_name }}"
+                    data-app-job="{{ app.job_title }}"
+                    data-has-resume="{% if app.has_resume %}1{% else %}0{% endif %}"
+                    data-status-url="{{ app.status_url }}"
+                    data-notes-url="{{ app.notes_url }}"
+                    data-resume-url="{{ app.resume_url }}"
+                    data-resume-preview-url="{{ app.resume_preview_url }}"
+                    data-detail-url="{{ app.detail_url }}"
+                    data-interview-url="{{ app.interview_schedule_url }}"
+                    data-email-url="{{ app.email_url }}"
+                    data-messages-url="{{ app.messages_url }}">
+                Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end rcd-applicant-actions__menu">
+                <li><button type="button" class="dropdown-item rec-action-profile"><span class="material-symbols-outlined">person</span>View Profile</button></li>
+                <li><button type="button" class="dropdown-item rec-action-resume"{% if not app.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">visibility</span>View Resume</button></li>
+                <li><button type="button" class="dropdown-item rec-action-download"{% if not app.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">download</span>Download Resume</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item rec-action-shortlist"><span class="material-symbols-outlined">star</span>Shortlist Candidate</button></li>
+                <li><button type="button" class="dropdown-item rec-action-reject"><span class="material-symbols-outlined">block</span>Reject Candidate</button></li>
+                <li><button type="button" class="dropdown-item rec-action-interview"><span class="material-symbols-outlined">calendar_today</span>Schedule Interview</button></li>
+                <li><button type="button" class="dropdown-item rec-action-next"><span class="material-symbols-outlined">trending_flat</span>Move to Next Stage</button></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item rec-action-notes"><span class="material-symbols-outlined">edit_note</span>Add Internal Notes</button></li>
+                <li><a class="dropdown-item" href="{{ app.messages_url }}"><span class="material-symbols-outlined">chat</span>Send Message</a></li>
+                {% if app.email_url %}
+                <li><a class="dropdown-item" href="{{ app.email_url }}"><span class="material-symbols-outlined">mail</span>Send Email</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </td>
+</tr>

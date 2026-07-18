@@ -1,0 +1,94 @@
+{% load static portal_urls %}
+
+<header class="jsd-header rcd-header" role="banner">
+    <div class="jsd-header__inner rcd-header__inner">
+        <div class="jsd-header__brand rcd-header__brand">
+            <button class="jsd-icon-btn jsd-header__menu-btn d-lg-none" type="button"
+                    data-bs-toggle="offcanvas" data-bs-target="#jsdMobileSidebar"
+                    aria-controls="jsdMobileSidebar" aria-label="Open navigation menu">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+
+            <a href="{% portal_url 'recruiter_dashboard' %}" class="jsd-header__logo-link" aria-label="{{ PLATFORM_NAME }} recruiter dashboard home">
+                <img class="jsd-header__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }}">
+            </a>
+
+            <div class="jsd-header__divider d-none d-md-block" aria-hidden="true"></div>
+
+            <div class="rcd-header__hub d-none d-md-flex">
+                {% if company_branding %}
+                <span class="rcd-header__company-name">{{ company_branding.name }}</span>
+                {% if company_branding.verified %}
+                {% include "it/recruiter/partials/company_verified_badge.html" with verified=True compact=True %}
+                {% endif %}
+                {% else %}
+                <span>Recruiter Hub</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="rcd-header__center">
+            <form class="rcd-header__search" method="get" action="{% portal_url 'recruiter_candidates' %}" role="search">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input type="search" name="q" placeholder="Search applicants..." aria-label="Search applicants"
+                       value="{{ request.GET.q|default:'' }}">
+            </form>
+        </div>
+
+        <div class="jsd-header__actions rcd-header__actions">
+            <div class="rcd-header__icon-group">
+                <a href="{{ messages_url }}" class="jsd-icon-btn d-none d-md-inline-flex" aria-label="Messages">
+                    <span class="material-symbols-outlined" aria-hidden="true">chat</span>
+                </a>
+
+                <a href="{{ notifications_url }}" class="jsd-icon-btn" aria-label="Notifications{% if unread_notification_count %} ({{ unread_notification_count }} unread){% endif %}">
+                    <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                    {% if unread_notification_count %}
+                    <span class="jsd-icon-btn__badge" aria-hidden="true">
+                        {% if unread_notification_count > 9 %}9+{% else %}{{ unread_notification_count }}{% endif %}
+                    </span>
+                    {% endif %}
+                </a>
+
+                <a href="{% portal_url 'recruiter_settings' %}" class="jsd-icon-btn rcd-header__settings d-none d-sm-inline-flex" aria-label="Settings">
+                    <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+                </a>
+            </div>
+
+            <div class="jsd-header__divider d-none d-md-block" aria-hidden="true"></div>
+
+            <div class="dropdown jsd-header__profile-wrap rcd-header__profile-wrap">
+                <button class="jsd-header__profile rcd-header__profile dropdown-toggle" type="button" id="jsdProfileDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="Account menu for {{ header_user.display_name }}">
+                    <div class="jsd-header__profile-meta rcd-header__profile-meta d-none d-lg-flex">
+                        <span class="jsd-header__profile-name">{{ header_user.display_name }}</span>
+                        <span class="jsd-header__profile-role">{{ header_user.role_label }}</span>
+                    </div>
+                    <div class="jsd-header__avatar rcd-header__avatar">
+                        {% if header_user.avatar_url %}
+                        <img src="{{ header_user.avatar_url }}" alt="">
+                        {% else %}
+                        <span class="jsd-header__avatar-initials">{{ header_user.initials }}</span>
+                        {% endif %}
+                    </div>
+                    <i class="bi bi-chevron-down jsd-header__profile-chevron" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end jsd-dropdown-menu jsd-profile-menu" aria-labelledby="jsdProfileDropdown">
+                    <li class="jsd-profile-menu__head d-lg-none px-3 py-2">
+                        <span class="jsd-header__profile-name d-block">{{ header_user.display_name }}</span>
+                        <span class="jsd-header__profile-role">{{ header_user.role_label }}</span>
+                    </li>
+                    <li class="d-lg-none"><hr class="dropdown-divider my-1"></li>
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% portal_url 'recruiter_dashboard' %}"><span class="material-symbols-outlined">dashboard</span>My Dashboard</a></li>
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% portal_url 'recruiter_profile' %}"><span class="material-symbols-outlined">apartment</span>Company Profile</a></li>
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% portal_url 'recruiter_jobs' %}"><span class="material-symbols-outlined">work</span>Manage Jobs</a></li>
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% portal_url 'recruiter_candidates' %}"><span class="material-symbols-outlined">group</span>Applicants</a></li>
+                    <li><a class="dropdown-item jsd-dropdown-item" href="{% portal_url 'recruiter_settings' %}"><span class="material-symbols-outlined">settings</span>Settings</a></li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li><a class="dropdown-item jsd-dropdown-item jsd-dropdown-item--danger" href="{{ logout_url }}"><span class="material-symbols-outlined">logout</span>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,133 @@
+<!-- Job Detail Modal -->
+<div class="modal fade" id="jobDetailModal" tabindex="-1" aria-labelledby="jobDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-bottom-0 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="jdm-company-logo" class="rounded overflow-hidden d-flex align-items-center justify-content-center bg-white border" style="width: 48px; height: 48px;">
+                        <i class="fas fa-building text-muted"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold" id="jobDetailModalLabel">Job Title</h5>
+                        <p class="mb-0 text-muted small" id="jdm-company-name">Company Name &bull; Location</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0">
+                <div class="row g-0 h-100">
+                    <!-- Main Content (Left) -->
+                    <div class="col-lg-8 border-end p-4">
+                        <div class="mb-4 d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary mb-2" id="jdm-domain">IT Domain</span>
+                                <h4 class="fw-bold mb-3">Job Description</h4>
+                            </div>
+                            <div class="text-end" id="jdm-badges">
+                                <!-- Status Badges appended here -->
+                            </div>
+                        </div>
+
+                        <div class="job-description-content text-secondary mb-4" id="jdm-description" style="white-space: pre-line;">
+                            <!-- Description here -->
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Roles & Responsibilities</h6>
+                        <div class="text-secondary mb-4" id="jdm-responsibilities" style="white-space: pre-line;">
+                            <!-- Responsibilities here -->
+                        </div>
+                        
+                        <h6 class="fw-bold mb-3">Requirements</h6>
+                        <div class="text-secondary mb-4" id="jdm-requirements" style="white-space: pre-line;">
+                            <!-- Requirements here -->
+                        </div>
+                        
+                        <h6 class="fw-bold mb-3">Required Skills</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-4" id="jdm-skills">
+                            <!-- Skills chips appended here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar (Right) -->
+                    <div class="col-lg-4 bg-light p-4">
+                        <h6 class="fw-bold mb-3 text-uppercase small text-muted">At a Glance</h6>
+                        
+                        <div class="d-flex flex-column gap-3 mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white rounded p-2 text-primary shadow-sm"><i class="fas fa-briefcase fa-fw"></i></div>
+                                <div>
+                                    <div class="small text-muted">Employment</div>
+                                    <div class="fw-medium" id="jdm-employment">Full Time</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white rounded p-2 text-primary shadow-sm"><i class="fas fa-money-bill-wave fa-fw"></i></div>
+                                <div>
+                                    <div class="small text-muted">Salary Range</div>
+                                    <div class="fw-medium" id="jdm-salary">Not Disclosed</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white rounded p-2 text-primary shadow-sm"><i class="fas fa-chart-line fa-fw"></i></div>
+                                <div>
+                                    <div class="small text-muted">Experience</div>
+                                    <div class="fw-medium" id="jdm-experience">Min 2 Years</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white rounded p-2 text-primary shadow-sm"><i class="fas fa-users fa-fw"></i></div>
+                                <div>
+                                    <div class="small text-muted">Vacancies</div>
+                                    <div class="fw-medium" id="jdm-vacancies">1</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <h6 class="fw-bold mb-3 text-uppercase small text-muted mt-4">Statistics</h6>
+                        <div class="row g-2 mb-4">
+                            <div class="col-6">
+                                <div class="bg-white p-3 rounded shadow-sm border text-center">
+                                    <h4 class="mb-1 text-primary fw-bold" id="jdm-views">0</h4>
+                                    <span class="small text-muted">Views</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-white p-3 rounded shadow-sm border text-center cursor-pointer" id="jdm-view-apps-btn">
+                                    <h4 class="mb-1 text-success fw-bold" id="jdm-applications">0</h4>
+                                    <span class="small text-muted text-decoration-underline text-primary">Applications</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <h6 class="fw-bold mb-3 text-uppercase small text-muted mt-4">Recruiter Information</h6>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="avatar rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                                <span id="jdm-recruiter-initial">R</span>
+                            </div>
+                            <div>
+                                <div class="fw-bold" id="jdm-recruiter-name">Recruiter Name</div>
+                                <div class="small text-muted" id="jdm-recruiter-contact">Contact Details</div>
+                            </div>
+                            <div class="ms-auto" id="jdm-recruiter-verified">
+                                <i class="fas fa-check-circle text-success" title="Verified"></i>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer bg-light border-top-0 py-3">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="ms-auto gap-2 d-flex" id="jdm-action-buttons">
+                    <!-- Action buttons injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

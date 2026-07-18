@@ -1,0 +1,1 @@
+"""Faculty Vacancies application package."""

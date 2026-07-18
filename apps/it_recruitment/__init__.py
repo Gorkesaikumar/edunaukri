@@ -1,0 +1,1 @@
+"""IT Recruitment application package."""

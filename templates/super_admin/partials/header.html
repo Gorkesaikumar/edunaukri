@@ -1,0 +1,80 @@
+{% load static %}
+<!-- Executive Top Navigation -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 h-14 bg-white/90 backdrop-blur-md border-b border-outline-variant/30 shadow-sm antialiased" style="font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;">
+    <div class="flex items-center gap-4">
+        <!-- Mobile Sidebar Toggle -->
+        <button id="mobileSidebarToggle" class="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-gray-100">
+            <span class="material-symbols-outlined !text-xl">menu</span>
+        </button>
+
+        <!-- Logo -->
+        <a href="{{ nav_urls.dashboard|default:'#' }}" class="flex items-center h-14 w-auto py-0.5 pl-2">
+            <img src="/static/img/screen.jpeg" alt="{{ PLATFORM_NAME }} Logo" class="h-[52px] w-auto object-contain transform scale-150 origin-left">
+        </a>
+        
+        <!-- Enhanced Global Search -->
+        <div class="hidden md:flex items-center bg-gray-100/80 px-3 py-1.5 rounded-lg border border-transparent focus-within:border-primary/30 focus-within:bg-white transition-all w-[440px] ml-6">
+            <span class="material-symbols-outlined text-on-surface-variant/60 !text-base">search</span>
+            <input class="bg-transparent border-none text-[14px] w-full px-2 focus:outline-none focus:ring-0 placeholder:text-on-surface-variant/50" placeholder="Search resources, logs, organizations, or users..." type="text">
+            <div class="flex items-center gap-1 opacity-40 text-[11px] font-mono border px-1.5 py-0.5 rounded bg-white">
+                <span>⌘K</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <!-- System Health Live Indicator -->
+        <div class="hidden sm:flex items-center gap-2 px-2.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">System Live</span>
+        </div>
+
+        <div class="flex items-center gap-2 border-l border-outline-variant/30 pl-4">
+            <!-- Notifications Button -->
+            <a href="{{ nav_urls.notifications|default:'#' }}" class="w-9 h-9 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-gray-100 relative">
+                <span class="material-symbols-outlined !text-xl">notifications</span>
+                <span class="absolute top-1 right-1.5 w-2.5 h-2.5 bg-primary rounded-full"></span>
+            </a>
+
+            <!-- Settings Button -->
+            <a href="{{ nav_urls.settings|default:'#' }}" class="w-9 h-9 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-gray-100">
+                <span class="material-symbols-outlined !text-xl">settings</span>
+            </a>
+
+            <!-- User Profile Dropdown Trigger -->
+            <div class="relative ml-2">
+                <button data-dropdown-toggle="userDropdownMenu" class="flex items-center gap-3 cursor-pointer focus:outline-none group">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-[16px] font-bold leading-none text-on-surface group-hover:text-primary transition-colors">{{ header_user.display_name|default:"Administrator" }}</p>
+                        <p class="text-xs text-primary font-semibold tracking-wide uppercase mt-1">{{ header_user.role_label|default:"Super Admin" }}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-primary text-white font-extrabold text-[16px] flex items-center justify-center shadow-sm ring-2 ring-primary/20 group-hover:ring-primary transition-all">
+                        {{ header_user.initials|default:"SA" }}
+                    </div>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="userDropdownMenu" class="dropdown-menu hidden absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50 font-medium" style="font-family: 'Inter', 'Plus Jakarta Sans', 'Manrope', system-ui, sans-serif;">
+                    <div class="px-5 py-3 border-b border-outline-variant/20 mb-2">
+                        <p class="text-[18px] font-bold text-on-surface truncate">{{ header_user.display_name|default:"Administrator" }}</p>
+                        <p class="text-[15px] text-on-surface-variant truncate mt-1">{{ header_user.email|default:"" }}</p>
+                    </div>
+                    <a href="{{ nav_urls.dashboard|default:'#' }}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 text-[16px] font-medium text-on-surface">
+                        <span class="material-symbols-outlined !text-[20px] text-on-surface-variant">dashboard</span> Dashboard
+                    </a>
+                    <a href="{{ nav_urls.settings|default:'#' }}" class="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 text-[16px] font-medium text-on-surface">
+                        <span class="material-symbols-outlined !text-[20px] text-on-surface-variant">settings</span> System Settings
+                    </a>
+
+                    <div class="border-t border-outline-variant/20 my-2"></div>
+                    <form action="{{ nav_urls.logout|default:'/logout/' }}" method="post" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full flex items-center gap-3 px-5 py-2.5 hover:bg-red-50 text-[16px] font-bold text-red-600 text-left">
+                            <span class="material-symbols-outlined !text-[20px]">logout</span> Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

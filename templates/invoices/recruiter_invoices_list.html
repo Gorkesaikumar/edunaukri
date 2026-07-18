@@ -1,0 +1,193 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}{{ PLATFORM_NAME }} | My Invoices{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 fw-bold text-dark mb-1">Invoices & Billing</h2>
+            <p class="text-muted mb-0">Manage your invoices, payments, and 90-day guarantees.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small fw-semibold text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3 border-bottom-0 rounded-top-start-4">Invoice #</th>
+                            <th class="py-3 border-bottom-0">Issue Date</th>
+                            <th class="py-3 border-bottom-0">Due Date</th>
+                            <th class="py-3 border-bottom-0">Amount</th>
+                            <th class="py-3 border-bottom-0">Status</th>
+                            <th class="pe-4 py-3 border-bottom-0 text-end rounded-top-end-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <span class="fw-bold text-dark">{{ invoice.invoice_number }}</span>
+                                <div class="small text-muted">{{ invoice.bill_to_name_snapshot }}</div>
+                            </td>
+                            <td class="py-3 text-muted">
+                                {{ invoice.issued_at|date:"M d, Y"|default:"-" }}
+                            </td>
+                            <td class="py-3 text-muted">
+                                {{ invoice.due_at|date:"M d, Y"|default:"-" }}
+                            </td>
+                            <td class="py-3">
+                                <span class="fw-bold">{{ invoice.currency }} {{ invoice.total_amount }}</span>
+                            </td>
+                            <td class="py-3">
+                                {% if invoice.status == 'paid' %}
+                                <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Paid</span>
+                                {% elif invoice.status == 'issued' %}
+                                <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">Issued</span>
+                                {% elif invoice.status == 'overdue' %}
+                                <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-pill">Overdue</span>
+                                {% elif invoice.status == 'refunded' %}
+                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1 rounded-pill">Refunded</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning px-2 py-1 rounded-pill">{{ invoice.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4 py-3 text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'recruiter_invoice_view' invoice.id %}" target="_blank">
+                                                <i class="bi bi-eye text-primary"></i> View Invoice
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'recruiter_invoice_download' invoice.id %}">
+                                                <i class="bi bi-download text-success"></i> Download PDF
+                                            </a>
+                                        </li>
+                                        {% if invoice.status == 'paid' %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center gap-2" href="#" onclick="openClaimModal('{{ invoice.id }}')">
+                                                <i class="bi bi-shield-exclamation text-warning"></i> File Guarantee Claim
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <div class="mb-3">
+                                    <i class="bi bi-receipt display-4 text-light"></i>
+                                </div>
+                                <h6>No Invoices Found</h6>
+                                <p class="small mb-0">You don't have any invoices generated yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Claim Modal -->
+<div class="modal fade" id="claimModal" tabindex="-1" aria-labelledby="claimModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="claimModalLabel">File Guarantee Claim</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-4">Submit a claim for a candidate that has left within the 90-day guarantee period.</p>
+                <form id="claimForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="claimInvoiceId" name="invoice_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark">Exit Date</label>
+                        <input type="date" class="form-control" name="exit_date" id="exitDate" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark">Reason for Leaving</label>
+                        <textarea class="form-control" name="reason" id="claimReason" rows="3" required placeholder="Please provide details..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small text-dark">Preferred Resolution</label>
+                        <select class="form-select" name="resolution" id="preferredResolution" required>
+                            <option value="">Select an option...</option>
+                            <option value="free_replacement">Free Replacement</option>
+                            <option value="refund">Refund</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary rounded-pill py-2 fw-semibold" onclick="submitClaim()">Submit Claim</button>
+                        <button type="button" class="btn btn-light rounded-pill py-2 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openClaimModal(invoiceId) {
+        document.getElementById('claimInvoiceId').value = invoiceId;
+        const modal = new bootstrap.Modal(document.getElementById('claimModal'));
+        modal.show();
+    }
+
+    async function submitClaim() {
+        const form = document.getElementById('claimForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const data = {
+            invoice_id: document.getElementById('claimInvoiceId').value,
+            exit_date: document.getElementById('exitDate').value,
+            reason: document.getElementById('claimReason').value,
+            resolution: document.getElementById('preferredResolution').value
+        };
+
+        try {
+            const response = await fetch('/api/guarantee-claims/recruiter/submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                EduNotify.show("Claim submitted successfully. Our team will review it shortly.", "success");
+                bootstrap.Modal.getInstance(document.getElementById('claimModal')).hide();
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                EduNotify.show(result.error || "Failed to submit claim", "error");
+            }
+        } catch (error) {
+            EduNotify.show("An error occurred while submitting the claim", "error");
+        }
+    }
+</script>
+{% endblock %}

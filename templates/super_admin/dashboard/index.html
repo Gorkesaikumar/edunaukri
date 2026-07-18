@@ -1,0 +1,533 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex bg-gray-100 p-1 rounded-lg">
+    <a href="{{ nav_urls.dashboard|default:'#' }}" class="px-4 py-1 text-[11px] font-bold rounded-md bg-white shadow-sm text-primary">Overview</a>
+    <a href="{{ nav_urls.analytics|default:'#' }}" class="px-4 py-1 text-[11px] font-bold rounded-md text-on-surface-variant hover:text-on-surface transition-colors">Analytics</a>
+
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Global Dashboard Filters -->
+<div class="mb-6 bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+        <h2 class="text-sm font-extrabold text-on-surface">Business Intelligence Overview</h2>
+        <p class="text-xs text-on-surface-variant">Real-time platform analytics powered by live data</p>
+    </div>
+    <form method="GET" class="flex flex-wrap items-center gap-3">
+        <select name="domain" class="px-3 py-1.5 rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant focus:ring-1 focus:ring-primary pl-3 pr-8 bg-gray-50">
+            <option value="all" {% if current_domain == 'all' %}selected{% endif %}>All Domains</option>
+            <option value="it" {% if current_domain == 'it' %}selected{% endif %}>IT Recruitment</option>
+            <option value="faculty" {% if current_domain == 'faculty' %}selected{% endif %}>Faculty Hiring</option>
+        </select>
+        
+        <select name="date_range" class="px-3 py-1.5 rounded-lg border border-outline-variant/30 text-xs text-on-surface-variant focus:ring-1 focus:ring-primary pl-3 pr-8 bg-gray-50">
+            <option value="today" {% if current_date_range == 'today' %}selected{% endif %}>Today</option>
+            <option value="7d" {% if current_date_range == '7d' %}selected{% endif %}>Last 7 Days</option>
+            <option value="30d" {% if current_date_range == '30d' %}selected{% endif %}>Last 30 Days</option>
+            <option value="90d" {% if current_date_range == '90d' %}selected{% endif %}>Last 90 Days</option>
+            <option value="year" {% if current_date_range == 'year' %}selected{% endif %}>This Year</option>
+        </select>
+        
+        <button type="submit" class="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-colors">
+            Apply Filters
+        </button>
+    </form>
+</div>
+
+<!-- Real-time Dashboard KPIs -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+    <!-- Revenue Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Total Revenue</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">₹{{ kpis.financials.total_revenue|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <span class="material-symbols-outlined">payments</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">This Month: <span class="font-bold text-on-surface">₹{{ kpis.financials.revenue_this_month|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Today: <span class="font-bold text-on-surface">₹{{ kpis.financials.revenue_today|default:"0" }}</span></span>
+        </div>
+    </div>
+
+    <!-- Users Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Recruiters</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.users.active_it_recruiters|add:kpis.users.active_faculty_recruiters|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">groups</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">IT: <span class="font-bold text-on-surface">{{ kpis.users.active_it_recruiters|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Faculty: <span class="font-bold text-on-surface">{{ kpis.users.active_faculty_recruiters|default:"0" }}</span></span>
+        </div>
+    </div>
+
+    <!-- Postings Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Active Postings</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.postings.published_jobs.current|add:kpis.postings.published_vacancies.current|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                <span class="material-symbols-outlined">work</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1 {% if kpis.postings.published_jobs.is_positive %}text-emerald-600{% elif kpis.postings.published_jobs.is_negative %}text-error{% else %}text-on-surface-variant{% endif %} font-bold">
+                <span class="material-symbols-outlined text-[14px]">{% if kpis.postings.published_jobs.is_positive %}trending_up{% elif kpis.postings.published_jobs.is_negative %}trending_down{% else %}trending_flat{% endif %}</span>
+                <span>{{ kpis.postings.published_jobs.growth_pct }}% jobs</span>
+            </div>
+            <div class="flex items-center gap-1 {% if kpis.postings.published_vacancies.is_positive %}text-emerald-600{% elif kpis.postings.published_vacancies.is_negative %}text-error{% else %}text-on-surface-variant{% endif %} font-bold">
+                <span class="material-symbols-outlined text-[14px]">{% if kpis.postings.published_vacancies.is_positive %}trending_up{% elif kpis.postings.published_vacancies.is_negative %}trending_down{% else %}trending_flat{% endif %}</span>
+                <span>{{ kpis.postings.published_vacancies.growth_pct }}% vacs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Hires</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.pipeline.successful_hires|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <span class="material-symbols-outlined">how_to_reg</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-[11px]">
+            <span class="text-on-surface-variant">Apps: <span class="font-bold text-on-surface">{{ kpis.pipeline.applications_today|default:"0" }} today</span></span>
+            <span class="text-on-surface-variant">Intvs: <span class="font-bold text-on-surface">{{ kpis.pipeline.interviews_scheduled|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Offers: <span class="font-bold text-on-surface">{{ kpis.pipeline.offers_released|default:"0" }}</span></span>
+        </div>
+    </div>
+
+    <!-- Guarantee Claims Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Guarantee Claims</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.financials.open_claims_count|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
+                <span class="material-symbols-outlined">shield_exclamation</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-[11px]">
+            <span class="text-on-surface-variant">Refunded: <span class="font-bold text-error">₹{{ kpis.financials.total_refunded|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Total: <span class="font-bold text-on-surface">{{ kpis.financials.total_claims_count|default:"0" }}</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- BI Charts Section Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+    <!-- Chart 1: Revenue Growth Analytics -->
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface">Revenue Growth Trend</h3>
+            <p class="text-xs text-on-surface-variant">Growth trajectory based on paid invoices</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[300px]">
+            <canvas id="revenueGrowthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 2: Revenue vs Placements -->
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface">Revenue vs Placements</h3>
+            <p class="text-xs text-on-surface-variant">Combined correlation overview</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[300px]">
+            <canvas id="revenueVsPlacementsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- BI Charts Section Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+    
+    <!-- Chart 3: Placement Analytics -->
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface">Placement Pipeline</h3>
+            <p class="text-xs text-on-surface-variant">IT vs Faculty funnel conversion</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[250px]">
+            <canvas id="placementFunnelChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Chart 4: Monthly Placement Trend -->
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface">Monthly Hire Trend</h3>
+            <p class="text-xs text-on-surface-variant">Joined candidates over time</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[250px]">
+            <canvas id="monthlyPlacementTrendChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Chart 5: Revenue by Institution/Company -->
+    <div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface">Top Revenue Sources</h3>
+            <p class="text-xs text-on-surface-variant">Organizations ranked by generated revenue</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[250px]">
+            <canvas id="revenueByOrgChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- Data Tables Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+    <!-- Top Recruiters Table -->
+    <div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+            <div>
+                <h3 class="text-sm font-extrabold text-on-surface">Top Revenue Generating Recruiters (IT)</h3>
+            </div>
+        </div>
+        <div class="flex-1 overflow-x-auto max-h-[350px] custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 shadow-sm z-10">
+                    <tr>
+                        <th class="p-3 pl-4">Recruiter / Org</th>
+                        <th class="p-3">Placements</th>
+                        <th class="p-3">Revenue</th>
+                        <th class="p-3 pr-4 text-right">Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs divide-y divide-outline-variant/10">
+                    {% for item in bi.top_recruiters %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-3 pl-4 font-bold text-on-surface">{{ item.name }}</td>
+                        <td class="p-3 text-on-surface-variant font-medium">{{ item.placements }}</td>
+                        <td class="p-3 text-emerald-600 font-bold">₹{{ item.revenue|floatformat:0 }}</td>
+                        <td class="p-3 pr-4 text-right text-error font-bold">₹{{ item.outstanding|floatformat:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="p-6 text-center text-on-surface-variant text-xs">No recruiter data available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Top Institutions Table -->
+    <div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+            <div>
+                <h3 class="text-sm font-extrabold text-on-surface">Top Revenue Generating Institutions</h3>
+            </div>
+        </div>
+        <div class="flex-1 overflow-x-auto max-h-[350px] custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 shadow-sm z-10">
+                    <tr>
+                        <th class="p-3 pl-4">Institution Name</th>
+                        <th class="p-3">Placements</th>
+                        <th class="p-3">Revenue</th>
+                        <th class="p-3 pr-4 text-right">Outstanding</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs divide-y divide-outline-variant/10">
+                    {% for item in bi.top_institutions %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-3 pl-4 font-bold text-on-surface">{{ item.name }}</td>
+                        <td class="p-3 text-on-surface-variant font-medium">{{ item.placements }}</td>
+                        <td class="p-3 text-emerald-600 font-bold">₹{{ item.revenue|floatformat:0 }}</td>
+                        <td class="p-3 pr-4 text-right text-error font-bold">₹{{ item.outstanding|floatformat:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="p-6 text-center text-on-surface-variant text-xs">No institution data available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Placements Table -->
+<div class="mt-5 bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+    <div class="p-4 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold text-on-surface">Recent Placement Activity</h3>
+        </div>
+    </div>
+    <div class="flex-1 overflow-x-auto max-h-[400px] custom-scrollbar">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+            <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 shadow-sm z-10">
+                <tr>
+                    <th class="p-3 pl-4">Candidate</th>
+                    <th class="p-3">Role / Designation</th>
+                    <th class="p-3">Recruiter / Org</th>
+                    <th class="p-3">Domain</th>
+                    <th class="p-3">Joining Date</th>
+                    <th class="p-3">Invoice</th>
+                    <th class="p-3 pr-4 text-right">Payment</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for item in bi.recent_placements %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="p-3 pl-4 font-bold text-on-surface">{{ item.candidate_name }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ item.job_title }}</td>
+                    <td class="p-3 text-on-surface-variant font-medium">{{ item.recruiter }}</td>
+                    <td class="p-3">
+                        {% if item.domain == 'it' %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-on-surface-variant">{{ item.joining_date }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ item.invoice_generated }}</td>
+                    <td class="p-3 pr-4 text-right">
+                        {% if item.payment_status == 'Paid' %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 text-emerald-600 border border-emerald-200">Paid</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-error/10 text-error border border-error/20">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="p-6 text-center text-on-surface-variant text-xs">No recent placements</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ bi.revenue_growth|json_script:"bi-revenue-growth-data" }}
+{{ bi.revenue_vs_placements|json_script:"bi-revenue-vs-placements-data" }}
+{{ bi.placement_analytics|json_script:"bi-placement-analytics-data" }}
+{{ bi.monthly_placement_trend|json_script:"bi-monthly-placement-data" }}
+{{ bi.revenue_by_org|json_script:"bi-revenue-by-org-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const primaryColor = '#4F46E5';
+        const facultyColor = '#D97706';
+        
+        // 1. Revenue Growth Trend (Line)
+        const revGrowthData = JSON.parse(document.getElementById('bi-revenue-growth-data').textContent || '[]');
+        if(document.getElementById('revenueGrowthChart') && revGrowthData.length > 0) {
+            new Chart(document.getElementById('revenueGrowthChart'), {
+                type: 'line',
+                data: {
+                    labels: revGrowthData.map(d => d.date),
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: revGrowthData.map(d => d.revenue),
+                        borderColor: '#10B981', // emerald
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { border: { dash: [4, 4] }, grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+        
+        // 2. Revenue vs Placements (Combined Bar + Line)
+        const revVsPlaceData = JSON.parse(document.getElementById('bi-revenue-vs-placements-data').textContent || '[]');
+        if(document.getElementById('revenueVsPlacementsChart') && revVsPlaceData.length > 0) {
+            new Chart(document.getElementById('revenueVsPlacementsChart'), {
+                type: 'bar',
+                data: {
+                    labels: revVsPlaceData.map(d => d.period),
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Revenue (₹)',
+                            data: revVsPlaceData.map(d => d.revenue),
+                            borderColor: '#10B981',
+                            backgroundColor: '#10B981',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Placements',
+                            data: revVsPlaceData.map(d => d.placements),
+                            backgroundColor: primaryColor,
+                            borderRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: '#f3f4f6' },
+                            title: { display: true, text: 'Revenue (₹)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Placements' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 3. Placement Funnel (Stacked Bar)
+        const placementData = JSON.parse(document.getElementById('bi-placement-analytics-data').textContent || '{}');
+        if(document.getElementById('placementFunnelChart') && placementData.it) {
+            new Chart(document.getElementById('placementFunnelChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Apps', 'Shortlisted', 'Interviewed', 'Selected', 'Joined'],
+                    datasets: [
+                        {
+                            label: 'IT Domain',
+                            data: [
+                                placementData.it.applications,
+                                placementData.it.shortlisted,
+                                placementData.it.interviewed,
+                                placementData.it.selected,
+                                placementData.it.joined
+                            ],
+                            backgroundColor: primaryColor,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Faculty Domain',
+                            data: [
+                                placementData.faculty.applications,
+                                placementData.faculty.shortlisted,
+                                placementData.faculty.interviewed,
+                                placementData.faculty.selected,
+                                placementData.faculty.joined
+                            ],
+                            backgroundColor: facultyColor,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#f3f4f6' } }
+                    }
+                }
+            });
+        }
+        
+        // 4. Monthly Placement Trend
+        const monthlyPlaceData = JSON.parse(document.getElementById('bi-monthly-placement-data').textContent || '[]');
+        if(document.getElementById('monthlyPlacementTrendChart') && monthlyPlaceData.length > 0) {
+            new Chart(document.getElementById('monthlyPlacementTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: monthlyPlaceData.map(d => d.month),
+                    datasets: [
+                        {
+                            label: 'IT Hires',
+                            data: monthlyPlaceData.map(d => d.it),
+                            borderColor: primaryColor,
+                            backgroundColor: primaryColor,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Faculty Hires',
+                            data: monthlyPlaceData.map(d => d.faculty),
+                            borderColor: facultyColor,
+                            backgroundColor: facultyColor,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#f3f4f6' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        // 5. Revenue By Organization (Horizontal Bar)
+        const orgRevData = JSON.parse(document.getElementById('bi-revenue-by-org-data').textContent || '[]');
+        if(document.getElementById('revenueByOrgChart') && orgRevData.length > 0) {
+            // Cut down labels length if they are too long
+            const labels = orgRevData.map(d => d.name.length > 15 ? d.name.substring(0, 15) + '...' : d.name);
+            new Chart(document.getElementById('revenueByOrgChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue Generated',
+                        data: orgRevData.map(d => d.revenue),
+                        backgroundColor: orgRevData.map(d => d.domain === 'it' ? primaryColor : facultyColor),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { grid: { color: '#f3f4f6' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
+    });
+</script>
+{% endblock %}

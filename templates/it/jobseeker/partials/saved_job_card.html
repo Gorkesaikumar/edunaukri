@@ -1,0 +1,71 @@
+<article class="jsd-saved-card{% if not job.is_open %} jsd-saved-card--closed{% endif %}" data-job-id="{{ job.id }}" data-saved-job-card>
+    <div class="jsd-saved-card__main">
+        <div class="jsd-saved-card__brand">
+            <div class="jsd-job-card__logo">
+                {% if job.logo_url %}
+                <img src="{{ job.logo_url }}" alt="{{ job.company_name }} logo" loading="lazy">
+                {% else %}
+                <span class="jsd-saved-card__initial">{{ job.logo_initial }}</span>
+                {% endif %}
+            </div>
+            <div class="jsd-saved-card__head">
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <p class="jsd-saved-card__company mb-0">{{ job.company_name }}</p>
+                    {% if job.company_verified %}
+                    <i class="bi bi-patch-check-fill jsd-verified" title="Verified employer"></i>
+                    {% endif %}
+                    {% if not job.is_open %}
+                    <span class="jsd-tag jsd-tag--muted">Closed</span>
+                    {% endif %}
+                </div>
+                <h2 class="jsd-saved-card__title">
+                    <a href="{{ job.detail_url }}">{{ job.title }}</a>
+                </h2>
+            </div>
+            {% if job.match_percent %}
+            <span class="jsd-job-card__match">{{ job.match_percent }}% Match</span>
+            {% endif %}
+        </div>
+
+        <div class="jsd-saved-card__chips">
+            {% if job.location %}<span class="jsd-tag"><i class="bi bi-geo-alt"></i> {{ job.location }}</span>{% endif %}
+            {% if job.salary_display %}<span class="jsd-tag jsd-tag--salary">{{ job.salary_display }}</span>{% endif %}
+            {% if job.experience_label %}<span class="jsd-tag">{{ job.experience_label }}</span>{% endif %}
+            <span class="jsd-tag">{{ job.employment_type_label }}</span>
+            <span class="jsd-tag">{{ job.work_mode_label }}</span>
+        </div>
+
+        {% if job.skills %}
+        <div class="jsd-saved-card__skills">
+            {% for skill in job.skills %}
+            <span class="jsd-skill-tag">{{ skill }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="jsd-saved-card__meta">
+            <span><i class="bi bi-clock"></i> {{ job.posted_display }}</span>
+            <span><i class="bi bi-bookmark"></i> Saved {{ job.saved_at_display }}</span>
+            {% if job.deadline_display %}
+            <span><i class="bi bi-calendar-event"></i> Deadline {{ job.deadline_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="jsd-saved-card__actions">
+        <button type="button"
+                class="jsd-save-btn is-saved"
+                data-save-job-toggle
+                data-job-id="{{ job.id }}"
+                aria-label="Remove saved job"
+                aria-pressed="true">
+            <i class="bi bi-bookmark-fill"></i>
+            <span>Saved</span>
+        </button>
+        {% if job.is_open %}
+        <a href="{{ job.detail_url }}" class="jsd-btn jsd-btn--soft">Apply Now</a>
+        {% else %}
+        <a href="{{ job.detail_url }}" class="jsd-btn jsd-btn--outline">View Job</a>
+        {% endif %}
+    </div>
+</article>

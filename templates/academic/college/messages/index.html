@@ -1,0 +1,84 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Messages | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/professor-dashboard.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head">
+    <h1 class="icd-page-head__title">Messages</h1>
+    <p class="icd-page-head__desc">Internal updates with candidate context, plus direct Email/WhatsApp actions when contact is available.</p>
+</header>
+
+<section class="icd-card icd-reporting-panel mb-3">
+    <div class="icd-frd-message-stats">
+        <div><span>Total</span><strong>{{ messages_page.total_count }}</strong></div>
+        <div><span>Unread</span><strong>{{ messages_page.unread_count }}</strong></div>
+    </div>
+    <form method="get" class="icd-filters">
+        <select name="state" class="icd-filters__select" aria-label="Filter messages by read state">
+            <option value="all"{% if messages_filters.state == "all" %} selected{% endif %}>All</option>
+            <option value="unread"{% if messages_filters.state == "unread" %} selected{% endif %}>Unread</option>
+            <option value="read"{% if messages_filters.state == "read" %} selected{% endif %}>Read</option>
+        </select>
+        <button type="submit" class="icd-btn icd-btn--primary icd-btn--sm">Apply</button>
+    </form>
+</section>
+
+{% if messages_page.notifications %}
+<ul class="fjd-notif-list">
+    {% for note in messages_page.notifications %}
+    <li class="fjd-card fjd-notif-list__item{% if not note.is_read %} fjd-notif-list__item--unread{% endif %}">
+        <div class="fjd-notification__icon fjd-notification__icon--info">
+            <i class="bi bi-chat" aria-hidden="true"></i>
+        </div>
+        <div class="flex-grow-1">
+            <p class="fjd-notification__title">{{ note.title }}</p>
+            {% if note.body %}<p class="fjd-notification__body">{{ note.body }}</p>{% endif %}
+            {% if note.candidate_name %}
+            <p class="fjd-notification__body mb-1">
+                <strong>{{ note.candidate_name }}</strong>{% if note.vacancy_title %} · {{ note.vacancy_title }}{% endif %}
+            </p>
+            {% endif %}
+            <p class="fjd-notification__time">{{ note.channels_label }}</p>
+            <p class="fjd-notification__time">{{ note.created_at }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a href="{{ note.action_url }}" class="icd-btn icd-btn--soft icd-btn--sm">{{ note.action_label }}</a>
+            {% if note.email_url %}
+            <a href="{{ note.email_url }}" class="icd-btn icd-btn--soft icd-btn--sm">Email</a>
+            {% endif %}
+            {% if note.whatsapp_url %}
+            <a href="{{ note.whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="icd-btn icd-btn--soft icd-btn--sm">WhatsApp</a>
+            {% endif %}
+        </div>
+        {% if not note.is_read %}
+        <form method="post" action="{{ note.mark_read_url }}">
+            {% csrf_token %}
+            <button type="submit" class="icd-btn icd-btn--soft">Mark read</button>
+        </form>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+{% if messages_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Message pages">
+    {% if messages_page.page > 1 %}<a class="fjd-page-btn" href="?page={{ messages_page.page|add:'-1' }}{% if messages_filters.state and messages_filters.state != 'all' %}&state={{ messages_filters.state }}{% endif %}">Previous</a>{% endif %}
+    <span>Page {{ messages_page.page }} of {{ messages_page.total_pages }}</span>
+    {% if messages_page.page < messages_page.total_pages %}<a class="fjd-page-btn" href="?page={{ messages_page.page|add:'1' }}{% if messages_filters.state and messages_filters.state != 'all' %}&state={{ messages_filters.state }}{% endif %}">Next</a>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="icd-card icd-empty">
+    <i class="bi bi-chat"></i>
+    <h2>No messages yet</h2>
+    <p>When faculty applicants reach out about your vacancies, messages will appear here.</p>
+    <a href="{% portal_url 'college_applications' %}" class="icd-btn icd-btn--primary mt-2">View Applications</a>
+</div>
+{% endif %}
+{% endblock %}

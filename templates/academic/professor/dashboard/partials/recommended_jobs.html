@@ -1,0 +1,69 @@
+{% load portal_urls %}
+{% for job in dashboard.recommended_jobs %}
+<article class="fjd-card fjd-card--hover fjd-job-card h-100 d-flex flex-column">
+    <div class="fjd-job-card__top d-flex justify-content-between align-items-start mb-3">
+        <div class="d-flex gap-3 align-items-start">
+            <div class="fjd-job-card__logo flex-shrink-0 shadow-sm border border-light">
+                {% if job.logo_url %}
+                <img src="{{ job.logo_url }}" alt="{{ job.institution_name }}" class="rounded-circle w-100 h-100 object-fit-cover">
+                {% else %}
+                <i class="bi bi-building fs-3 text-secondary" aria-hidden="true"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="fjd-job-card__title fs-6 fw-bold mb-1 text-dark">{{ job.title }}</h3>
+                <p class="fjd-job-card__institution text-muted small mb-1">{{ job.institution_name }} • {{ job.location }}</p>
+                <div class="fjd-job-subject text-secondary small"><i class="bi bi-book me-1"></i>{{ job.subject }}</div>
+            </div>
+        </div>
+        <div class="d-flex align-items-start">
+            <button type="button"
+                    class="fjd-job-card__save fjd-save-btn{% if job.is_saved %} is-saved{% endif %} text-secondary border-0 bg-transparent p-0 ms-2"
+                    data-save-vacancy-toggle
+                    data-vacancy-id="{{ job.id }}"
+                    title="Save job"
+                    aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
+                <i class="bi {% if job.is_saved %}bi-bookmark-fill text-primary{% else %}bi-bookmark fs-4{% endif %}"></i>
+            </button>
+        </div>
+    </div>
+    {% if job.match_explanation %}
+    <div class="bg-light rounded p-2 mb-3 small text-muted border border-light">
+        <i class="bi bi-info-circle me-1 text-primary"></i> {{ job.match_explanation }}
+    </div>
+    {% endif %}
+    <div class="fjd-job-card__tags d-flex flex-wrap gap-2 mb-auto pb-3 border-bottom border-light">
+        <span class="fjd-tag bg-white border"><i class="bi bi-cash-stack text-muted me-1"></i> {{ job.salary }}</span>
+        <span class="fjd-tag bg-white border"><i class="bi bi-briefcase text-muted me-1"></i> {{ job.experience_required }}</span>
+        <span class="fjd-tag bg-white border"><i class="bi bi-clock text-muted me-1"></i> {{ job.employment_type }}</span>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-1">
+        <div class="fjd-job-date text-muted small"><i class="bi bi-calendar3 me-1"></i> Posted {{ job.posted_date }}</div>
+    </div>
+    <div class="fjd-job-card__actions mt-3">
+        {% if job.is_eligible %}
+        <button type="button" class="fjd-btn fjd-btn--primary w-100 fjd-apply-action-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#fjdApplyModal"
+                data-job-id="{{ job.id }}"
+                data-job-title="{{ job.title }}"
+                data-job-institution="{{ job.institution_name }}"
+                data-apply-url="{{ job.apply_url }}">
+            Apply Now
+        </button>
+        {% else %}
+        <a href="{% portal_url 'professor_profile' %}" class="fjd-btn fjd-btn--primary w-100" title="{{ job.eligibility_message|escape }}">Complete Profile</a>
+        {% endif %}
+        <a href="{{ job.detail_url }}" class="fjd-btn fjd-btn--outline">Details</a>
+    </div>
+</article>
+{% empty %}
+<div class="fjd-card fjd-empty fjd-empty--wide p-5 text-center">
+    <div class="fjd-empty-state__icon mb-3">
+        <i class="bi bi-search text-muted fs-1" aria-hidden="true"></i>
+    </div>
+    <h3 class="fjd-empty-state__title fs-5 mb-2">No strong job matches yet</h3>
+    <p class="text-muted mb-4">Complete your profile and keep your resume updated to improve your recommendations.</p>
+    <a href="{% portal_url 'professor_profile' %}" class="fjd-btn fjd-btn--primary px-4 py-2">Improve Profile</a>
+</div>
+{% endfor %}

@@ -1,0 +1,341 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}{{ PLATFORM_NAME }} | Faculty Dashboard{% endblock %}
+
+{% block extra_head %}
+{% if dashboard.show_completion_card %}
+<link href="{% static 'css/jobseeker-dashboard.css' %}" rel="stylesheet">
+{% endif %}
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-welcome d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="fjd-welcome__title">{{ dashboard.greeting }}, {{ dashboard.display_name }} 👋</h1>
+        {% if dashboard.subheadline %}
+        <p class="fjd-welcome__subtitle">{{ dashboard.headline }}{% if dashboard.subheadline %} • {{ dashboard.subheadline }}{% endif %}</p>
+        {% else %}
+        <p class="fjd-welcome__subtitle">{{ dashboard.headline }}</p>
+        {% endif %}
+    </div>
+    <div class="fjd-welcome__actions">
+        <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--outline"><i class="bi bi-search me-2"></i>Find Jobs</a>
+        {% if dashboard.show_completion_card %}
+        <a href="{% portal_url 'professor_profile' %}" class="fjd-btn fjd-btn--primary"><i class="bi bi-person-lines-fill me-2"></i>Complete Profile</a>
+        {% endif %}
+    </div>
+</header>
+
+{% if show_selection_celebration %}
+    {# Selection Celebration — fire confetti and show custom banner #}
+    <div id="jsdSelectionCelebration" class="fjd-celebration-trigger"
+         data-play-celebration="true"
+         data-celebration-message="🎉 Congratulations! You have been selected!"
+         aria-hidden="true">
+        <canvas id="jsdSelectionConfetti" class="fjd-confetti-canvas" aria-hidden="true"></canvas>
+    </div>
+    
+    <div class="alert alert-success d-flex align-items-center gap-3 mb-4 fjd-completion-banner border-success shadow-sm" role="alert">
+        <span class="fjd-completion-banner__icon text-success" aria-hidden="true" style="font-size: 1.5rem;">
+            <i class="bi bi-stars"></i>
+        </span>
+        <div class="flex-grow-1">
+            <strong class="fjd-completion-banner__pct text-success">Congratulations!</strong>
+            <span class="fjd-completion-banner__msg">You have been selected for a Faculty position! Check your applications and emails for the next steps.</span>
+        </div>
+        <a href="{% portal_url 'professor_applications' %}?status=selected" class="fjd-completion-banner__cta btn btn-success text-white rounded-pill px-4">
+            View Offers
+        </a>
+    </div>
+{% endif %}
+
+{% if dashboard.show_completion_card %}
+    {% if dashboard.completion.play_celebration %}
+    {# 100% — fire confetti, no visible banner. JS picks up this element and animates. #}
+    <div id="jsdHeroCard" class="fjd-celebration-trigger"
+         data-play-celebration="true"
+         data-celebration-message="{{ dashboard.completion.celebration_message|default:'🎉 Profile Complete!' }}"
+         data-mark-animation-url="{{ dashboard.completion.mark_animation_url }}"
+         aria-hidden="true">
+        <canvas id="jsdHeroConfetti" class="fjd-confetti-canvas" aria-hidden="true"></canvas>
+    </div>
+    {% else %}
+    {# Profile incomplete — show the nudge banner #}
+    <div class="alert d-flex align-items-center gap-3 mb-4 fjd-completion-banner" role="alert">
+        <span class="fjd-completion-banner__icon" aria-hidden="true">
+            <i class="bi bi-info-circle-fill"></i>
+        </span>
+        <div class="flex-grow-1">
+            <strong class="fjd-completion-banner__pct">{{ dashboard.profile_completion }}% complete</strong>
+            <span class="fjd-completion-banner__msg">Complete your profile to receive better job recommendations and improve your visibility to institutions.</span>
+        </div>
+        <a href="{% portal_url 'professor_profile' %}" class="fjd-completion-banner__cta">
+            Improve Profile <i class="bi bi-arrow-right-short"></i>
+        </a>
+    </div>
+    {% endif %}
+{% endif %}
+
+{# Primary KPI row #}
+<section class="fjd-stats" id="fjdStatsRow" aria-label="Dashboard statistics"
+         data-insights-url="{% portal_url 'professor_dashboard_insights_api' %}">
+    {% for stat in dashboard.stats %}
+    <article class="fjd-card fjd-card--hover fjd-stat" data-stat-key="{{ stat.key }}">
+        <div class="fjd-stat__icon fjd-stat__icon--{{ stat.tone }}">
+            <i class="bi {{ stat.icon }}" aria-hidden="true"></i>
+        </div>
+        <div>
+            <p class="fjd-stat__label">{{ stat.label }}</p>
+            <p class="fjd-stat__value" data-stat-value>{{ stat.value }}</p>
+        </div>
+    </article>
+    {% empty %}
+    <article class="fjd-card fjd-empty"><p>Statistics will appear once you start applying.</p></article>
+    {% endfor %}
+</section>
+
+{# Application tracker #}
+{% if dashboard.tracker_stats %}
+<section class="fjd-tracker" aria-label="Application tracker">
+    {% for stat in dashboard.tracker_stats %}
+    <article class="fjd-card fjd-card--hover fjd-tracker__item fjd-tracker__item--{{ stat.tone }}">
+        <p class="fjd-tracker__value">{{ stat.value }}</p>
+        <p class="fjd-tracker__label">{{ stat.label }}</p>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+
+<div class="fjd-bento">
+    <div class="fjd-bento__main">
+        {# Recommended jobs #}
+        <section class="fjd-section" aria-label="Recommended jobs"
+                 data-recommended-jobs-url="{% portal_url 'professor_recommended_jobs_partial_api' %}">
+            <div class="fjd-section__head">
+                <h2 class="fjd-section__title">Recommended Faculty Jobs</h2>
+                <a class="fjd-section__link" href="{% portal_url 'professor_browse_jobs' %}">View All Jobs</a>
+            </div>
+            <div class="fjd-skeleton-grid" id="fjdJobsSkeleton" style="display: none;">
+                <div class="fjd-skeleton-card"></div>
+                <div class="fjd-skeleton-card"></div>
+                <div class="fjd-skeleton-card"></div>
+                <div class="fjd-skeleton-card"></div>
+            </div>
+            <div class="fjd-jobs-grid" id="fjdRecommendedJobs">
+                {% include "academic/professor/dashboard/partials/recommended_jobs.html" %}
+            </div>
+        </section>
+
+        {# Recent applications #}
+        <section class="fjd-section">
+            <div class="fjd-section__head d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <h2 class="fjd-section__title mb-0">Recent Applications</h2>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="position-relative">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="text" id="fjdAppSearch" class="form-control rounded-pill ps-5 pe-4 py-2 shadow-sm border-light" placeholder="Search applications..." style="width: 250px; font-size: 0.9rem;">
+                    </div>
+                    <a class="fjd-btn fjd-btn--outline rounded-pill text-nowrap px-4 py-2" href="{% portal_url 'professor_applications' %}">View All</a>
+                </div>
+            </div>
+
+            {% if dashboard.recent_applications %}
+            <div class="d-flex flex-column gap-3">
+                {% for app in dashboard.recent_applications %}
+                <article class="fjd-card p-4 border border-light shadow-sm rounded-4 bg-white" data-app-search-item>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="fs-5 fw-bold text-dark mb-0 fjd-app-inst">{{ app.institution_name }}</h3>
+                                <span class="badge {{ app.status_class }} px-3 py-2 rounded-pill shadow-sm fs-7 fw-medium" style="letter-spacing: 0.3px;">{{ app.status_label }}</span>
+                            </div>
+                            <h4 class="fs-6 fw-semibold text-primary mb-1 fjd-app-role">{{ app.job_title }}</h4>
+                            <div class="d-flex flex-wrap align-items-center gap-3 text-muted small mt-2">
+                                <span class="fjd-app-dept"><i class="bi bi-building me-1"></i>{{ app.department }}</span>
+                                <span><i class="bi bi-calendar3 me-1"></i>Applied on {{ app.applied_date }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex flex-column flex-sm-row flex-md-column gap-2 align-items-stretch align-items-md-end mt-2 mt-md-0 border-start-md ps-md-4 pt-3 pt-md-0">
+                            <a href="{{ app.detail_url }}" class="fjd-btn fjd-btn--primary w-100 text-nowrap px-4 rounded-pill">
+                                <i class="bi bi-file-earmark-text me-2"></i>View Application
+                            </a>
+                            <a href="{{ app.job_url }}" class="fjd-btn fjd-btn--outline w-100 text-nowrap px-4 rounded-pill border-secondary text-secondary">
+                                <i class="bi bi-briefcase me-2"></i>View Job
+                            </a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+                <div id="fjdNoAppResults" class="fjd-card fjd-empty p-5 text-center border-0 bg-light rounded-4" style="display: none;">
+                    <div class="fjd-empty-state__icon mb-3">
+                        <i class="bi bi-search text-muted fs-1" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="fs-5 mb-2">No matches found</h3>
+                    <p class="text-muted mb-0">Try adjusting your search terms.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="fjd-card fjd-empty p-5 text-center">
+                <div class="fjd-empty-state__icon mb-3">
+                    <i class="bi bi-file-earmark-text text-muted fs-1" aria-hidden="true"></i>
+                </div>
+                <h3 class="fjd-empty-state__title fs-5 mb-2">You haven't applied to any jobs yet.</h3>
+                <p class="text-muted mb-4">Explore faculty openings and submit applications to track your progress here.</p>
+                <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--primary px-4 py-2">Explore Jobs</a>
+            </div>
+            {% endif %}
+        </section>
+
+        {# Saved jobs empty state #}
+        {% if dashboard.show_saved_empty %}
+        <section class="fjd-card fjd-empty p-5 text-center bg-light border-0">
+            <div class="fjd-empty-state__icon mb-3">
+                <i class="bi bi-bookmark-plus text-primary fs-1 opacity-75" aria-hidden="true"></i>
+            </div>
+            <h3 class="fjd-empty-state__title fs-5 mb-2">Your Saved Jobs will appear here</h3>
+            <p class="text-muted mb-4 small">Start exploring the best faculty positions and save them for later application.</p>
+            <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--primary px-4 py-2 shadow-sm">Browse All Jobs</a>
+        </section>
+        {% endif %}
+    </div>
+
+    <aside class="fjd-bento__aside">
+        {# Enterprise Profile Completion Widget #}
+        <section class="fjd-profile-card" aria-label="Profile completion widget">
+            <div class="fjd-profile-card__header">
+                <h3 class="fjd-profile-card__title">
+                    <i class="bi bi-person-check text-primary me-2" aria-hidden="true"></i>Profile Completion
+                </h3>
+            </div>
+            <div class="fjd-profile-card__progress-box bg-light rounded p-3 mb-3 border border-light shadow-sm">
+                <div class="fjd-profile-card__stats-row d-flex justify-content-between align-items-center mb-2">
+                    <span class="fjd-profile-card__pct fw-bold text-dark">{{ dashboard.completion.percentage }}% Complete</span>
+                    <span class="fjd-profile-card__strength small badge bg-white text-dark border {% if dashboard.completion.percentage == 100 %}border-success{% elif dashboard.completion.percentage >= 75 %}border-primary{% elif dashboard.completion.percentage >= 40 %}border-warning{% else %}border-danger{% endif %}">
+                        {% if dashboard.completion.percentage == 100 %}Complete{% elif dashboard.completion.percentage >= 75 %}Strong{% elif dashboard.completion.percentage >= 40 %}Intermediate{% else %}Beginner{% endif %}
+                    </span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar {% if dashboard.completion.percentage == 100 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ dashboard.completion.percentage }}%;" aria-valuenow="{{ dashboard.completion.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <ul class="fjd-profile-card__list">
+                {% for item in dashboard.completion.checklist %}
+                <li class="fjd-profile-card__item {% if item.completed %}is-completed{% endif %}">
+                    <a href="{{ item.url }}" class="fjd-profile-card__row" title="{% if item.completed %}Completed: {{ item.label }}{% else %}Complete {{ item.label }}{% endif %}">
+                        <div class="fjd-profile-card__row-left">
+                            <span class="fjd-profile-card__icon {% if item.completed %}icon--done{% else %}icon--pending{% endif %}">
+                                <i class="bi {% if item.completed %}bi-check-circle-fill{% else %}bi-circle{% endif %}" aria-hidden="true"></i>
+                            </span>
+                            <span class="fjd-profile-card__label">{{ item.label }}</span>
+                        </div>
+                        <div class="fjd-profile-card__row-right">
+                            {% if item.completed %}
+                            <span class="fjd-status-chip fjd-status-chip--done">Completed</span>
+                            {% else %}
+                            <span class="fjd-status-chip fjd-status-chip--pending">Incomplete</span>
+                            {% endif %}
+                            <i class="bi bi-chevron-right fjd-profile-card__chevron" aria-hidden="true"></i>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="fjd-profile-card__cta-wrap">
+                <a href="{% portal_url 'professor_profile' %}" class="fjd-profile-card__cta">
+                    <span>Complete Your Profile</span>
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
+
+        {# Upcoming interviews #}
+        <section class="fjd-card fjd-widget">
+            <h3 class="fjd-widget__title">Upcoming Interviews</h3>
+            {% if dashboard.upcoming_interviews %}
+            <ul class="fjd-interviews">
+                {% for interview in dashboard.upcoming_interviews %}
+                <li class="fjd-interview">
+                    {% if interview.is_urgent %}
+                    <div class="fjd-interview__urgent-banner w-100 mb-2"><i class="bi bi-exclamation-triangle-fill"></i> Within 24 Hours!</div>
+                    {% endif %}
+                    <div class="d-flex gap-3">
+                        <div class="fjd-interview__date">
+                            <span class="fjd-interview__month">{{ interview.month_label }}</span>
+                            <span class="fjd-interview__day">{{ interview.day_label }}</span>
+                        </div>
+                        <div class="fjd-interview__body flex-grow-1">
+                            <p class="fjd-interview__title fw-bold mb-1">{{ interview.title }}</p>
+                            <span class="fjd-interview__round"><i class="bi bi-person-badge"></i> {{ interview.round_label }}</span>
+                            <span class="fjd-interview__mode"><i class="bi bi-clock"></i> {{ interview.schedule_label }} • {{ interview.interview_type }}</span>
+                            <p class="fjd-interview__meta text-muted mb-2">{{ interview.institution_name }}</p>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                {% if interview.meet_url %}
+                                <a href="{{ interview.meet_url }}" class="fjd-btn fjd-btn--primary fjd-btn--sm" target="_blank" rel="noopener noreferrer">
+                                    <i class="bi bi-camera-video"></i> Join Meeting
+                                </a>
+                                {% elif interview.location_label %}
+                                <span class="fjd-interview__location d-inline-flex align-items-center gap-1 text-secondary fs-7"><i class="bi bi-geo-alt"></i> {{ interview.location_label }}</span>
+                                {% endif %}
+                                {% if interview.calendar_url %}
+                                <a href="{{ interview.calendar_url }}" class="fjd-btn fjd-btn--outline fjd-btn--sm" target="_blank" rel="noopener noreferrer">
+                                    <i class="bi bi-calendar-plus"></i> Calendar
+                                </a>
+                                {% endif %}
+                            </div>
+                            <a href="{{ interview.detail_url }}" class="fjd-link-sm d-block mt-2">View Application Details</a>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="fjd-widget__empty">No interviews scheduled yet.</p>
+            {% endif %}
+        </section>
+
+        {# Quick actions #}
+        <section class="fjd-widget">
+            <h3 class="fjd-widget__title">Quick Actions</h3>
+            <div class="fjd-quick-actions">
+                {% for action in dashboard.quick_actions %}
+                <a href="{{ action.url }}" class="fjd-card fjd-card--hover fjd-quick-action fjd-quick-action--{{ action.tone }}">
+                    <i class="bi {{ action.icon }}" aria-hidden="true"></i>
+                    <span>{{ action.label }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# Notifications #}
+        <section class="fjd-card fjd-widget fjd-widget--notifications">
+            <div class="fjd-widget__head">
+                <h3 class="fjd-widget__title mb-0">Notifications</h3>
+                {% if dashboard.unread_notification_count %}
+                <span class="fjd-widget__dot" aria-label="{{ dashboard.unread_notification_count }} unread"></span>
+                {% endif %}
+            </div>
+            {% if dashboard.notifications %}
+            <ul class="fjd-notifications">
+                {% for note in dashboard.notifications %}
+                <li class="fjd-notification{% if not note.is_read %} fjd-notification--unread{% endif %}">
+                    <div class="fjd-notification__icon fjd-notification__icon--{{ note.tone }}">
+                        <i class="bi {{ note.icon }}" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <p class="fjd-notification__title">{{ note.title }}</p>
+                        {% if note.body %}<p class="fjd-notification__body">{{ note.body|truncatechars:100 }}</p>{% endif %}
+                        <p class="fjd-notification__time">{{ note.created_at }}</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{% portal_url 'professor_notifications' %}" class="fjd-link-sm">See all activity</a>
+            {% else %}
+            <p class="fjd-widget__empty">You're all caught up.</p>
+            {% endif %}
+        </section>
+    </aside>
+</div>
+{% endblock %}

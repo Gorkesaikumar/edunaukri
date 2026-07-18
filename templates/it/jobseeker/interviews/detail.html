@@ -1,0 +1,268 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}{{ interview.job_title }} | Interviews | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/jobseeker-interviews.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+{% with d=interview %}
+<header class="jsd-page-head">
+    <nav class="jsd-int-breadcrumb" aria-label="Breadcrumb">
+        <a href="{% url 'jobseeker_interviews' user_uuid=portal_user_uuid %}">Interviews</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ d.job_title }}</span>
+    </nav>
+    <div class="jsd-page-head__row">
+        <div>
+            <h1 class="jsd-page-head__title">{{ d.job_title }}</h1>
+            <p class="jsd-page-head__desc">
+                {{ d.company_name }}
+                {% if d.company_verified %}<i class="bi bi-patch-check-fill jsd-verified"></i>{% endif %}
+                · {{ d.round_label }}
+            </p>
+        </div>
+        <span class="jsd-int-badge {{ d.status_badge }} jsd-int-badge--lg">
+            <i class="bi {{ d.status_icon }}"></i> {{ d.status_label }}
+        </span>
+    </div>
+</header>
+
+<div id="jsdInterviewDetail"
+     data-application-id="{{ d.application_id }}"
+     data-scheduled-at="{{ d.scheduled_at_iso }}"
+     data-confirm-url="{% url 'jobseeker_interview_confirm_api' user_uuid=portal_user_uuid application_id=d.application_id %}"
+     data-reschedule-url="{% url 'jobseeker_interview_reschedule_api' user_uuid=portal_user_uuid application_id=d.application_id %}">
+
+    {% if d.countdown_seconds %}
+    <section class="jsd-int-countdown-banner">
+        <p class="mb-1">Interview starts in</p>
+        <div class="jsd-int-countdown-live" data-countdown-target="{{ d.scheduled_at_iso }}">
+            <span class="jsd-int-countdown__unit"><strong data-days>00</strong><small>Days</small></span>
+            <span class="jsd-int-countdown__unit"><strong data-hours>00</strong><small>Hours</small></span>
+            <span class="jsd-int-countdown__unit"><strong data-minutes>00</strong><small>Minutes</small></span>
+            <span class="jsd-int-countdown__unit"><strong data-seconds>00</strong><small>Seconds</small></span>
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="jsd-int-detail-grid">
+        <div class="jsd-int-detail-main">
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <p class="jsd-int-status-desc"><i class="bi bi-info-circle"></i> {{ d.status_description }}</p>
+                    <div class="jsd-int-hero-actions">
+                        {% if d.meet_url %}
+                        <a href="{{ d.meet_url }}"
+                           class="jsd-btn jsd-btn--primary jsd-int-join-btn{% if not d.can_join %} is-disabled{% endif %}"
+                           {% if d.can_join %}target="_blank" rel="noopener"{% else %}aria-disabled="true" tabindex="-1"{% endif %}
+                           data-join-url="{{ d.meet_url }}">
+                            <i class="bi bi-camera-video-fill"></i> Join Interview
+                        </a>
+                        {% endif %}
+                        {% if d.can_confirm %}
+                        <button type="button" class="jsd-btn jsd-btn--soft" data-int-action="confirm">Confirm Attendance</button>
+                        {% endif %}
+                        {% if d.can_reschedule %}
+                        <button type="button" class="jsd-btn jsd-btn--outline" data-int-action="reschedule">Request Reschedule</button>
+                        {% endif %}
+                        {% if d.calendar_url %}
+                        <a href="{{ d.calendar_url }}" class="jsd-btn jsd-btn--outline" target="_blank" rel="noopener">
+                            <i class="bi bi-calendar-plus"></i> Add to Google Calendar
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'jobseeker_interview_print' user_uuid=portal_user_uuid application_id=d.application_id %}" class="jsd-btn jsd-btn--outline" target="_blank" rel="noopener">
+                            <i class="bi bi-download"></i> Download Details
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-briefcase"></i> Job Information</h2>
+                    <div class="jsd-int-info-grid">
+                        <div><span>Job Title</span><strong>{{ d.job_title }}</strong></div>
+                        <div><span>Company</span><strong>{{ d.company_name }}</strong></div>
+                        <div><span>Department</span><strong>{{ d.department|default:"—" }}</strong></div>
+                        <div><span>Salary</span><strong>{{ d.salary_display|default:"Not disclosed" }}</strong></div>
+                        <div><span>Employment Type</span><strong>{{ d.employment_type|default:"—" }}</strong></div>
+                        <div><span>Work Mode</span><strong>{{ d.work_mode|default:"—" }}</strong></div>
+                        <div><span>Location</span><strong>{{ d.location|default:"—" }}</strong></div>
+                    </div>
+                    {% if d.company_profile_url %}
+                    <a href="{{ d.company_profile_url }}" class="jsd-link">View Company Profile</a>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-calendar-event"></i> Interview Details</h2>
+                    <div class="jsd-int-info-grid">
+                        <div><span>Interview ID</span><strong><code>{{ d.interview_id }}</code></strong></div>
+                        <div><span>Round</span><strong>{{ d.round_label }}</strong></div>
+                        <div><span>Type</span><strong>{{ d.interview_type }}</strong></div>
+                        <div><span>Mode</span><strong>{{ d.mode }}</strong></div>
+                        <div><span>Date</span><strong>{{ d.date_label }}</strong></div>
+                        <div><span>Time</span><strong>{{ d.time_label }} ({{ d.timezone_label }})</strong></div>
+                        <div><span>Duration</span><strong>{{ d.duration_label }}</strong></div>
+                    </div>
+                </div>
+            </section>
+
+            {% if d.instructions %}
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-journal-text"></i> Meeting Instructions</h2>
+                    <p class="mb-0">{{ d.instructions|linebreaksbr }}</p>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if d.required_documents %}
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-file-earmark-check"></i> Required Documents</h2>
+                    <ul class="jsd-int-doc-list">
+                        {% for doc in d.required_documents %}
+                        <li><i class="bi bi-check2-square"></i> {{ doc }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if d.panel %}
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-people"></i> Interview Panel</h2>
+                    <div class="jsd-int-panel-list">
+                        {% for member in d.panel %}
+                        <article class="jsd-int-panel-member">
+                            <div class="jsd-int-panel-member__avatar"><i class="bi bi-person"></i></div>
+                            <div>
+                                <p class="mb-0 fw-semibold">{{ member.name }}</p>
+                                <p class="mb-0 small text-muted">{{ member.designation }}{% if member.department %} · {{ member.department }}{% endif %}</p>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-diagram-3"></i> Interview Timeline</h2>
+                    <ol class="jsd-int-timeline">
+                        {% for event in d.timeline %}
+                        <li class="jsd-int-timeline__item jsd-int-timeline__item--{{ event.tone }}">
+                            <div class="jsd-int-timeline__icon"><i class="bi {{ event.icon }}"></i></div>
+                            <div>
+                                <p class="jsd-int-timeline__title">{{ event.title }}</p>
+                                <p class="jsd-int-timeline__desc">{{ event.description }}</p>
+                                <p class="jsd-int-timeline__meta">{{ event.actor_name }} · {{ event.occurred_date }} · {{ event.occurred_time }}</p>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">Timeline events will appear as your interview progresses.</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2><i class="bi bi-chat-left-text"></i> Interview Feedback</h2>
+                    {% if d.feedback.visible %}
+                    <div class="jsd-int-feedback-grid">
+                        {% if d.feedback.technical %}<div><span>Technical</span><strong>{{ d.feedback.technical }}</strong></div>{% endif %}
+                        {% if d.feedback.communication %}<div><span>Communication</span><strong>{{ d.feedback.communication }}</strong></div>{% endif %}
+                        {% if d.feedback.problem_solving %}<div><span>Problem Solving</span><strong>{{ d.feedback.problem_solving }}</strong></div>{% endif %}
+                        {% if d.feedback.overall %}<div><span>Overall Rating</span><strong>{{ d.feedback.overall }}</strong></div>{% endif %}
+                    </div>
+                    {% if d.feedback.comments %}
+                    <p class="mb-0 mt-2 text-muted">{{ d.feedback.comments }}</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="mb-0 text-muted"><i class="bi bi-shield-lock"></i> {{ d.feedback.confidential_message }}</p>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <aside class="jsd-int-detail-side">
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2>Recruiter</h2>
+                    <div class="jsd-int-recruiter">
+                        <div class="jsd-int-card__avatar">
+                            {% if d.recruiter_avatar %}
+                            <img src="{{ d.recruiter_avatar }}" alt="{{ d.recruiter_name }}">
+                            {% else %}
+                            <i class="bi bi-person-badge"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-semibold">{{ d.recruiter_name }}</p>
+                            <p class="mb-0 text-muted small">{{ d.recruiter_designation }}</p>
+                            {% if d.recruiter_email %}
+                            <a href="mailto:{{ d.recruiter_email }}" class="small">{{ d.recruiter_email }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body">
+                    <h2>Recruiter Updates</h2>
+                    <ul class="jsd-int-updates">
+                        {% for update in d.recruiter_updates %}
+                        <li>
+                            <p class="mb-0">{{ update.message }}</p>
+                            <p class="jsd-int-updates__meta">{{ update.recruiter_name }} · {{ update.occurred_date }} · {{ update.occurred_time }}</p>
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">No recruiter updates yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+            <section class="jsd-card jsd-int-panel">
+                <div class="jsd-card__body d-grid gap-2">
+                    <a href="{% url 'jobseeker_interviews' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--outline">Back to Interviews</a>
+                    <a href="{% url 'jobseeker_application_detail' user_uuid=portal_user_uuid application_id=d.application_id %}" class="jsd-btn jsd-btn--soft">View Application</a>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<div class="jsd-int-modal" id="jsdIntRescheduleModal" hidden>
+    <div class="jsd-int-modal__dialog">
+        <h3>Request Reschedule</h3>
+        <p class="text-muted small">Your recruiter will be notified and will follow up with new timing.</p>
+        <textarea id="jsdIntRescheduleReason" rows="4" placeholder="Share your preferred dates or reason..."></textarea>
+        <div class="jsd-int-modal__actions">
+            <button type="button" class="jsd-btn jsd-btn--outline" data-modal-close>Cancel</button>
+            <button type="button" class="jsd-btn jsd-btn--primary" id="jsdIntRescheduleSubmit">Send Request</button>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JSD_INTERVIEWS = {
+    csrfToken: "{{ csrf_token|escapejs }}",
+    joinWindowMinutes: 15
+  };
+</script>
+<script src="{% static 'js/jobseeker-interviews.js' %}"></script>
+{% endblock %}

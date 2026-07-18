@@ -1,0 +1,58 @@
+{# Reusable Trusted Hiring Partner card. Expects a `partner` dict (see HiringPartnersSelector). #}
+<article class="ed-partner-card ed-partner-card--{{ partner.domain }}"
+         data-type="{{ partner.filter_group }}"
+         data-name="{{ partner.name|lower }}"
+         data-location="{{ partner.location_display|lower }}"
+         tabindex="0">
+    <div class="ed-partner-card__media">
+        {% if partner.banner_url %}
+            <div class="ed-partner-card__banner" style="background-image:url('{{ partner.banner_url }}');"></div>
+        {% else %}
+            <div class="ed-partner-card__banner ed-partner-card__banner--gradient"></div>
+        {% endif %}
+        <div class="ed-partner-card__overlay"></div>
+        <span class="ed-hiring-badge ed-hiring-badge--{{ partner.hiring_status }}">
+            <span class="ed-hiring-badge__dot"></span>{{ partner.hiring_label }}
+        </span>
+        <div class="ed-partner-card__logo">
+            {% if partner.logo_url %}
+                <img src="{{ partner.logo_url }}" alt="{{ partner.name }} logo" loading="lazy">
+            {% else %}
+                <span class="ed-logo-monogram" aria-hidden="true">{{ partner.initial }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="ed-partner-card__body">
+        <div class="d-flex align-items-center gap-1 mb-1">
+            <h4 class="ed-partner-card__name mb-0 text-truncate">{{ partner.name }}</h4>
+            {% if partner.verified %}
+                <i class="bi bi-patch-check-fill ed-verified" aria-hidden="true" title="Verified organization"></i>
+            {% endif %}
+        </div>
+
+        <div class="ed-partner-card__meta">
+            <span class="ed-partner-type"><i class="bi bi-buildings" aria-hidden="true"></i> {{ partner.type_label }}</span>
+            <span class="ed-partner-loc"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ partner.location_display }}</span>
+        </div>
+
+        <div class="ed-partner-card__jobs">
+            <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+            <span class="ed-partner-card__jobs-count">{{ partner.jobs_count_label }}</span>
+            {% if partner.active_since %}<span class="ed-partner-card__since">Active since {{ partner.active_since }}</span>{% endif %}
+        </div>
+
+        {% if partner.preview_jobs %}
+            <ul class="ed-partner-preview">
+                {% for title in partner.preview_jobs %}
+                    <li><i class="bi bi-dot" aria-hidden="true"></i><span class="text-truncate">{{ title }}</span></li>
+                {% endfor %}
+                {% if partner.more_count %}
+                    <li class="ed-partner-preview__more">+{{ partner.more_count }} More Opening{{ partner.more_count|pluralize }}</li>
+                {% endif %}
+            </ul>
+        {% endif %}
+
+        <a href="{{ partner.profile_url }}" class="ed-btn ed-btn--gradient mt-auto">View Open Positions <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</article>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Job Not Found | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<section class="container-xl py-5 text-center">
+    <h1>Job not found</h1>
+    <p class="text-muted">This job may have been closed, expired, or removed.</p>
+    <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--gradient mt-3">Browse Jobs</a>
+</section>
+{% endblock %}

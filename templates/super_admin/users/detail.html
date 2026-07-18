@@ -1,0 +1,159 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="{% url 'super_admin_users' user_uuid=header_user.user_uuid %}?domain={{ current_domain }}" class="px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant/40 bg-white text-on-surface-variant hover:bg-gray-50 flex items-center gap-1">
+        <span class="material-symbols-outlined !text-sm">arrow_back</span> Back to Directory
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- User Security Profile Card -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant/30 shadow-xs">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-outline-variant/20">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl {% if current_domain == 'admin' %}bg-slate-900{% elif current_domain == 'professor' %}bg-amber-600{% else %}bg-primary{% endif %} text-white font-extrabold text-xl flex items-center justify-center shadow-md">
+                {{ user_detail.email|slice:":2"|upper|default:"US" }}
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-extrabold text-on-surface">{{ user_detail.email|default:"Unknown User" }}</h2>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if current_domain == 'admin' %}bg-slate-100 text-slate-800{% elif current_domain == 'professor' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ current_domain }}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant/70 font-mono mt-1">UUID: {{ user_detail.id }}</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            {% if not user_detail.email_verified %}
+            <button onclick="superAdminAction('{% url 'super_admin_user_action' user_uuid=header_user.user_uuid user_id=user_detail.id %}', {action: 'verify', domain: '{{ current_domain }}'}, 'Manually verify this email address?')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-sm">mark_email_read</span> Force Verify Email
+            </button>
+            {% endif %}
+
+            {% if user_detail.is_active and user_detail.account_status != 'suspended' %}
+            <button onclick="superAdminAction('{% url 'super_admin_user_action' user_uuid=header_user.user_uuid user_id=user_detail.id %}', {action: 'suspend', domain: '{{ current_domain }}'}, 'Suspend this user account?')" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-sm">block</span> Suspend Account
+            </button>
+            {% else %}
+            <button onclick="superAdminAction('{% url 'super_admin_user_action' user_uuid=header_user.user_uuid user_id=user_detail.id %}', {action: 'activate', domain: '{{ current_domain }}'}, 'Reactivate this user account?')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-sm">check_circle</span> Activate Account
+            </button>
+            {% endif %}
+
+            <button onclick="superAdminAction('{% url 'super_admin_user_action' user_uuid=header_user.user_uuid user_id=user_detail.id %}', {action: 'force_logout', domain: '{{ current_domain }}'}, 'Revoke all JWT tokens and sessions for this user?')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-sm">logout</span> Revoke Sessions
+            </button>
+
+            <button data-modal-open="resetPasswordModal" class="px-3 py-1.5 border border-outline-variant/40 bg-white hover:bg-gray-50 text-on-surface text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition-all">
+                <span class="material-symbols-outlined !text-sm">key</span> Reset Password
+            </button>
+        </div>
+    </div>
+
+    <!-- Security Attributes Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6">
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Account Status</p>
+            <p class="text-sm font-bold mt-1 capitalize {% if user_detail.account_status == 'active' %}text-emerald-700{% elif user_detail.account_status == 'suspended' %}text-red-600{% else %}text-on-surface{% endif %}">{{ user_detail.account_status|default:"Active" }}</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Email Status</p>
+            <p class="text-sm font-bold mt-1 {% if user_detail.email_verified %}text-emerald-700{% else %}text-amber-600{% endif %}">{% if user_detail.email_verified %}Verified{% else %}Pending Verification{% endif %}</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Registered On</p>
+            <p class="text-sm font-bold mt-1 text-on-surface font-mono">{{ user_detail.created_at|slice:":16"|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-wider">Last Login</p>
+            <p class="text-sm font-bold mt-1 text-on-surface font-mono">{{ user_detail.last_login|slice:":16"|default:"Never" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Login History & User Activity Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Login History Table -->
+    <div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50">
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Recent Login History</h3>
+            <p class="text-[10px] text-on-surface-variant/60">IP addresses, browser agents, and login timestamps</p>
+        </div>
+        <div class="flex-1 overflow-x-auto custom-scrollbar max-h-[360px]">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                    <tr>
+                        <th class="p-3">Timestamp</th>
+                        <th class="p-3">IP Address</th>
+                        <th class="p-3">User Agent</th>
+                        <th class="p-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs divide-y divide-outline-variant/10 font-mono">
+                    {% for log in login_history %}
+                    <tr class="hover:bg-gray-50/80">
+                        <td class="p-3 text-[11px]">{{ log.timestamp|slice:":16"|default:"N/A" }}</td>
+                        <td class="p-3 text-[11px]">{{ log.ip_address|default:"127.0.0.1" }}</td>
+                        <td class="p-3 text-[10px] text-on-surface-variant/70 truncate max-w-[150px] font-sans">{{ log.user_agent|default:"Mozilla/5.0" }}</td>
+                        <td class="p-3 font-sans">
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Success</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-on-surface-variant/50 text-xs font-sans">No login history recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- User Activity Feed -->
+    <div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-outline-variant/30 bg-gray-50/50">
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Domain Activity Feed</h3>
+            <p class="text-[10px] text-on-surface-variant/60">Applications submitted, job postings created, or profile edits</p>
+        </div>
+        <div class="flex-1 overflow-x-auto custom-scrollbar max-h-[360px] p-4 space-y-3">
+            {% for act in user_activity %}
+            <div class="p-3 rounded-xl bg-gray-50/80 border border-outline-variant/20 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined !text-base">event</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-on-surface">{{ act.description|default:act.event_type }}</p>
+                    <p class="text-[10px] text-on-surface-variant/60 font-mono mt-0.5">{{ act.timestamp|slice:":16"|default:"Recently" }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-on-surface-variant/50 text-xs">No recent activity found for this account.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div id="resetPasswordModal" class="modal-backdrop hidden fixed inset-0 bg-on-surface/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/30 animate-fade-in">
+        <div class="flex justify-between items-center pb-3 border-b border-outline-variant/20 mb-4">
+            <h3 class="text-base font-extrabold text-on-surface">Admin Password Override</h3>
+            <button data-modal-close="resetPasswordModal" class="text-on-surface-variant hover:text-on-surface">✕</button>
+        </div>
+        <div class="space-y-4">
+            <p class="text-xs text-on-surface-variant">Enter a new secure password for <strong>{{ user_detail.email }}</strong>. All existing active sessions will be invalidated.</p>
+            <div>
+                <label class="block text-[10px] font-bold text-on-surface-variant/70 uppercase mb-1">New Password</label>
+                <input type="password" id="newPasswordInput" class="w-full px-3 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Enter new password (min 8 chars)...">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button data-modal-close="resetPasswordModal" class="px-4 py-2 rounded-lg border border-outline-variant/40 text-xs font-bold text-on-surface-variant hover:bg-gray-50">Cancel</button>
+                <button onclick="const pwd = document.getElementById('newPasswordInput').value; if(!pwd){showToast('Password cannot be empty', 'error'); return;} superAdminAction('{% url 'super_admin_user_action' user_uuid=header_user.user_uuid user_id=user_detail.id %}', {action: 'reset_password', domain: '{{ current_domain }}', new_password: pwd}, 'Confirm password reset?');" class="px-4 py-2 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-sm">Reset & Revoke</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

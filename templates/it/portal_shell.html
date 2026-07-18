@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<section class="ed-portal-page">
+    <div class="ed-container ed-portal-page__inner">
+        <header class="ed-portal-page__header">
+            <h1 class="ed-portal-page__title">{{ page_title }}</h1>
+            {% if page_description %}
+            <p class="ed-portal-page__subtitle">{{ page_description }}</p>
+            {% endif %}
+        </header>
+        <div class="ed-portal-page__body">
+            <div class="ed-portal-placeholder">
+                <i class="bi bi-tools ed-portal-placeholder__icon" aria-hidden="true"></i>
+                <p>This section is being prepared. Check back soon.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,302 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="{{ request.path }}" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50">Clear Filters</a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Global Analytics Filters -->
+<div class="bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs mb-6">
+    <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface mb-4">Global Analytics Filters</h3>
+    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Domain</label>
+            <select name="domain" class="w-full text-sm border-outline-variant/30 rounded-lg p-2 bg-gray-50 focus:ring-primary focus:border-primary">
+                <option value="">All Domains</option>
+                <option value="it" {% if current_filters.domain == 'it' %}selected{% endif %}>IT</option>
+                <option value="faculty" {% if current_filters.domain == 'faculty' %}selected{% endif %}>Faculty</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Search (Name/Recruiter)</label>
+            <input type="text" name="search" value="{{ current_filters.search|default:'' }}" placeholder="Search..." class="w-full text-sm border-outline-variant/30 rounded-lg p-2 bg-gray-50 focus:ring-primary focus:border-primary">
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Date Range</label>
+            <select name="date_range" class="w-full text-sm border-outline-variant/30 rounded-lg p-2 bg-gray-50 focus:ring-primary focus:border-primary">
+                <option value="">All Time</option>
+                <option value="7d" {% if current_filters.date_range == '7d' %}selected{% endif %}>Last 7 Days</option>
+                <option value="30d" {% if current_filters.date_range == '30d' %}selected{% endif %}>Last 30 Days</option>
+                <option value="90d" {% if current_filters.date_range == '90d' %}selected{% endif %}>Last 90 Days</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold text-on-surface-variant mb-1">Invoice Status</label>
+            <select name="invoice_status" class="w-full text-sm border-outline-variant/30 rounded-lg p-2 bg-gray-50 focus:ring-primary focus:border-primary">
+                <option value="">All Statuses</option>
+                <option value="paid" {% if current_filters.invoice_status == 'paid' %}selected{% endif %}>Paid</option>
+                <option value="draft" {% if current_filters.invoice_status == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="issued" {% if current_filters.invoice_status == 'issued' %}selected{% endif %}>Issued</option>
+                <option value="overdue" {% if current_filters.invoice_status == 'overdue' %}selected{% endif %}>Overdue</option>
+                <option value="cancelled" {% if current_filters.invoice_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
+                Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Section 1 - Placement Analytics -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs mb-6 overflow-hidden">
+    <div class="p-5 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Real-Time Placement Analytics</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Total IT: <strong>{{ enterprise_data.placement_analytics.total_it }}</strong> | Total Faculty: <strong>{{ enterprise_data.placement_analytics.total_faculty }}</strong></p>
+        </div>
+        <a href="?{{ request.GET.urlencode }}&export_table=placements" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 flex items-center gap-1 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export to Excel
+        </a>
+    </div>
+    
+    <div class="overflow-x-auto custom-scrollbar max-h-[500px]">
+        <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 z-10 shadow-sm">
+                <tr>
+                    <th class="p-3 pl-5">Candidate Name</th>
+                    <th class="p-3">Domain</th>
+                    <th class="p-3">Recruiter / Institution</th>
+                    <th class="p-3">Job Title</th>
+                    <th class="p-3">Salary / CTC</th>
+                    <th class="p-3">Joining Date</th>
+                    <th class="p-3">Current Status</th>
+                    <th class="p-3 pr-5 text-right">Invoice Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for placement in enterprise_data.placement_analytics.results %}
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="p-3 pl-5 font-bold text-on-surface">{{ placement.candidate_name }}</td>
+                    <td class="p-3">
+                        {% if placement.domain == 'faculty' %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-on-surface">{{ placement.recruiter }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ placement.job_title }}</td>
+                    <td class="p-3 font-mono">₹{{ placement.salary|floatformat:"2" }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ placement.joining_date }}</td>
+                    <td class="p-3 text-emerald-600 font-bold">{{ placement.status }}</td>
+                    <td class="p-3 pr-5 text-right">
+                        {% if placement.invoice_status == 'paid' %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">Paid</span>
+                        {% elif placement.invoice_status == 'overdue' %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700">Overdue</span>
+                        {% elif placement.invoice_status == 'cancelled' %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700">Cancelled</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">{{ placement.invoice_status|title }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="p-8 text-center text-on-surface-variant text-xs">No placements found for the selected filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 2 - Institutional Revenue Analytics -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="p-5 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Real-Time Institutional Revenue & Billing Health</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Aggregated revenue analytics per institution</p>
+        </div>
+        <a href="?{{ request.GET.urlencode }}&export_table=revenue" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 flex items-center gap-1 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export to Excel
+        </a>
+    </div>
+    
+    <div class="overflow-x-auto custom-scrollbar max-h-[500px]">
+        <table class="w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 z-10 shadow-sm">
+                <tr>
+                    <th class="p-3 pl-5">Organization Name</th>
+                    <th class="p-3">Domain</th>
+                    <th class="p-3 text-center">Candidates Hired</th>
+                    <th class="p-3 text-right">Total Placement Fee</th>
+                    <th class="p-3 text-right">Total GST</th>
+                    <th class="p-3 text-right text-emerald-700">Total Invoice Amount</th>
+                    <th class="p-3 text-right">Total Paid Amount</th>
+                    <th class="p-3 text-right text-error">Pending Balance</th>
+                    <th class="p-3 text-center">Last Payment Date</th>
+                    <th class="p-3 pr-5 text-right">Current Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for org in enterprise_data.revenue_analytics %}
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="p-3 pl-5 font-bold text-on-surface">{{ org.organization_name }}</td>
+                    <td class="p-3">
+                        {% if org.domain == 'faculty' %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-center font-bold">{{ org.candidates_hired }}</td>
+                    <td class="p-3 text-right font-mono text-on-surface-variant">₹{{ org.total_fee|floatformat:"2" }}</td>
+                    <td class="p-3 text-right font-mono text-on-surface-variant">₹{{ org.total_gst|floatformat:"2" }}</td>
+                    <td class="p-3 text-right font-mono font-bold text-emerald-700">₹{{ org.total_invoice|floatformat:"2" }}</td>
+                    <td class="p-3 text-right font-mono text-on-surface-variant">₹{{ org.total_paid|floatformat:"2" }}</td>
+                    <td class="p-3 text-right font-mono font-bold text-error">₹{{ org.pending_amount|floatformat:"2" }}</td>
+                    <td class="p-3 text-center text-on-surface-variant">{{ org.last_payment_date }}</td>
+                    <td class="p-3 pr-5 text-right">
+                        {% if org.pending_amount <= 0 %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">Settled</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">Outstanding</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="p-8 text-center text-on-surface-variant text-xs">No revenue data found for the selected filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 3 - Top Revenue Institutions -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs mb-6 overflow-hidden">
+    <div class="p-5 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Top 10 Revenue Institutions</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Institutions ranked by total revenue generated</p>
+        </div>
+        <a href="?{{ request.GET.urlencode }}&export_table=top_institutions" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 flex items-center gap-1 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export to Excel
+        </a>
+    </div>
+    
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3 pl-5">Rank</th>
+                    <th class="p-3">Organization Name</th>
+                    <th class="p-3">Domain</th>
+                    <th class="p-3 text-center">Hires</th>
+                    <th class="p-3 text-right">Total Revenue</th>
+                    <th class="p-3 text-right">Total Paid</th>
+                    <th class="p-3 pr-5 text-right text-error">Outstanding</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for org in enterprise_data.top_revenue_institutions %}
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="p-3 pl-5 font-bold text-on-surface">#{{ org.rank }}</td>
+                    <td class="p-3 font-bold text-on-surface">{{ org.organization_name }}</td>
+                    <td class="p-3">
+                        {% if org.domain == 'faculty' %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-center font-bold">{{ org.candidates_hired }}</td>
+                    <td class="p-3 text-right font-mono font-bold text-emerald-700">₹{{ org.total_revenue|floatformat:"2" }}</td>
+                    <td class="p-3 text-right font-mono text-on-surface-variant">₹{{ org.total_paid|floatformat:"2" }}</td>
+                    <td class="p-3 pr-5 text-right font-mono font-bold text-error">₹{{ org.outstanding_balance|floatformat:"2" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-8 text-center text-on-surface-variant text-xs">No data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 4 - Recent Placements -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="p-5 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-tight text-on-surface">Recent Placements (Latest 15)</h3>
+            <p class="text-[10px] text-on-surface-variant mt-1">Most recent successful candidate placements</p>
+        </div>
+        <a href="?{{ request.GET.urlencode }}&export_table=recent_placements" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 flex items-center gap-1 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export to Excel
+        </a>
+    </div>
+    
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3 pl-5">Candidate</th>
+                    <th class="p-3">Domain</th>
+                    <th class="p-3">Recruiter / Institution</th>
+                    <th class="p-3">Designation</th>
+                    <th class="p-3">CTC</th>
+                    <th class="p-3">Joined On</th>
+                    <th class="p-3 pr-5 text-right">Payment Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for placement in enterprise_data.recent_placements %}
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="p-3 pl-5 font-bold text-on-surface">{{ placement.candidate_name }}</td>
+                    <td class="p-3">
+                        {% if placement.domain == 'faculty' %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-on-surface">{{ placement.recruiter }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ placement.designation }}</td>
+                    <td class="p-3 font-mono">₹{{ placement.salary|floatformat:"2" }}</td>
+                    <td class="p-3 text-on-surface-variant">{{ placement.joined_on }}</td>
+                    <td class="p-3 pr-5 text-right">
+                        {% if placement.payment_status == 'Paid' %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">Paid</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-8 text-center text-on-surface-variant text-xs">No recent placements found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+{% load static %}
+{% load stat_tags %}
+
+{% block title %}{{ PLATFORM_NAME }} — Connecting Exceptional Educators with Exceptional Institutions{% endblock %}
+
+{% block content %}
+
+{# HERO #}
+<section class="ed-hero">
+    <span class="ed-hero__blob ed-hero__blob--primary" aria-hidden="true"></span>
+    <span class="ed-hero__blob ed-hero__blob--secondary" aria-hidden="true"></span>
+
+    <div class="ed-container position-relative" style="z-index:1;">
+        <div class="text-center mx-auto ed-mb-lg ed-reveal" style="max-width: 56rem;">
+            <span class="ed-eyebrow ed-mb-md d-inline-block">The Standard in Academic Excellence</span>
+            <h1 class="ed-display-xl ed-text-on-surface ed-mb-md">
+                Connecting Exceptional <span class="ed-text-primary">Educators</span> with Exceptional <span class="ed-text-secondary">Institutions</span>.
+            </h1>
+            <p class="ed-body-lg ed-text-variant mx-auto" style="max-width: 42rem;">
+                Elevate your career or institution with India's most curated academic talent platform.
+            </p>
+        </div>
+
+        {# Search card #}
+        <form class="ed-search-card ed-glass-card ed-shadow-premium-lg ed-mb-2xl ed-reveal" role="search">
+            <div class="ed-field ed-field--grow">
+                <label class="ed-field__label" for="heroJobTitle">Job Title</label>
+                <div class="ed-input-wrap">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input class="ed-input" id="heroJobTitle" type="text" placeholder="e.g. Dean of Science">
+                </div>
+            </div>
+            <div class="ed-field ed-field--grow">
+                <label class="ed-field__label" for="heroLocation">Location</label>
+                <div class="ed-input-wrap">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    <input class="ed-input" id="heroLocation" type="text" placeholder="Bangalore, Hybrid">
+                </div>
+            </div>
+            <div class="ed-field ed-field--fixed">
+                <label class="ed-field__label" for="heroInstitution">Institution Type</label>
+                <div class="ed-input-wrap">
+                    <i class="bi bi-bank" aria-hidden="true"></i>
+                    <select class="ed-input" id="heroInstitution">
+                        <option>K-12 School</option>
+                        <option>University</option>
+                        <option>EdTech</option>
+                    </select>
+                </div>
+            </div>
+            <button class="ed-btn ed-btn--search w-100 w-md-auto" type="submit">Search Roles</button>
+        </form>
+
+        {# Stat cards #}
+        <div class="row g-4 mx-auto" style="max-width: 56rem;">
+            <div class="col-6 col-md-3">
+                <div class="ed-stat-card ed-glass-card ed-shadow-premium h-100">
+                    <p class="ed-stat-card__value ed-text-primary">{{ stats.active_jobs|compact_count }}</p>
+                    <p class="ed-label-md ed-text-variant mb-0">Active Jobs</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ed-stat-card ed-glass-card ed-shadow-premium h-100">
+                    <p class="ed-stat-card__value ed-text-secondary">{{ stats.institutions|compact_count }}</p>
+                    <p class="ed-label-md ed-text-variant mb-0">Institutions</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ed-stat-card ed-glass-card ed-shadow-premium h-100">
+                    <p class="ed-stat-card__value ed-text-tertiary">{{ stats.hiring_success_pct|percent }}</p>
+                    <p class="ed-label-md ed-text-variant mb-0">Hiring Success</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ed-stat-card ed-glass-card ed-shadow-premium h-100 d-flex flex-column justify-content-center">
+                    <span class="ed-stat-card__icon"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></span>
+                    <p class="ed-label-md ed-text-variant mb-0">Verified Employers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# FEATURED OPPORTUNITIES — unified real-time IT + Faculty feed #}
+<section class="ed-section ed-bg-container-low" id="featured-jobs">
+    <div class="ed-container ed-reveal" data-carousel-root>
+        <div class="ed-section-head">
+            <div>
+                <h2 class="ed-headline-lg ed-mb-2">Featured Opportunities</h2>
+                <p class="ed-body-md ed-text-variant mb-0">The latest approved roles from across IT &amp; Faculty recruitment, updated in real time.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-shrink-0">
+                <div class="ed-carousel__nav d-none" data-carousel-nav>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-prev aria-label="Previous jobs">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-next aria-label="Next jobs">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <a class="ed-link-arrow" href="#">View all jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </div>
+
+        {% if featured_jobs %}
+            <div class="ed-carousel" data-carousel role="region" aria-label="Featured opportunities carousel" tabindex="0">
+                {% for job in featured_jobs %}
+                    <div class="ed-carousel__item">
+                        {% include "partials/job_card.html" with job=job %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="ed-empty-state">
+                <div class="ed-empty-state__icon" aria-hidden="true">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <h3 class="ed-headline-md ed-mb-2">No featured opportunities available at the moment.</h3>
+                <p class="ed-body-md ed-text-variant ed-mb-lg">New roles from verified institutions and companies appear here as soon as they are published.</p>
+                <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--primary">Browse All Jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{# TRUSTED HIRING PARTNERS — live, verified organisations hiring now #}
+<section class="ed-section" id="hiring-partners">
+    <div class="ed-container ed-reveal" data-carousel-root>
+        <div class="text-center ed-mb-lg">
+            <h2 class="ed-headline-lg ed-mb-2">Trusted Hiring Partners</h2>
+            <p class="ed-body-md ed-text-variant mb-0">Explore verified organizations currently hiring across the IT and Faculty recruitment domains.</p>
+        </div>
+
+        {% if hiring_partners %}
+            {# Quick filters + search #}
+            <div class="ed-partner-toolbar ed-mb-lg">
+                <div class="ed-filter-chips" role="tablist" aria-label="Filter hiring partners by type">
+                    {% for chip in partner_filters %}
+                        <button type="button" class="ed-filter-chip{% if chip.slug == 'all' %} is-active{% endif %}"
+                                data-partner-filter="{{ chip.slug }}" aria-pressed="{% if chip.slug == 'all' %}true{% else %}false{% endif %}">
+                            {{ chip.label }}
+                        </button>
+                    {% endfor %}
+                </div>
+                <div class="ed-partner-search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" class="ed-partner-search__input" placeholder="Search organization or location"
+                           aria-label="Search hiring partners" data-partner-search>
+                </div>
+            </div>
+
+            {# Navigation controls #}
+            <div class="d-flex justify-content-end ed-mb-md">
+                <div class="ed-carousel__nav d-none" data-carousel-nav>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-prev aria-label="Previous partners">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-next aria-label="Next partners">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ed-carousel ed-carousel--partners" data-carousel data-partner-track
+                 role="region" aria-label="Hiring partners carousel" tabindex="0">
+                {% for partner in hiring_partners %}
+                    <div class="ed-carousel__item ed-carousel__item--partner">
+                        {% include "partials/partner_card.html" with partner=partner %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <p class="ed-partner-noresults d-none text-center ed-body-md ed-text-variant" data-partner-noresults>
+                No organizations match your filters.
+            </p>
+        {% else %}
+            <div class="ed-empty-state">
+                <div class="ed-empty-state__icon" aria-hidden="true">
+                    <i class="bi bi-buildings"></i>
+                </div>
+                <h3 class="ed-headline-md ed-mb-2">No organizations are currently hiring.</h3>
+                <p class="ed-body-md ed-text-variant ed-mb-lg">Verified companies and institutions appear here as soon as they publish open positions.</p>
+                <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--primary">Browse All Jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{# WHY EDUNAUKRI — Bento grid #}
+<section class="ed-section ed-why">
+    <div class="ed-why__decor" aria-hidden="true">
+        <i class="bi bi-mortarboard-fill bi-1"></i>
+        <i class="bi bi-book-fill bi-2"></i>
+        <i class="bi bi-journal-bookmark-fill bi-3"></i>
+    </div>
+
+    <div class="ed-container position-relative" style="z-index:1;">
+        <div class="text-center ed-mb-2xl mx-auto ed-reveal" style="max-width: 56rem;">
+            <h2 class="ed-display-lg ed-text-on-surface ed-mb-md">Why Leading Educational Institutions Choose {{ PLATFORM_NAME }}</h2>
+            <p class="ed-body-lg ed-text-variant mb-0">
+                Powering smarter hiring by connecting verified educational institutions with talented educators through a modern recruitment platform designed exclusively for the education sector.
+            </p>
+        </div>
+
+        <div class="row g-4 ed-reveal">
+            {# Card 1 — Large featured #}
+            <div class="col-12 col-lg-8">
+                <div class="ed-bento-card ed-bento-card--pad">
+                    <div class="d-flex flex-column flex-md-row gap-4 align-items-center h-100">
+                        <div class="flex-fill">
+                            <div class="ed-feature-icon ed-feature-icon--lg ed-mb-md">
+                                <i class="bi bi-cpu" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="ed-headline-md ed-text-on-surface mb-3">Smart Candidate Matching</h3>
+                            <p class="ed-body-md ed-text-variant mb-0">Automatically match qualified educators with relevant teaching opportunities using intelligent profile analysis. Our system ensures the right fit for every classroom.</p>
+                        </div>
+                        <div class="flex-fill w-100">
+                            <div class="ed-skeleton">
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="ed-skeleton__row">
+                                        <span class="ed-skeleton__dot ed-tint-primary"></span>
+                                        <span class="ed-skeleton__bar" style="width:6rem;"></span>
+                                    </div>
+                                    <div class="ed-skeleton__row">
+                                        <span class="ed-skeleton__dot ed-tint-secondary"></span>
+                                        <span class="ed-skeleton__bar" style="width:8rem;"></span>
+                                    </div>
+                                    <div class="ed-skeleton__row">
+                                        <span class="ed-skeleton__dot ed-tint-tertiary"></span>
+                                        <span class="ed-skeleton__bar" style="width:5rem;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Card 2 #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-primary ed-mb-md">
+                        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-label-md ed-text-on-surface mb-2" style="font-size:1.125rem;">Verified Educational Institutions</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Every school, college, university, and coaching institute is verified before publishing vacancies.</p>
+                </div>
+            </div>
+
+            {# Card 3 #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-secondary ed-mb-md">
+                        <i class="bi bi-hand-index" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-label-md ed-text-on-surface mb-2" style="font-size:1.125rem;">One-Click Applications</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Apply to multiple education jobs quickly using a single professional profile.</p>
+                </div>
+            </div>
+
+            {# Card 4 #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-tertiary ed-mb-md">
+                        <i class="bi bi-bell" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-label-md ed-text-on-surface mb-2" style="font-size:1.125rem;">Real-Time Job Alerts</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Receive instant notifications whenever jobs match your profile.</p>
+                </div>
+            </div>
+
+            {# Card 5 #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad">
+                    <div class="ed-feature-icon ed-feature-icon--md ed-tint-primary ed-mb-md">
+                        <i class="bi bi-bullseye" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="ed-label-md ed-text-on-surface mb-2" style="font-size:1.125rem;">Application Tracking</h3>
+                    <p class="ed-body-md ed-text-variant mb-0">Monitor every stage of your application from applied to hired.</p>
+                </div>
+            </div>
+
+            {# Card 6 — small #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad-sm d-flex align-items-start gap-3 h-100">
+                    <div class="ed-feature-icon ed-feature-icon--sm ed-text-primary">
+                        <i class="bi bi-people-fill" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h4 class="ed-label-md ed-text-on-surface mb-1">Trusted by Institutions</h4>
+                        <p class="ed-caption ed-text-variant mb-0">Thousands of verified institutions recruit through us.</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Card 7 — small #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad-sm d-flex align-items-start gap-3 h-100">
+                    <div class="ed-feature-icon ed-feature-icon--sm ed-text-secondary">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h4 class="ed-label-md ed-text-on-surface mb-1">Secure Hiring</h4>
+                        <p class="ed-caption ed-text-variant mb-0">Protected data and verified employers for safety.</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Card 8 — small #}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="ed-bento-card ed-bento-card--pad-sm d-flex align-items-start gap-3 h-100">
+                    <div class="ed-feature-icon ed-feature-icon--sm ed-text-tertiary">
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h4 class="ed-label-md ed-text-on-surface mb-1">Faster Recruitment</h4>
+                        <p class="ed-caption ed-text-variant mb-0">Reduce hiring time with streamlined workflows.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# YOUR HIRING JOURNEY — Recruitment timeline (IT + Faculty) #}
+<section class="ed-section ed-bg-surface" aria-labelledby="journey-heading">
+    <div class="ed-container ed-reveal">
+        <div class="text-center ed-mb-2xl">
+            <h2 class="ed-headline-lg ed-mb-2" id="journey-heading">Your Hiring Journey</h2>
+            <p class="ed-body-md ed-text-variant mb-0">Complete your profile, discover opportunities, connect with recruiters, and secure your next career move through one unified recruitment platform.</p>
+        </div>
+
+        <div class="ed-timeline">
+            <div class="ed-timeline__track" aria-hidden="true">
+                <div class="ed-timeline__progress" id="timelineProgress"></div>
+            </div>
+            <ol class="row g-4 position-relative ed-timeline__list" style="z-index:1;">
+                <li class="col-12 col-md-3">
+                    <div class="ed-step is-active" data-step="25" aria-current="step">
+                        <div class="ed-step__num">
+                            <span class="ed-step__count">01</span>
+                            <i class="bi bi-person-circle ed-step__badge" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="ed-headline-md mb-2 ed-step__title">Create Your Profile</h3>
+                        <p class="ed-body-md ed-text-variant mb-0">Register, complete your professional profile, upload your resume or academic CV, and showcase your skills, experience, qualifications, certifications, and achievements.</p>
+                    </div>
+                </li>
+                <li class="col-12 col-md-3">
+                    <div class="ed-step" data-step="50">
+                        <div class="ed-step__num">
+                            <span class="ed-step__count">02</span>
+                            <i class="bi bi-briefcase ed-step__badge" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="ed-headline-md mb-2 ed-step__title">Discover Matching Opportunities</h3>
+                        <p class="ed-body-md ed-text-variant mb-0">Explore the latest verified job openings from both IT companies and educational institutions that match your profile, skills, qualifications, experience, and career goals.</p>
+                    </div>
+                </li>
+                <li class="col-12 col-md-3">
+                    <div class="ed-step" data-step="75">
+                        <div class="ed-step__num">
+                            <span class="ed-step__count">03</span>
+                            <i class="bi bi-send-check ed-step__badge" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="ed-headline-md mb-2 ed-step__title">Apply &amp; Connect</h3>
+                        <p class="ed-body-md ed-text-variant mb-0">Apply for suitable positions with one click, track your applications in real time, communicate with recruiters, receive interview invitations, and stay updated throughout the hiring process.</p>
+                    </div>
+                </li>
+                <li class="col-12 col-md-3">
+                    <div class="ed-step" data-step="100">
+                        <div class="ed-step__num">
+                            <span class="ed-step__count">04</span>
+                            <i class="bi bi-award ed-step__badge" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="ed-headline-md mb-2 ed-step__title">Get Hired &amp; Grow</h3>
+                        <p class="ed-body-md ed-text-variant mb-0">Receive offers, complete the hiring process, join your new organization, and continue growing your career with future opportunities available through {{ PLATFORM_NAME }}.</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+{# SUCCESS STORIES — verified placement testimonials (auto-scroll carousel) #}
+<section class="ed-section ed-bg-container-low" aria-labelledby="stories-heading">
+    <div class="ed-container ed-reveal">
+        <div class="text-center ed-mb-lg">
+            <h2 class="ed-headline-lg ed-mb-2" id="stories-heading">Success Stories</h2>
+            <p class="ed-body-md ed-text-variant mb-0">Verified placements from professionals and educators who found their next opportunity through {{ PLATFORM_NAME }}.</p>
+        </div>
+
+        {% if testimonials %}
+            <div class="ed-stories-toolbar ed-mb-lg">
+                <div class="ed-filter-chips" role="tablist" aria-label="Filter success stories">
+                    <button type="button" class="ed-filter-chip is-active" data-story-filter="all" data-story-sort="recent" aria-pressed="true">All</button>
+                    <button type="button" class="ed-filter-chip" data-story-filter="it" data-story-sort="recent" aria-pressed="false">IT Placements</button>
+                    <button type="button" class="ed-filter-chip" data-story-filter="faculty" data-story-sort="recent" aria-pressed="false">Faculty Placements</button>
+                    <button type="button" class="ed-filter-chip" data-story-filter="all" data-story-sort="recent" aria-pressed="false">Recent</button>
+                    <button type="button" class="ed-filter-chip" data-story-filter="all" data-story-sort="salary" aria-pressed="false">Highest Salary</button>
+                </div>
+                <div class="ed-carousel__nav" data-stories-nav>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-stories-prev aria-label="Previous stories">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-stories-next aria-label="Next stories">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ed-stories" data-stories role="region" aria-roledescription="carousel" aria-label="Success stories">
+                <div class="ed-stories__track" data-stories-track>
+                    {% for t in testimonials %}
+                        <div class="ed-stories__item">
+                            {% include "partials/testimonial_card.html" with t=t %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ed-stories__dots" data-stories-dots role="tablist" aria-label="Success stories pagination"></div>
+            <p class="ed-stories__empty d-none text-center ed-body-md ed-text-variant" data-stories-noresults>
+                No success stories match this filter.
+            </p>
+        {% else %}
+            <div class="ed-empty-state">
+                <div class="ed-empty-state__icon" aria-hidden="true">
+                    <i class="bi bi-chat-quote"></i>
+                </div>
+                <h3 class="ed-headline-md ed-mb-2">No success stories yet.</h3>
+                <p class="ed-body-md ed-text-variant ed-mb-lg">Verified placement stories from our candidates will appear here soon.</p>
+                <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--primary">Browse All Jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{# LIVE HIRING ACTIVITY — real-time social proof feed #}
+<section class="ed-section ed-bg-surface" aria-labelledby="activity-heading">
+    <div class="ed-container ed-reveal">
+        <div class="text-center ed-mb-lg">
+            <h2 class="ed-headline-lg ed-mb-2" id="activity-heading">Live Hiring Activity</h2>
+            <p class="ed-body-md ed-text-variant mb-3">See what&rsquo;s happening across the {{ PLATFORM_NAME }} platform in real time.</p>
+            <span class="ed-activity-counter" data-activity-counter-wrap>
+                <span class="ed-activity-counter__pulse" aria-hidden="true"></span>
+                <i class="bi bi-fire" aria-hidden="true"></i>
+                <span data-activity-counter>{{ activity_today }}</span>&nbsp;Hiring Activities Today
+            </span>
+        </div>
+
+        <div class="ed-activity-feed{% if not activities %} d-none{% endif %}"
+             data-activity-feed
+             data-activity-url="{% url 'live_activity' %}">
+            {% for a in activities %}
+                {% include "partials/activity_card.html" with a=a %}
+            {% endfor %}
+        </div>
+
+        <div class="ed-empty-state{% if activities %} d-none{% endif %}" data-activity-empty>
+            <div class="ed-empty-state__icon" aria-hidden="true">
+                <i class="bi bi-broadcast"></i>
+            </div>
+            <h3 class="ed-headline-md ed-mb-2">No live activity right now.</h3>
+            <p class="ed-body-md ed-text-variant ed-mb-lg">Hiring activity across IT and Faculty domains will appear here as it happens.</p>
+            <a href="{% url 'marketplace_browse_jobs' %}" class="ed-btn ed-btn--primary">Explore Jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </div>
+</section>
+
+{# CTA #}
+<section class="ed-section">
+    <div class="ed-container">
+        <div class="ed-cta ed-reveal">
+            <span class="ed-cta__blob ed-cta__blob--tr" aria-hidden="true"></span>
+            <span class="ed-cta__blob ed-cta__blob--bl" aria-hidden="true"></span>
+            <div class="ed-cta__content">
+                <h2 class="ed-display-lg ed-mb-md">Ready to Start Your Education Career?</h2>
+                <p class="ed-body-lg ed-mb-xl" style="opacity:.9;">Join 50,000+ top-tier educators and 3,500+ premium institutions today.</p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="#" class="ed-btn ed-btn--light">For Candidates</a>
+                    <a href="#" class="ed-btn ed-btn--outline-light">For Institutions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

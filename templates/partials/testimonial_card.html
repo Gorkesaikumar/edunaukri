@@ -1,0 +1,44 @@
+{# Reusable Success Story card. Expects a `t` dict (see TestimonialsSelector). #}
+<article class="ed-story-card ed-story-card--{{ t.domain }}"
+         data-domain="{{ t.domain }}"
+         data-salary="{{ t.salary_increase_pct }}"
+         tabindex="0">
+    <div class="ed-story-card__top">
+        <span class="ed-story-domain ed-story-domain--{{ t.domain }}">{{ t.domain_label }}</span>
+        <i class="bi bi-quote ed-story-card__quotemark" aria-hidden="true"></i>
+    </div>
+
+    <div class="ed-stars" aria-label="{{ t.rating }} out of 5 stars">
+        {% for _ in t.rating_range %}<i class="bi bi-star-fill" aria-hidden="true"></i>{% endfor %}
+        {% for _ in t.empty_range %}<i class="bi bi-star ed-star-empty" aria-hidden="true"></i>{% endfor %}
+    </div>
+
+    <p class="ed-story-card__quote{% if t.quote_is_long %} is-clamped{% endif %}" data-story-quote>{{ t.quote }}</p>
+    {% if t.quote_is_long %}
+        <button type="button" class="ed-story-card__more" data-story-more aria-expanded="false">Read More</button>
+    {% endif %}
+
+    {% if t.badges %}
+        <div class="ed-story-badges">
+            {% for badge in t.badges %}
+                <span class="ed-story-badge"><i class="bi {{ badge.icon }}" aria-hidden="true"></i><span class="ed-story-badge__label">{{ badge.label }}</span></span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="ed-story-card__author">
+        <div class="ed-avatar ed-avatar--sm">
+            {% if t.photo_url %}
+                <img src="{{ t.photo_url }}" alt="{{ t.author_name }}" loading="lazy">
+            {% else %}
+                <span class="ed-logo-monogram" aria-hidden="true">{{ t.initial }}</span>
+            {% endif %}
+        </div>
+        <div class="ed-story-card__id">
+            <p class="ed-story-card__name mb-0">{{ t.author_name }}</p>
+            <p class="ed-story-card__role mb-0">
+                {{ t.designation }}{% if t.designation and t.organization_name %} &middot; {% endif %}<span class="ed-story-card__org">{{ t.organization_name }}</span>
+            </p>
+        </div>
+    </div>
+</article>

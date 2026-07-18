@@ -1,0 +1,98 @@
+<!-- Candidate Profile Modal -->
+<div class="modal fade" id="candidateProfileModal" tabindex="-1" aria-labelledby="candidateProfileModalLabel" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-bottom-0 py-3">
+                <h5 class="modal-title mb-0 fw-bold" id="candidateProfileModalLabel">Candidate Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0">
+                <!-- Header Banner -->
+                <div class="bg-primary pt-5 pb-4 px-4 text-white text-center position-relative">
+                    <div class="avatar rounded-circle bg-white text-primary d-flex align-items-center justify-content-center shadow mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem; margin-top: -20px;" id="cpm-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1" id="cpm-name">Candidate Name</h4>
+                    <p class="mb-2 text-white-50" id="cpm-designation">Current Designation at Company</p>
+                    <div class="d-flex justify-content-center gap-3 small">
+                        <span id="cpm-location"><i class="fas fa-map-marker-alt me-1"></i> Location</span>
+                        <span id="cpm-experience"><i class="fas fa-briefcase me-1"></i> Experience</span>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <ul class="nav nav-tabs nav-fill bg-light pt-2 px-3 border-bottom" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-medium text-dark pb-3 border-0 border-bottom border-3" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-selected="true">Overview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-medium text-muted pb-3 border-0 border-bottom border-3 border-transparent" id="resume-tab" data-bs-toggle="tab" data-bs-target="#resume" type="button" role="tab" aria-selected="false">Resume & Docs</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-medium text-muted pb-3 border-0 border-bottom border-3 border-transparent" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-selected="false">Application History</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content p-4" id="profileTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-muted small fw-bold mb-3">Contact Information</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2"><i class="fas fa-envelope text-primary fa-fw me-2"></i> <span id="cpm-email">email@example.com</span></li>
+                                    <li class="mb-2"><i class="fas fa-phone text-primary fa-fw me-2"></i> <span id="cpm-phone">+1 234 567 8900</span></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-muted small fw-bold mb-3">Application Details</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2"><strong>Status:</strong> <span class="badge bg-secondary ms-2" id="cpm-status">Applied</span></li>
+                                    <li class="mb-2"><strong>Applied:</strong> <span id="cpm-applied-date">Date</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">Cover Letter / Notes</h6>
+                        <div class="bg-light p-3 rounded text-secondary mb-4" id="cpm-cover-letter" style="white-space: pre-line; font-style: italic;">
+                            No cover letter provided.
+                        </div>
+                        
+                    </div>
+
+                    <!-- Resume Tab -->
+                    <div class="tab-pane fade" id="resume" role="tabpanel" aria-labelledby="resume-tab">
+                        <div class="text-center py-4" id="cpm-resume-section">
+                            <div class="mb-3"><i class="fas fa-file-pdf text-danger" style="font-size: 3rem;"></i></div>
+                            <h5 class="fw-bold mb-1" id="cpm-resume-name">Resume.pdf</h5>
+                            <p class="text-muted small mb-4">Uploaded on <span id="cpm-resume-date">Date</span></p>
+                            
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-primary" id="cpm-view-resume-btn">
+                                    <i class="fas fa-eye me-1"></i> View Document
+                                </button>
+                                <a href="#" class="btn btn-outline-secondary" id="cpm-download-resume-btn" download>
+                                    <i class="fas fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab -->
+                    <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                        <ul class="timeline list-unstyled mb-0 position-relative ps-4 border-start border-primary border-2" id="cpm-history-timeline">
+                            <!-- Timeline events injected here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer bg-light border-top-0 py-3">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

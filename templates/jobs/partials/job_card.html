@@ -1,0 +1,106 @@
+{# Marketplace job card — expects MarketplaceJobCard or compatible dict #}
+<article class="jm-job-card" data-job-id="{{ job.id }}">
+    <div class="jm-job-card__top">
+        <div class="jm-job-card__brand">
+            <div class="ed-logo-tile jm-job-card__logo">
+                {% if job.logo_url %}
+                <img src="{{ job.logo_url }}" alt="{{ job.company_name }} logo" loading="lazy">
+                {% else %}
+                <span class="ed-logo-monogram" aria-hidden="true">{{ job.logo_initial }}</span>
+                {% endif %}
+            </div>
+            <div class="jm-job-card__meta">
+                <div class="d-flex align-items-center gap-1">
+                    <p class="jm-job-card__company mb-0">{{ job.company_name }}</p>
+                    {% if job.company_verified %}
+                    <i class="bi bi-patch-check-fill ed-verified" title="Verified employer"></i>
+                    {% endif %}
+                </div>
+                <h2 class="jm-job-card__title">
+                    <a href="{{ job.detail_url }}">{{ job.title }}</a>
+                </h2>
+            </div>
+        </div>
+        <div class="jm-job-card__badges">
+            <span class="ed-chip ed-chip--slate"><i class="bi {{ job.domain_icon }}"></i> {{ job.domain_label }}</span>
+            {% if job.match_percent %}
+            <span class="jm-match-badge">{{ job.match_percent }}% Match</span>
+            {% endif %}
+            {% if job.is_fresh and job.fresh_label %}
+            <span class="jm-fresh-badge">{{ job.fresh_label }}</span>
+            {% endif %}
+            {% if job.is_featured %}
+            <span class="jm-featured-badge">Featured</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="jm-job-card__chips">
+        {% if job.location %}<span class="ed-chip ed-chip--slate"><i class="bi bi-geo-alt"></i> {{ job.location }}</span>{% endif %}
+        {% if job.salary_display %}<span class="ed-chip ed-chip--amber">{{ job.salary_display }}</span>{% endif %}
+        {% if job.experience_label %}<span class="ed-chip ed-chip--purple">{{ job.experience_label }}</span>{% endif %}
+        <span class="ed-chip ed-chip--blue">{{ job.employment_type_label }}</span>
+        <span class="ed-chip ed-chip--blue">{{ job.work_mode_label }}</span>
+    </div>
+
+    {% if job.skills %}
+    <div class="jm-job-card__skills">
+        {% for skill in job.skills %}
+        <span class="jm-skill-tag">{{ skill }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="jm-job-card__footer">
+        <div class="jm-job-card__stats">
+            <span><i class="bi bi-clock"></i> {{ job.posted_display }}</span>
+            <span><i class="bi bi-people"></i> {{ job.applicant_count }} applicant{{ job.applicant_count|pluralize }}</span>
+            {% if job.deadline_display %}
+            <span><i class="bi bi-calendar-event"></i> Deadline {{ job.deadline_display }}</span>
+            {% endif %}
+        </div>
+        <div class="jm-job-card__actions">
+            {% if job.can_save %}
+            <button type="button"
+                    class="ed-icon-btn ed-icon-btn--lg jsd-save-btn{% if job.is_saved %} is-saved{% endif %}"
+                    data-save-job-toggle
+                    data-job-id="{{ job.id }}"
+                    aria-label="Save job"
+                    aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
+                <i class="bi {% if job.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+            </button>
+            {% elif job.save_login_url %}
+            <a href="{{ job.save_login_url }}" class="ed-icon-btn ed-icon-btn--lg" aria-label="Sign in to save job">
+                <i class="bi bi-bookmark"></i>
+            </a>
+            {% endif %}
+
+            <button type="button" 
+                    class="ed-icon-btn ed-icon-btn--lg jm-share-btn" 
+                    data-share-url="{{ job.share_url }}" 
+                    data-share-title="{{ job.title|escapejs }}"
+                    data-share-company="{{ job.company_name|escapejs }}"
+                    data-share-domain="{{ job.domain_label|escapejs }}"
+                    data-share-location="{{ job.location|default:'Remote'|escapejs }}"
+                    data-share-type="{{ job.employment_type_label|escapejs }}"
+                    data-share-logo="{% if job.logo_url %}{{ job.logo_url }}{% endif %}"
+                    data-share-initial="{{ job.logo_initial }}"
+                    aria-label="Share job">
+                <i class="bi bi-share"></i>
+            </button>
+
+            {% if job.has_applied %}
+            <span class="jm-applied-label"><i class="bi bi-check-circle-fill"></i> Applied</span>
+            {% elif job.can_apply %}
+            {% if is_job_seeker %}
+            <form method="post" action="{{ job.apply_url }}" class="jm-apply-form" data-apply-job-form>
+                {% csrf_token %}
+                <button type="submit" class="ed-btn ed-btn--gradient">Apply Now</button>
+            </form>
+            {% else %}
+            <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply Now</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</article>

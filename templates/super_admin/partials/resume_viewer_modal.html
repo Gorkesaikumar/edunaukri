@@ -1,0 +1,37 @@
+<!-- Resume Viewer Modal -->
+<div class="modal fade" id="resumeViewerModal" tabindex="-1" aria-labelledby="resumeViewerModalLabel" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-dark text-white border-bottom-0 py-2 px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fas fa-file-pdf fs-4 text-danger"></i>
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold fs-6" id="rvm-filename">Resume.pdf</h5>
+                        <p class="mb-0 small text-white-50" id="rvm-candidate-name">Candidate Name</p>
+                    </div>
+                </div>
+                
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light" id="rvm-zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="rvm-zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                    <div class="vr bg-secondary mx-2"></div>
+                    <a href="#" class="btn btn-sm btn-light text-dark fw-medium" id="rvm-download" download><i class="fas fa-download me-1"></i> Download</a>
+                    <button type="button" class="btn-close btn-close-white ms-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            
+            <div class="modal-body bg-secondary p-0 position-relative h-100 w-100 d-flex justify-content-center align-items-center" id="rvm-container">
+                <!-- Loader -->
+                <div class="text-center text-white" id="rvm-loader">
+                    <div class="spinner-border mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading document...</p>
+                </div>
+                
+                <!-- PDF iframe/embed will be injected here via JS -->
+                <iframe id="rvm-iframe" src="" class="w-100 h-100 border-0 d-none" style="max-width: 1000px; background-color: #525659; box-shadow: 0 0 15px rgba(0,0,0,0.2);"></iframe>
+            </div>
+        </div>
+    </div>
+</div>

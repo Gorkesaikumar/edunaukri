@@ -1,0 +1,51 @@
+<article class="im-card im-card--{{ institution.domain }}">
+    <a href="{{ institution.profile_url }}" class="im-card__link">
+        <div class="im-card__media">
+            {% if institution.banner_url %}
+            <div class="im-card__banner" style="background-image:url('{{ institution.banner_url }}');"></div>
+            {% else %}
+            <div class="im-card__banner im-card__banner--{{ institution.domain }}"></div>
+            {% endif %}
+            <div class="im-card__overlay"></div>
+            {% if institution.is_hiring %}
+            <span class="im-hiring-badge"><span class="im-hiring-badge__dot"></span>{{ institution.hiring_label }}</span>
+            {% endif %}
+            <div class="im-card__logo">
+                {% if institution.logo_url %}
+                <img src="{{ institution.logo_url }}" alt="{{ institution.name }} logo" loading="lazy">
+                {% else %}
+                <span class="ed-logo-monogram">{{ institution.logo_initial }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="im-card__body">
+            <div class="im-card__top">
+                <span class="im-domain-badge im-domain-badge--{{ institution.domain }}">
+                    <i class="bi {{ institution.domain_icon }}"></i> {{ institution.domain_label }}
+                </span>
+                {% if institution.verified %}
+                <i class="bi bi-patch-check-fill ed-verified" title="Verified"></i>
+                {% endif %}
+            </div>
+
+            <h2 class="im-card__name">{{ institution.name }}</h2>
+            <p class="im-card__type">{{ institution.type_label }}</p>
+            {% if institution.description %}
+            <p class="im-card__desc">{{ institution.description|truncatechars:120 }}</p>
+            {% endif %}
+
+            <div class="im-card__meta">
+                <span><i class="bi bi-geo-alt"></i> {{ institution.location }}</span>
+                {% if institution.established_year %}<span><i class="bi bi-calendar3"></i> Est. {{ institution.established_year }}</span>{% endif %}
+            </div>
+
+            <div class="im-card__stats">
+                <span class="im-openings"><i class="bi bi-briefcase-fill"></i> {{ institution.open_positions_label }}</span>
+                {% if institution.employee_label %}<span class="im-employees">{{ institution.employee_label }}</span>{% endif %}
+            </div>
+
+            <span class="im-card__cta">View Profile <i class="bi bi-arrow-right"></i></span>
+        </div>
+    </a>
+</article>

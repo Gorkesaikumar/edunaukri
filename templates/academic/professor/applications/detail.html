@@ -1,0 +1,239 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}{{ application_detail.job_title }} | Application{% endblock %}
+
+{% block extra_head %}
+<style>
+  .fjd-joining-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .78rem; font-weight: 600;
+    padding: .25rem .6rem; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .fjd-joining-badge--joined   { background: #d1fae5; color: #065f46; }
+  .fjd-joining-badge--progress { background: #fef3c7; color: #92400e; }
+  .fjd-joining-badge--confirmed{ background: #dbeafe; color: #1e40af; }
+  .fjd-joining-badge--accepted { background: #ede9fe; color: #5b21b6; }
+  .fjd-joining-badge--abscond  { background: #fee2e2; color: #991b1b; }
+  .fjd-joining-badge--exited   { background: #f1f5f9; color: #475569; }
+  .fjd-joining-badge--pending  { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div id="fjpApplicationDetail"
+     data-offer-url="{{ application_detail.offer_api_url }}">
+<header class="fjd-page-head">
+    <a href="{% portal_url 'professor_applications' %}" class="fjd-link-sm d-inline-flex align-items-center gap-1 mb-2">
+        <i class="bi bi-arrow-left"></i> Back to Applications
+    </a>
+    <h1 class="fjd-page-head__title">{{ application_detail.job_title }}</h1>
+    <p class="fjd-page-head__desc">
+        {% if application_detail.institution_profile_url %}
+        <a href="{{ application_detail.institution_profile_url }}" class="fjd-link-sm">{{ application_detail.institution_name }}</a>
+        {% else %}
+        {{ application_detail.institution_name }}
+        {% endif %}
+        {% if application_detail.location %} • {{ application_detail.location }}{% endif %}
+    </p>
+</header>
+
+{% if application_detail.interview %}
+<section class="fjd-card fjd-interview-panel">
+    <h2 class="fjd-widget__title"><i class="bi bi-calendar-event"></i> Interview Details</h2>
+    <p class="mb-2"><strong>{{ application_detail.interview.interview_type }}</strong> on {{ application_detail.interview.date_label }}{% if application_detail.interview.time_label %} at {{ application_detail.interview.time_label }}{% endif %}</p>
+    {% if application_detail.interview.location_label %}
+    <p class="fjd-interview__location mb-2"><i class="bi bi-geo-alt"></i> {{ application_detail.interview.location_label }}</p>
+    {% endif %}
+    {% if application_detail.interview.meet_url %}
+    <a href="{{ application_detail.interview.meet_url }}" class="fjd-btn fjd-btn--primary" target="_blank" rel="noopener noreferrer"{% if not application_detail.interview.can_join %} aria-disabled="true"{% endif %}>Join Interview</a>
+    {% endif %}
+</section>
+{% endif %}
+
+<div class="fjd-detail-grid" style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1.5rem; align-items: start;">
+    <section class="fjd-detail-main d-flex flex-column gap-4">
+        <!-- Main Application Status & Meta -->
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <div class="fjd-detail-head d-flex justify-content-between align-items-center mb-3">
+                    <span class="fjd-badge {{ application_detail.status_class }}">{{ application_detail.status_label }}</span>
+                    <p class="fjd-detail-meta mb-0 text-muted small">Applied {{ application_detail.applied_date }} · Updated {{ application_detail.last_updated }}</p>
+                </div>
+                
+                {% if application_detail.department or application_detail.source %}
+                <div class="mt-3">
+                    {% if application_detail.department %}
+                    <p class="mb-1"><strong>Applied Department:</strong> {{ application_detail.department }}</p>
+                    {% endif %}
+                    {% if application_detail.source %}
+                    <p class="mb-1"><strong>Source:</strong> {{ application_detail.source }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a href="{{ application_detail.job_url }}" class="fjd-btn fjd-btn--outline">
+                        <i class="bi bi-briefcase me-1"></i> View Job
+                    </a>
+                    <button type="button" class="fjd-btn fjd-btn--outline" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i> Print Application
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submitted Resume & Cover Letter -->
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4"><i class="bi bi-file-person me-2"></i>Submitted Documents</h2>
+                {% if application_detail.cv_snapshot %}
+                <div class="fjd-alert fjd-alert--info mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Resume Attached:</strong> {{ application_detail.cv_snapshot.original_filename|default:"Resume" }}
+                    </div>
+                </div>
+                {% else %}
+                <p class="fjd-detail-text mb-3"><em>No resume attached to this application.</em></p>
+                {% endif %}
+
+                {% if application_detail.cover_letter %}
+                <h3 class="h6 mt-4 mb-2">Cover Letter</h3>
+                <div class="fjd-detail-text" style="background: var(--fjd-bg-muted); padding: 1rem; border-radius: 8px;">
+                    {{ application_detail.cover_letter|linebreaksbr }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Professional Profile Snapshot -->
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4"><i class="bi bi-briefcase me-2"></i>Professional Profile Snapshot</h2>
+                <dl class="fjd-profile-dl">
+                    <div class="fjd-profile-dl__row"><dt>Current Designation</dt><dd>{{ application_detail.current_designation|default:"-" }}</dd></div>
+                    <div class="fjd-profile-dl__row"><dt>Current Institution</dt><dd>{{ application_detail.current_institution|default:"-" }}</dd></div>
+                    {% if application_detail.expected_salary %}
+                    <div class="fjd-profile-dl__row"><dt>Expected Salary</dt><dd>₹{{ application_detail.expected_salary }}</dd></div>
+                    {% endif %}
+                    <div class="fjd-profile-dl__row"><dt>Experience (Years)</dt><dd>{{ application_detail.experience_snapshot.experience_years|default:"0" }} total</dd></div>
+                    <div class="fjd-profile-dl__row"><dt>Research Publications</dt><dd>{{ application_detail.research_publications_count|default:"0" }}</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Education Snapshot -->
+        {% if application_detail.qualification_snapshot %}
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4"><i class="bi bi-mortarboard me-2"></i>Education Snapshot</h2>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                    {% for qual in application_detail.qualification_snapshot %}
+                    <li>
+                        <strong>{{ qual.qualification }}</strong><br>
+                        <span class="text-muted">{{ qual.institution }} {% if qual.year %}• {{ qual.year }}{% endif %}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Certificates Snapshot -->
+        {% if application_detail.certificates_snapshot %}
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4"><i class="bi bi-award me-2"></i>Certificates Snapshot</h2>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                    {% for cert in application_detail.certificates_snapshot %}
+                    <li>
+                        <i class="bi bi-check-circle-fill text-success me-2"></i> <strong>{{ cert.qualification }}</strong>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Side Panel -->
+    <aside class="fjd-detail-side d-flex flex-column gap-4">
+        {% if application_detail.offer %}
+        <div class="fjd-card fjd-offer-panel">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4"><i class="bi bi-envelope-check me-2"></i>Offer Details</h2>
+                <dl class="fjd-profile-dl" style="font-size: 0.875rem;">
+                    <div class="fjd-profile-dl__row d-flex justify-content-between"><dt>Salary</dt><dd class="text-end">{{ application_detail.offer.salary_display }}</dd></div>
+                    <div class="fjd-profile-dl__row d-flex justify-content-between"><dt>Designation</dt><dd class="text-end">{{ application_detail.offer.designation }}</dd></div>
+                    <div class="fjd-profile-dl__row d-flex justify-content-between align-items-start">
+                        <dt>Joining</dt>
+                        <dd class="text-end">
+                            {% with joining=application_detail.offer.joining_date %}
+                            {% if "Joined" in joining and "awaiting" not in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--joined"><i class="bi bi-trophy-fill me-1"></i>{{ joining }}</span>
+                            {% elif "Joining in Progress" in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--progress"><i class="bi bi-arrow-repeat me-1"></i>{{ joining }}</span>
+                            {% elif "Confirmed" in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--confirmed"><i class="bi bi-calendar-check me-1"></i>{{ joining }}</span>
+                            {% elif "Accepted" in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--accepted"><i class="bi bi-hand-thumbs-up me-1"></i>{{ joining }}</span>
+                            {% elif "Absconded" in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--abscond"><i class="bi bi-exclamation-triangle me-1"></i>{{ joining }}</span>
+                            {% elif "Exited" in joining %}
+                            <span class="fjd-joining-badge fjd-joining-badge--exited"><i class="bi bi-box-arrow-right me-1"></i>{{ joining }}</span>
+                            {% else %}
+                            <span class="fjd-joining-badge fjd-joining-badge--pending">{{ joining }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </dd>
+                    </div>
+
+                    {% if application_detail.offer.expiry_label %}
+                    <div class="fjd-profile-dl__row d-flex justify-content-between"><dt>Expiry</dt><dd class="text-end">{{ application_detail.offer.expiry_label }}</dd></div>
+                    {% endif %}
+                </dl>
+                {% if application_detail.offer.letter_url %}
+                <a href="{{ application_detail.offer.letter_url }}" class="fjd-btn fjd-btn--outline w-100 mt-3" target="_blank" rel="noopener">Download Letter</a>
+                {% endif %}
+                {% if application_detail.can_accept_offer or application_detail.can_decline_offer %}
+                <div class="d-flex flex-column gap-2 mt-3">
+                    {% if application_detail.can_accept_offer %}
+                    <button type="button" class="fjd-btn fjd-btn--primary w-100" data-offer-action="accept">Accept Offer</button>
+                    {% endif %}
+                    {% if application_detail.can_decline_offer %}
+                    <button type="button" class="fjd-btn fjd-btn--outline w-100" data-offer-action="decline">Decline Offer</button>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if application_detail.timeline %}
+        <div class="fjd-card">
+            <div class="fjd-card__body">
+                <h2 class="fjd-widget__title mb-4">Application Timeline</h2>
+                <ul class="fjd-timeline">
+                    {% for entry in application_detail.timeline %}
+                    <li class="fjd-timeline__item">
+                        <div class="fjd-timeline__dot" aria-hidden="true"></div>
+                        <div>
+                            <p class="fjd-timeline__title">{{ entry.title }}</p>
+                            {% if entry.description %}<p class="fjd-timeline__desc">{{ entry.description }}</p>{% endif %}
+                            <p class="fjd-timeline__time">{{ entry.occurred_at }}</p>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </aside>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/professor-applications.js' %}"></script>
+{% endblock %}

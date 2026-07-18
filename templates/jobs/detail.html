@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static portal_urls %}
+
+{% block title %}{{ card.title }} at {{ card.company_name }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/job-marketplace.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="jm-detail">
+    <div class="container-xl">
+        <nav class="jm-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'marketplace_browse_jobs' %}">Jobs</a>
+            <span aria-hidden="true">/</span>
+            <span>{{ card.title }}</span>
+        </nav>
+
+        <div class="jm-detail__layout">
+            <article class="jm-detail__main">
+                <header class="jm-detail__header">
+                    <div class="jm-detail__brand">
+                        <div class="ed-logo-tile">
+                            {% if card.logo_url %}
+                            <img src="{{ card.logo_url }}" alt="{{ card.company_name }} logo">
+                            {% else %}
+                            <span class="ed-logo-monogram">{{ card.logo_initial }}</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h1 class="jm-detail__title">{{ job.title }}</h1>
+                                {% if card.match_percent %}
+                                <span class="jm-match-badge jm-match-badge--lg">{{ card.match_percent }}% Match</span>
+                                {% endif %}
+                                {% if card.is_fresh %}<span class="jm-fresh-badge">{{ card.fresh_label }}</span>{% endif %}
+                            </div>
+                            <p class="jm-detail__company">
+                                {{ card.company_name }}
+                                {% if card.company_verified %}<i class="bi bi-patch-check-fill ed-verified"></i>{% endif %}
+                            </p>
+                            <div class="jm-detail__chips">
+                                <span class="ed-chip ed-chip--slate"><i class="bi bi-geo-alt"></i> {{ card.location }}</span>
+                                {% if card.salary_display %}<span class="ed-chip ed-chip--amber">{{ card.salary_display }}</span>{% endif %}
+                                {% if card.experience_label %}<span class="ed-chip ed-chip--purple">{{ card.experience_label }}</span>{% endif %}
+                                <span class="ed-chip ed-chip--blue">{{ card.employment_type_label }}</span>
+                                <span class="ed-chip ed-chip--blue">{{ card.work_mode_label }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="jm-detail__actions">
+                        {% if card.has_applied %}
+                        <span class="jm-applied-label jm-applied-label--lg"><i class="bi bi-check-circle-fill"></i> Applied</span>
+                        {% elif is_job_seeker %}
+                        <form method="post" action="{% url 'marketplace_job_apply' job_id=job.pk %}" id="jmDetailApplyForm">
+                            {% csrf_token %}
+                            <button type="submit" class="ed-btn ed-btn--gradient ed-btn--lg">Apply Now</button>
+                        </form>
+                        {% else %}
+                        <a href="{{ login_url }}" class="ed-btn ed-btn--gradient ed-btn--lg">Sign in to Apply</a>
+                        {% endif %}
+
+                        <button type="button" 
+                                class="ed-btn ed-btn--outline jm-share-btn" 
+                                data-share-url="{{ card.share_url }}" 
+                                data-share-title="{{ job.title|escapejs }}"
+                                data-share-company="{{ card.company_name|escapejs }}"
+                                data-share-domain="{{ card.domain_label|escapejs }}"
+                                data-share-location="{{ card.location|default:'Remote'|escapejs }}"
+                                data-share-type="{{ card.employment_type_label|escapejs }}"
+                                data-share-logo="{% if card.logo_url %}{{ card.logo_url }}{% endif %}"
+                                data-share-initial="{{ card.logo_initial }}"
+                                aria-label="Share job">
+                            <i class="bi bi-share"></i> Share
+                        </button>
+                        {% if is_job_seeker %}
+                        <button type="button"
+                                class="ed-btn ed-btn--outline jsd-save-btn{% if card.is_saved %} is-saved{% endif %}"
+                                data-save-job-toggle
+                                data-job-id="{{ job.pk }}"
+                                aria-pressed="{{ card.is_saved|yesno:'true,false' }}">
+                            <i class="bi {% if card.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                            {% if card.is_saved %}Saved{% else %}Save Job{% endif %}
+                        </button>
+                        {% else %}
+                        <a href="{% url 'it_login_job_seeker' %}?next={{ request.path|urlencode }}&save_job={{ job.pk }}" class="ed-btn ed-btn--outline">
+                            <i class="bi bi-bookmark"></i> Save Job
+                        </a>
+                        {% endif %}
+                    </div>
+                </header>
+
+                {% if skills %}
+                <section class="jm-detail__section">
+                    <h2>Required Skills</h2>
+                    <div class="jm-job-card__skills">
+                        {% for skill in skills %}
+                        <span class="jm-skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <section class="jm-detail__section">
+                    <h2>Job Description</h2>
+                    <div class="jm-detail__prose">{{ job.description|linebreaks }}</div>
+                </section>
+
+                {% if job.roles_responsibilities %}
+                <section class="jm-detail__section">
+                    <h2>Responsibilities</h2>
+                    <div class="jm-detail__prose">{{ job.roles_responsibilities|linebreaks }}</div>
+                </section>
+                {% endif %}
+
+                {% if job.requirements %}
+                <section class="jm-detail__section">
+                    <h2>Requirements</h2>
+                    <div class="jm-detail__prose">{{ job.requirements|linebreaks }}</div>
+                </section>
+                {% endif %}
+
+                {% if job.benefits %}
+                <section class="jm-detail__section">
+                    <h2>Benefits</h2>
+                    <div class="jm-detail__prose">{{ job.benefits|linebreaks }}</div>
+                </section>
+                {% endif %}
+            </article>
+
+            <aside class="jm-detail__aside">
+                <div class="jm-aside-card">
+                    <h3>Job Overview</h3>
+                    <ul class="jm-aside-list">
+                        <li><span>Posted</span><strong>{{ card.posted_display }}</strong></li>
+                        <li><span>Applicants</span><strong>{{ card.applicant_count }}</strong></li>
+                        {% if card.deadline_display %}
+                        <li><span>Deadline</span><strong>{{ card.deadline_display }}</strong></li>
+                        {% endif %}
+                        {% if job.education_requirement %}
+                        <li><span>Education</span><strong>{{ job.education_requirement }}</strong></li>
+                        {% endif %}
+                        {% if job.vacancies %}
+                        <li><span>Openings</span><strong>{{ job.vacancies }}</strong></li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                {% if job.company %}
+                <div class="jm-aside-card">
+                    <h3>About {{ job.company.name }}</h3>
+                    {% if job.company.description %}
+                    <p class="jm-aside-text">{{ job.company.description|truncatechars:280 }}</p>
+                    {% endif %}
+                    {% if job.company.industry %}
+                    <p class="jm-aside-meta"><i class="bi bi-building"></i> {{ job.company.industry }}</p>
+                    {% endif %}
+                    {% if job.company.website_url %}
+                    <a href="{{ job.company.website_url }}" class="jm-aside-link" target="_blank" rel="noopener">Company website</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if job.posted_by %}
+                <div class="jm-aside-card">
+                    <h3>Recruiter</h3>
+                    <p class="jm-aside-meta">{{ job.posted_by.full_name|default:"Hiring Team" }}</p>
+                </div>
+                {% endif %}
+            </aside>
+        </div>
+
+        {% if related_jobs %}
+        <section class="jm-related">
+            <h2 class="jm-related__title">Similar Jobs</h2>
+            <div class="jm-jobs jm-jobs--related">
+                {% for job in related_jobs %}
+                {% include "jobs/partials/job_card.html" with job=job is_job_seeker=is_job_seeker %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</section>
+
+<div class="jm-apply-modal" id="jmApplyModal" hidden>
+    <div class="jm-apply-modal__dialog" role="dialog" aria-labelledby="jmApplyModalTitle">
+        <div class="jm-apply-modal__icon"><i class="bi bi-check-lg"></i></div>
+        <h3 id="jmApplyModalTitle">Application submitted!</h3>
+        <p>Your application has been sent to the recruiter.</p>
+        <a href="{% portal_url 'jobseeker_applications' %}" class="ed-btn ed-btn--gradient">View Applications</a>
+    </div>
+</div>
+
+{% include "jobs/partials/share_modal.html" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.JM_CONFIG = {
+    csrfToken: "{{ csrf_token|escapejs }}",
+    isJobSeeker: {{ is_job_seeker|yesno:"true,false" }},
+    resumeUrl: "{% if is_job_seeker %}{% portal_url 'jobseeker_resume' %}{% else %}#{% endif %}"
+  };
+</script>
+<script src="{% static 'js/job-marketplace.js' %}"></script>
+{% endblock %}

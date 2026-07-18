@@ -1,0 +1,316 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Settings | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/recruiter-settings.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="rcd-set-page-header">
+    <h1>Account &amp; Company Settings</h1>
+    <p>Manage your recruiter account, company profile, password, notifications, and security activity.</p>
+</header>
+
+{% if settings_page %}
+<div class="rcd-set-layout" id="rcdSettingsPage"
+     data-api-account="{{ settings_page.api_urls.account }}"
+     data-api-password="{{ settings_page.api_urls.password }}"
+     data-api-notifications="{{ settings_page.api_urls.notifications }}"
+     data-api-sessions="{{ settings_page.api_urls.sessions }}"
+     data-api-revoke-others="{{ settings_page.api_urls.revoke_others }}"
+     data-api-connected="{{ settings_page.api_urls.connected }}"
+     data-api-audit="{{ settings_page.api_urls.audit }}"
+     data-api-delete="{{ settings_page.api_urls.delete_account }}"
+     data-api-company="/api/it/recruiter/company/"> <!-- Added company API endpoint if any -->
+
+    <nav class="rcd-set-nav" aria-label="Settings sections">
+        <a href="#account" class="rcd-set-nav__link is-active"><i class="bi bi-person"></i> Account</a>
+        <a href="#company" class="rcd-set-nav__link"><i class="bi bi-building"></i> Company Profile</a>
+        <a href="#password" class="rcd-set-nav__link"><i class="bi bi-shield-lock"></i> Password</a>
+        <a href="#notifications" class="rcd-set-nav__link"><i class="bi bi-bell"></i> Notifications</a>
+        <a href="#connected" class="rcd-set-nav__link"><i class="bi bi-link-45deg"></i> Connected Accounts</a>
+        <a href="#sessions" class="rcd-set-nav__link"><i class="bi bi-laptop"></i> Active Sessions</a>
+        <a href="#activity" class="rcd-set-nav__link"><i class="bi bi-shield-check"></i> Security Activity</a>
+    </nav>
+
+    <div class="rcd-set-main">
+        <section class="rcd-bento rcd-set-section" id="account">
+            <div class="rcd-bento__body">
+                <h2><i class="bi bi-person-badge"></i> Account Information</h2>
+                <div class="rcd-set-info-grid">
+                    <div><span>Full Name</span><strong>{{ settings_page.account.full_name }}</strong></div>
+                    <div><span>Login Email</span><strong>{{ settings_page.account.email }}</strong></div>
+                    <div><span>Official Email</span><strong>{{ settings_page.account.official_email|default:"—" }}</strong></div>
+                    <div><span>Mobile</span><strong>{{ settings_page.account.phone|default:"—" }}</strong></div>
+                    <div><span>Designation</span><strong>{{ settings_page.account.designation|default:"—" }}</strong></div>
+                    <div><span>Company</span><strong>{{ settings_page.account.company_association|default:"—" }}</strong></div>
+                    <div><span>Registered</span><strong>{{ settings_page.account.registered_label }}</strong></div>
+                    <div><span>Last Login</span><strong>{{ settings_page.account.last_login_label }}</strong></div>
+                    <div><span>Account Status</span><strong>{{ settings_page.account.account_status_label }}</strong></div>
+                    <div><span>Email Verified</span><strong>{% if settings_page.account.email_verified %}<span class="rcd-badge bg-success text-white">Verified</span>{% else %}<span class="rcd-badge bg-warning text-dark">Pending</span>{% endif %}</strong></div>
+                    <div><span>Mobile Verified</span><strong>{% if settings_page.account.phone_verified %}<span class="rcd-badge bg-success text-white">Verified</span>{% else %}<span class="rcd-badge bg-warning text-dark">Not verified</span>{% endif %}</strong></div>
+                </div>
+            <hr>
+            <form id="rcdSetAccountForm" class="rcd-set-form row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcdSetFirstName">First Name</label>
+                        <input type="text" class="form-control" id="rcdSetFirstName" value="{{ settings_page.account.first_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcdSetLastName">Last Name</label>
+                        <input type="text" class="form-control" id="rcdSetLastName" value="{{ settings_page.account.last_name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="rcdSetPhone">Mobile Number</label>
+                        <input type="tel" class="form-control" id="rcdSetPhone" value="{{ settings_page.account.phone }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetOfficialEmail">Official Email</label>
+                        <input type="email" class="form-control" id="rcdSetOfficialEmail" value="{{ settings_page.account.official_email }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetDesignation">Designation</label>
+                        <input type="text" class="form-control" id="rcdSetDesignation" value="{{ settings_page.account.designation }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="rcd-btn rcd-btn-primary btn-sm">Save Account Info</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Company Profile Section -->
+        <section class="rcd-set-section" id="company">
+            <div class="rcd-bento__body">
+                <h2><i class="bi bi-building"></i> Company Profile</h2>
+                <p class="rcd-set-hint">Update your company details. These details are visible to candidates when you post jobs.</p>
+                {% if company_branding %}
+                <form id="rcdSetCompanyForm" class="rcd-set-form row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetCompanyName">Company Name</label>
+                        <input type="text" class="form-control" id="rcdSetCompanyName" value="{{ company_branding.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetCompanyLegalName">Legal Name</label>
+                        <input type="text" class="form-control" id="rcdSetCompanyLegalName" value="{{ company_branding.legal_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetCompanyIndustry">Industry</label>
+                        <input type="text" class="form-control" id="rcdSetCompanyIndustry" value="{{ company_branding.industry }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rcdSetCompanyWebsite">Website URL</label>
+                        <input type="url" class="form-control" id="rcdSetCompanyWebsite" value="{{ company_branding.website_url }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rcdSetCompanyDescription">Company Description</label>
+                        <textarea class="form-control" id="rcdSetCompanyDescription" rows="3">{{ company_branding.description }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="rcd-btn rcd-btn-primary btn-sm">Update Company Details</button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="rcd-set-empty">
+                    <i class="bi bi-building-slash"></i>
+                    <p>You have not created a company profile yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="rcd-set-section" id="password">
+            <div class="rcd-bento__body">
+                <h2><i class="bi bi-shield-lock"></i> Change Password</h2>
+                <p class="rcd-set-hint">Use a strong password with uppercase, lowercase, numbers, and special characters.</p>
+                <form id="rcdSetPasswordForm" class="rcd-set-form" novalidate>
+                    <div class="rcd-set-form-error" id="rcdSetPasswordError" hidden role="alert"></div>
+                    <div class="rcd-set-pass-field">
+                        <label class="form-label" for="rcdSetCurrentPass">Current Password</label>
+                        <div class="rcd-set-pass-wrap">
+                            <input type="password" class="form-control" id="rcdSetCurrentPass" autocomplete="current-password" required>
+                            <button type="button" class="rcd-set-pass-toggle" data-target="rcdSetCurrentPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <p class="rcd-set-field-error" id="rcdSetCurrentPassError" hidden></p>
+                    </div>
+                    <div class="rcd-set-pass-field">
+                        <label class="form-label" for="rcdSetNewPass">New Password</label>
+                        <div class="rcd-set-pass-wrap">
+                            <input type="password" class="form-control" id="rcdSetNewPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="rcd-set-pass-toggle" data-target="rcdSetNewPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <div class="rcd-set-strength"><div class="rcd-set-strength__bar" id="rcdSetStrengthBar"></div></div>
+                        <p class="rcd-set-strength__label" id="rcdSetStrengthLabel">Password strength</p>
+                        <ul class="rcd-set-pass-rules" id="rcdSetPassRules">
+                            <li data-rule="length">At least 8 characters</li>
+                            <li data-rule="upper">One uppercase letter</li>
+                            <li data-rule="lower">One lowercase letter</li>
+                            <li data-rule="digit">One number</li>
+                            <li data-rule="special">One special character</li>
+                        </ul>
+                        <p class="rcd-set-field-error" id="rcdSetNewPassError" hidden></p>
+                    </div>
+                    <div class="rcd-set-pass-field">
+                        <label class="form-label" for="rcdSetConfirmPass">Confirm New Password</label>
+                        <div class="rcd-set-pass-wrap">
+                            <input type="password" class="form-control" id="rcdSetConfirmPass" autocomplete="new-password" required minlength="8">
+                            <button type="button" class="rcd-set-pass-toggle" data-target="rcdSetConfirmPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                        </div>
+                        <p class="rcd-set-field-error" id="rcdSetConfirmPassError" hidden></p>
+                    </div>
+                    <button type="submit" class="rcd-btn rcd-btn-primary btn-sm" id="rcdSetPasswordBtn">
+                        <span class="rcd-set-btn__label">Update Password</span>
+                        <span class="rcd-set-btn__spinner d-none" aria-hidden="true"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="rcd-set-section" id="notifications">
+            <div class="rcd-bento__body">
+                <h2><i class="bi bi-bell"></i> Notification Preferences</h2>
+                <div class="rcd-set-toggles">
+                    {% for item in notification_toggles %}
+                    <label class="rcd-set-toggle" data-toggle-row="{{ item.key }}">
+                        <span class="rcd-set-toggle__label">{{ item.label }}</span>
+                        <span class="rcd-set-toggle__controls">
+                            <span class="rcd-set-toggle__status" aria-live="polite"></span>
+                            <input type="checkbox" class="rcd-set-toggle__input" id="notify-{{ item.key }}" data-notify-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                            <span class="rcd-set-toggle__switch" aria-hidden="true"></span>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="rcd-set-section" id="connected">
+            <div class="rcd-bento__body">
+                <h2><i class="bi bi-link-45deg"></i> Connected Accounts</h2>
+                <p class="rcd-set-hint">Link Google or LinkedIn for faster sign-in. The social account email must match your {{ PLATFORM_NAME }} email.</p>
+                <div class="rcd-set-connected" id="rcdSetConnectedList">
+                    {% for account in settings_page.connected_accounts %}
+                    <article class="rcd-set-connected__item" data-provider="{{ account.provider }}">
+                        <div>
+                            <strong>
+                                {% if account.provider == "google" %}<i class="bi bi-google"></i>{% else %}<i class="bi bi-linkedin"></i>{% endif %}
+                                {{ account.label }}
+                            </strong>
+                            {% if account.connected %}
+                            <p class="mb-0 text-muted small">{{ account.provider_email|default:settings_page.account.email }}</p>
+                            <p class="mb-0 text-muted small">Connected {{ account.connected_label }}</p>
+                            {% elif not account.configured %}
+                            <p class="mb-0 text-muted small">Not available — OAuth is not configured.</p>
+                            {% else %}
+                            <p class="mb-0 text-muted small">Not connected</p>
+                            {% endif %}
+                        </div>
+                        {% if account.connected %}
+                        <button type="button" class="rcd-btn rcd-btn-outline-danger btn-sm rcd-set-disconnect" data-provider="{{ account.provider }}">Disconnect</button>
+                        {% elif account.configured %}
+                        <a href="{{ account.connect_url }}" class="rcd-btn rcd-btn-outline btn-sm">Connect</a>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="rcd-set-section" id="sessions">
+            <div class="rcd-bento__body">
+                <div class="rcd-set-section-head">
+                    <h2><i class="bi bi-laptop"></i> Active Login Sessions</h2>
+                    <button type="button" class="rcd-btn rcd-btn-outline btn-sm" id="rcdSetRevokeOthers">Sign Out Other Devices</button>
+                </div>
+                <p class="rcd-set-hint">Each sign-in creates a unique session. Sign out devices you no longer use.</p>
+                <div class="rcd-set-sessions">
+                    {% for session in settings_page.sessions %}
+                    <article class="rcd-set-session{% if session.is_current %} is-current{% endif %}">
+                        <div>
+                            <strong>{{ session.device_label }}</strong>
+                            {% if session.is_current %}<span class="rcd-badge bg-success text-white">Current session</span>{% endif %}
+                            <p class="mb-0 text-muted small">{{ session.browser }} · {{ session.os_name }} · {{ session.ip_address }}</p>
+                            <p class="mb-0 text-muted small">Logged in {{ session.login_label }} · Last active {{ session.last_active_label }}</p>
+                        </div>
+                        {% if not session.is_current %}
+                        <button type="button" class="rcd-btn rcd-btn-outline-danger btn-sm rcd-set-revoke-session" data-session-id="{{ session.id }}">Sign Out</button>
+                        {% endif %}
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0">No active sessions recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="rcd-set-section" id="activity">
+            <div class="rcd-bento__body">
+                <div class="rcd-set-section-head">
+                    <h2><i class="bi bi-shield-check"></i> Security Activity</h2>
+                    <button type="button" class="rcd-btn rcd-btn-outline btn-sm" id="rcdSetRefreshActivity">Refresh</button>
+                </div>
+                <p class="rcd-set-hint">Recent sign-ins, password changes, session actions, and connected account updates.</p>
+                <div class="rcd-set-audit" id="rcdSetActivityList">
+                    {% for event in settings_page.audit_log %}
+                    <article class="rcd-set-audit__item" data-event-type="{{ event.event_type }}">
+                        <div>
+                            <strong>{{ event.title }}</strong>
+                            {% if event.description %}
+                            <p class="mb-0 text-muted small">{{ event.description }}</p>
+                            {% endif %}
+                            <p class="mb-0 text-muted small">{{ event.occurred_label }}{% if event.ip_address %} · {{ event.ip_address }}{% endif %}</p>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p class="text-muted mb-0" id="rcdSetActivityEmpty">No security activity recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="rcd-set-section rcd-set-danger" id="delete">
+            <div class="rcd-bento__body">
+                <h2 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Account</h2>
+                <p class="rcd-set-hint">Permanently deactivate your recruiter account. This action cannot be undone.</p>
+                <button type="button" class="rcd-btn rcd-btn-danger btn-sm" id="rcdSetDeleteOpen">Delete My Account</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade" id="rcdSetDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This will permanently deactivate your recruiter account and sign you out of all devices.</p>
+                <label class="form-label" for="rcdSetDeletePass">Confirm your password</label>
+                <input type="password" class="form-control" id="rcdSetDeletePass">
+                <p class="rcd-set-error mt-2" id="rcdSetDeleteError" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="rcd-btn rcd-btn-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn-danger" id="rcdSetDeleteConfirm">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="rcd-bento"><div class="rcd-bento__body rcd-empty"><p>Complete your recruiter profile to manage account settings.</p></div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.RCD_SETTINGS = {
+    csrfToken: "{{ csrf_token|escapejs }}",
+    loginUrl: "/it/login/recruiter/"
+  };
+</script>
+<script src="{% static 'js/recruiter-settings.js' %}"></script>
+{% endblock %}

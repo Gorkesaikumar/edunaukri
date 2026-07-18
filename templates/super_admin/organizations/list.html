@@ -1,0 +1,352 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="?type=company" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_type == 'company' %}bg-primary text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %} flex items-center gap-1.5">
+        <span class="material-symbols-outlined !text-sm">corporate_fare</span> IT Employers
+    </a>
+    <a href="?type=college" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-colors {% if current_type == 'college' %}bg-amber-600 text-white shadow-sm{% else %}bg-white text-on-surface-variant border border-outline-variant/30 hover:bg-gray-50{% endif %} flex items-center gap-1.5">
+        <span class="material-symbols-outlined !text-sm">account_balance</span> Academic Institutions
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <form method="get" class="flex items-center gap-3 w-full md:w-auto flex-1">
+        <input type="hidden" name="type" value="{{ current_type }}">
+        <div class="relative w-full max-w-md">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant/50 !text-lg">search</span>
+            <input type="text" name="q" value="{{ current_search }}" placeholder="Search organization name or registry ID..." class="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+        </div>
+        <select name="status" class="px-4 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+            <option value="">All Statuses</option>
+            <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+            <option value="deactivated" {% if current_status == 'deactivated' %}selected{% endif %}>Deactivated</option>
+        </select>
+        <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Search</button>
+    </form>
+    
+    <div class="text-xs text-on-surface-variant font-medium">
+        <span>Showing <strong class="text-on-surface">{{ organizations|length }}</strong> organizations</span>
+    </div>
+</div>
+
+<!-- Organizations Table -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Organization Identity</th>
+                    <th class="p-3.5">Domain</th>
+                    <th class="p-3.5">Registered Date</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5">Recruiters</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10">
+                {% for org in organizations %}
+                <tr class="hover:bg-gray-50/80 transition-colors" data-org-id="{{ org.id }}">
+                    <td class="p-3.5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg {% if current_type == 'college' %}bg-amber-600{% else %}bg-indigo-600{% endif %} text-white font-extrabold text-xs flex items-center justify-center shadow-xs overflow-hidden">
+                                {% if org.logo_file %}
+                                    <img src="/media/{{ org.logo_file.storage_path }}" class="w-full h-full object-cover" alt="Logo">
+                                {% else %}
+                                    {{ org.name|slice:":2"|upper|default:"OR" }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-on-surface block text-sm">{{ org.name|default:"Unnamed Organization" }}</span>
+                                <p class="text-[10px] text-on-surface-variant/60 font-mono">ID: {{ org.id|slice:":8" }}...</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if current_type == 'college' %}bg-amber-50 text-amber-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">
+                            {% if current_type == 'college' %}Academic Institution{% else %}IT Employer{% endif %}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[11px]">{{ org.created_at|date:"M d, Y" }}</td>
+                    <td class="p-3.5 status-cell">
+                        {% if org.is_active %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase flex items-center gap-1 w-max">
+                            <span class="material-symbols-outlined !text-xs">check_circle</span> Active
+                        </span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase flex items-center gap-1 w-max">
+                            <span class="material-symbols-outlined !text-xs">cancel</span> Deactivated
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3.5 text-on-surface-variant font-mono text-[11px]">
+                        {{ org.members.count }}
+                    </td>
+                    <td class="p-3.5 text-right actions-cell">
+                        <div class="inline-flex items-center justify-end gap-2 w-full">
+                            <button onclick="openOrgViewModal('{{ org.id }}', '{{ current_type }}')" class="px-3 py-1.5 rounded-lg border border-outline-variant/40 hover:bg-gray-50 text-xs font-bold text-on-surface transition-colors flex items-center gap-1" title="View Details">
+                                <span class="material-symbols-outlined !text-[14px]">visibility</span> View
+                            </button>
+                            {% if org.is_active %}
+                            <button onclick="openDeactivateModal('{{ org.id }}', '{{ current_type }}', '{{ org.name|escapejs }}')" class="btn-deactivate px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 text-xs font-bold text-red-600 transition-colors flex items-center gap-1" title="Deactivate">
+                                <span class="material-symbols-outlined !text-[14px]">block</span> Deactivate
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs">No organizations found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<!-- View Modal -->
+<div id="viewOrgModal" class="fixed inset-0 bg-black/50 z-[999] flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col m-4 transform scale-95 transition-transform" id="viewOrgModalContent">
+        <div class="p-4 border-b border-outline-variant/20 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-on-surface">Organization Details</h3>
+            <button onclick="closeOrgViewModal()" class="text-on-surface-variant hover:bg-gray-100 p-1 rounded-lg">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6" id="viewOrgModalBody">
+            <div class="flex justify-center items-center py-8">
+                <span class="material-symbols-outlined animate-spin text-primary !text-4xl">progress_activity</span>
+            </div>
+        </div>
+        <div class="p-4 border-t border-outline-variant/20 flex items-center justify-end gap-2 bg-gray-50 rounded-b-xl" id="viewOrgModalFooter">
+            <!-- Footer buttons generated via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Modal -->
+<div id="deactivateModal" class="fixed inset-0 bg-black/50 z-[999] flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col m-4 transform scale-95 transition-transform" id="deactivateModalContent">
+        <div class="p-5 flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                <span class="material-symbols-outlined !text-3xl">warning</span>
+            </div>
+            <h3 class="text-lg font-bold text-on-surface mb-2">Deactivate <span id="deactivateOrgName" class="text-red-600">Organization</span></h3>
+            <p class="text-sm text-on-surface-variant mb-6" id="deactivateMessage">
+                You are about to deactivate this organization. This action will immediately disable platform access for the organization and all recruiters associated with it. Existing data will be preserved and the organization can be reactivated later.
+            </p>
+            <div class="flex w-full gap-3">
+                <button onclick="closeDeactivateModal()" class="flex-1 px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-sm font-bold transition-colors">Cancel</button>
+                <button onclick="submitDeactivate()" id="btnDeactivateSubmit" class="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined !text-sm hidden" id="deactivateSpinner">progress_activity</span>
+                    Deactivate Organization
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function escapeHtml(value) {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    let currentDeactivateId = null;
+    let currentDeactivateType = null;
+
+    function openOrgViewModal(orgId, type) {
+        const modal = document.getElementById('viewOrgModal');
+        const modalContent = document.getElementById('viewOrgModalContent');
+        const body = document.getElementById('viewOrgModalBody');
+        
+        modal.classList.remove('hidden');
+        // small delay for transition
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+        }, 10);
+        
+        body.innerHTML = `
+            <div class="flex justify-center items-center py-8">
+                <span class="material-symbols-outlined animate-spin text-primary !text-4xl">progress_activity</span>
+            </div>
+        `;
+        
+        const orgBaseUrl = "{{ nav_urls.organizations }}";
+
+        fetch(`${orgBaseUrl}${orgId}/detail/?type=${type}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const org = data.data;
+                    body.innerHTML = `
+                        <div class="flex items-start gap-4 pb-6 border-b border-outline-variant/10">
+                            <div class="w-16 h-16 rounded-xl bg-gray-100 text-gray-500 font-extrabold text-xl flex items-center justify-center shadow-xs overflow-hidden shrink-0">
+                                ${org.logo_url ? '<img src="' + escapeHtml(org.logo_url) + '" class="w-full h-full object-cover">' : escapeHtml(String(org.name || "").substring(0, 2).toUpperCase())}
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-on-surface">${escapeHtml(org.name)}</h2>
+                                <p class="text-sm text-on-surface-variant font-mono">ID: ${escapeHtml(org.id)}</p>
+                                <span class="inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-700">${escapeHtml(org.type)}</span>
+                                <span class="inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${org.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">${escapeHtml(org.status)}</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Organization Information</h4>
+                                <ul class="space-y-3 text-sm text-on-surface">
+                                    <li><span class="text-gray-500 w-32 inline-block">Reg Number:</span> <strong>${escapeHtml(org.registration_number)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">Email:</span> <strong>${escapeHtml(org.email)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">Phone:</span> <strong>${escapeHtml(org.phone)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">Website:</span> ${org.website ? '<a href="'+escapeHtml(org.website)+'" target="_blank" class="text-primary hover:underline">'+escapeHtml(org.website)+'</a>' : '<strong>N/A</strong>'}</li>
+                                    <li><span class="text-gray-500 w-32 inline-block">Address:</span> <strong class="break-words">${escapeHtml(org.address)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">City:</span> <strong>${escapeHtml(org.city)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">State:</span> <strong>${escapeHtml(org.state)}</strong></li>
+                                    <li><span class="text-gray-500 w-32 inline-block">Country:</span> <strong>${escapeHtml(org.country)}</strong></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Account Information</h4>
+                                <ul class="space-y-3 text-sm text-on-surface">
+                                    <li><span class="text-gray-500 w-36 inline-block">Registration Date:</span> <strong>${escapeHtml(org.registered_date)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Current Status:</span> <strong>${escapeHtml(org.subscription_status)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Subscription Plan:</span> <strong class="text-primary">${escapeHtml(org.subscription_plan)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Subscription Expiry:</span> <strong>${escapeHtml(org.subscription_expiry)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Total Recruiters:</span> <strong>${escapeHtml(org.total_recruiters)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Active Recruiters:</span> <strong>${escapeHtml(org.active_recruiters)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Total Job Postings:</span> <strong>${escapeHtml(org.total_jobs)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Total Hires:</span> <strong>${escapeHtml(org.total_hires)}</strong></li>
+                                    <li><span class="text-gray-500 w-36 inline-block">Last Login:</span> <strong>${escapeHtml(org.last_login)}</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('viewOrgModalFooter').innerHTML = `
+                        <button onclick="closeOrgViewModal()" class="px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-sm font-bold transition-colors text-on-surface">Close</button>
+                        <a href="{{ nav_urls.users }}?domain=${type === 'college' ? 'faculty' : 'it'}&org_id=${encodeURIComponent(org.id)}" class="px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-primary hover:text-white hover:border-primary text-sm font-bold transition-colors text-on-surface">${type === 'college' ? 'View Faculty' : 'View Recruiters'}</a>
+                        <a href="{{ nav_urls.jobs }}?type=${type === 'college' ? 'faculty' : 'it'}&org_id=${encodeURIComponent(org.id)}" class="px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-primary hover:text-white hover:border-primary text-sm font-bold transition-colors text-on-surface">${type === 'college' ? 'View Vacancies' : 'View Job Postings'}</a>
+                    `;
+                } else {
+                    body.innerHTML = `<div class="p-6 text-center text-red-600">Failed to load details: ${escapeHtml(data.error)}</div>`;
+                    document.getElementById('viewOrgModalFooter').innerHTML = `<button onclick="closeOrgViewModal()" class="px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-sm font-bold transition-colors">Close</button>`;
+                }
+            })
+            .catch(err => {
+                body.innerHTML = `<div class="p-6 text-center text-red-600">Error loading data.</div>`;
+                document.getElementById('viewOrgModalFooter').innerHTML = `<button onclick="closeOrgViewModal()" class="px-4 py-2 rounded-lg border border-outline-variant/40 hover:bg-gray-100 text-sm font-bold transition-colors">Close</button>`;
+            });
+    }
+
+    function closeOrgViewModal() {
+        const modal = document.getElementById('viewOrgModal');
+        const modalContent = document.getElementById('viewOrgModalContent');
+        modal.classList.add('opacity-0');
+        modalContent.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
+
+    function openDeactivateModal(orgId, type, orgName) {
+        currentDeactivateId = orgId;
+        currentDeactivateType = type;
+        document.getElementById('deactivateOrgName').textContent = orgName;
+        
+        const modal = document.getElementById('deactivateModal');
+        const modalContent = document.getElementById('deactivateModalContent');
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeDeactivateModal() {
+        const modal = document.getElementById('deactivateModal');
+        const modalContent = document.getElementById('deactivateModalContent');
+        modal.classList.add('opacity-0');
+        modalContent.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    }
+
+    function submitDeactivate() {
+        if (!currentDeactivateId) return;
+        
+        const btn = document.getElementById('btnDeactivateSubmit');
+        const spinner = document.getElementById('deactivateSpinner');
+        btn.disabled = true;
+        spinner.classList.remove('hidden');
+        
+        const orgBaseUrl = "{{ nav_urls.organizations }}";
+        
+        fetch(`${orgBaseUrl}${currentDeactivateId}/action/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                action: 'deactivate',
+                type: currentDeactivateType
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast !== 'undefined') showToast(data.message, 'success');
+                // Update the row DOM without page reload
+                const row = document.querySelector(`tr[data-org-id="${currentDeactivateId}"]`);
+                if (row) {
+                    const statusTd = row.querySelector('.status-cell');
+                    const actionsTd = row.querySelector('.actions-cell');
+                    if (statusTd) {
+                        statusTd.innerHTML = `
+                            <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase flex items-center gap-1 w-max">
+                                <span class="material-symbols-outlined !text-xs">cancel</span> Deactivated
+                            </span>
+                        `;
+                    }
+                    if (actionsTd) {
+                        const deactivateBtn = actionsTd.querySelector('.btn-deactivate');
+                        if (deactivateBtn) deactivateBtn.remove();
+                    }
+                }
+                closeDeactivateModal();
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+            } else {
+                if (typeof showToast !== 'undefined') showToast(data.error, 'error');
+                else alert(data.error);
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+            }
+        })
+        .catch(err => {
+            if (typeof showToast !== 'undefined') showToast('Network error', 'error');
+            else alert('Network error');
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+        });
+    }
+</script>
+{% endblock %}

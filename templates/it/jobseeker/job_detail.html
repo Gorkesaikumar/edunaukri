@@ -1,0 +1,29 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="jsd-page-head">
+    <h1 class="jsd-page-head__title">{{ job.title }}</h1>
+    <p class="jsd-page-head__desc">{{ page_description }}</p>
+</header>
+<div class="jsd-card">
+    <div class="jsd-card__body">
+        <p>{{ job.description|truncatewords:80 }}</p>
+        <div class="d-flex gap-2 mt-3">
+            <form method="post" action="{% url 'jobseeker_job_apply' user_uuid=portal_user_uuid job_id=job.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="jsd-btn jsd-btn--primary">Apply Now</button>
+            </form>
+            <button type="button"
+                    class="jsd-btn jsd-btn--outline jsd-save-btn"
+                    data-save-job-toggle
+                    data-job-id="{{ job.pk }}"
+                    aria-pressed="false">
+                <i class="bi bi-bookmark"></i> Save Job
+            </button>
+            <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--outline">Back</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

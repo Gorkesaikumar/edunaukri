@@ -1,0 +1,85 @@
+<!-- Application List Modal -->
+<div class="modal fade" id="applicationListModal" tabindex="-1" aria-labelledby="applicationListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-primary text-white border-bottom-0 py-3">
+                <div>
+                    <h4 class="modal-title mb-0 fw-bold" id="applicationListModalLabel">Applications</h4>
+                    <p class="mb-0 small text-white-50" id="alm-job-title">Job Title</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body bg-light p-0 d-flex flex-column">
+                <!-- Filters/Search Bar -->
+                <div class="bg-white p-3 border-bottom shadow-sm">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" class="form-control border-start-0" id="alm-search-input" placeholder="Search applicant name, email...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="alm-status-filter">
+                                <option value="">All Statuses</option>
+                                <option value="APPLIED">Applied</option>
+                                <option value="SHORTLISTED">Shortlisted</option>
+                                <option value="INTERVIEW">Interview</option>
+                                <option value="OFFERED">Offered</option>
+                                <option value="HIRED">Hired</option>
+                                <option value="REJECTED">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5 text-end">
+                            <span class="text-muted small me-3">Showing <strong id="alm-count">0</strong> applicants</span>
+                            <button class="btn btn-outline-primary btn-sm" id="alm-export-btn"><i class="fas fa-download me-1"></i> Export</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table/List Area -->
+                <div class="flex-grow-1 overflow-auto p-4">
+                    <div class="table-responsive bg-white rounded shadow-sm border">
+                        <table class="table table-hover table-borderless align-middle mb-0" id="alm-table">
+                            <thead class="table-light border-bottom">
+                                <tr>
+                                    <th scope="col" class="py-3 ps-4">Applicant</th>
+                                    <th scope="col" class="py-3">Contact</th>
+                                    <th scope="col" class="py-3">Experience</th>
+                                    <th scope="col" class="py-3">Applied Date</th>
+                                    <th scope="col" class="py-3">Status</th>
+                                    <th scope="col" class="py-3 text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alm-table-body">
+                                <!-- Rows injected here -->
+                            </tbody>
+                        </table>
+                        
+                        <!-- Empty State -->
+                        <div id="alm-empty-state" class="text-center py-5 d-none">
+                            <div class="display-1 text-muted mb-3"><i class="fas fa-inbox"></i></div>
+                            <h4 class="text-secondary fw-bold">No applications found</h4>
+                            <p class="text-muted">There are no applications matching your criteria.</p>
+                        </div>
+
+                        <!-- Loader -->
+                        <div id="alm-loader" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="bg-white p-3 border-top d-flex justify-content-between align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary" id="alm-prev-btn" disabled>Previous</button>
+                    <span class="small text-muted" id="alm-page-info">Page 1 of 1</span>
+                    <button class="btn btn-sm btn-outline-secondary" id="alm-next-btn" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

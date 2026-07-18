@@ -1,0 +1,323 @@
+"""Clean URL routes for Professor portal pages."""
+
+from django.urls import path
+
+from apps.academic_recruitment.views.professor_applications_api import (
+    ProfessorApplicationOfferAPIView,
+    ProfessorApplicationsAPIView,
+)
+from apps.academic_recruitment.views.professor_dashboard_api import (
+    ProfessorDashboardInsightsAPIView,
+    ProfessorProfileCompletionAnimationAPIView,
+    ProfessorRecommendedJobsPartialAPIView,
+)
+from apps.academic_recruitment.views.professor_saved_jobs_api import (
+    ProfessorSavedVacanciesAPIView,
+    ProfessorSavedVacancyStatusAPIView,
+)
+from apps.academic_recruitment.views.professor_interviews_api import (
+    ProfessorInterviewConfirmAPIView,
+    ProfessorInterviewRescheduleAPIView,
+)
+from apps.academic_recruitment.views.professor_profile_api import (
+    ProfessorProfileAPIView,
+    ProfessorProfileCVAPIView,
+    ProfessorProfileCVDownloadView,
+    ProfessorProfileCVPreviewView,
+    ProfessorProfilePhotoAPIView,
+    ProfessorProfileQualificationDetailAPIView,
+    ProfessorProfileQualificationsAPIView,
+    ProfessorProfileSectionAPIView,
+)
+from apps.academic_recruitment.views.professor_tracker_api import (
+    ProfessorTrackerAPIView,
+    ProfessorTrackerExportView,
+)
+from apps.academic_recruitment.views.professor_settings_api import (
+    ProfessorSettingsAccountAPIView,
+    ProfessorSettingsAuditAPIView,
+    ProfessorSettingsConnectedAPIView,
+    ProfessorSettingsDeleteAccountAPIView,
+    ProfessorSettingsNotificationsAPIView,
+    ProfessorSettingsPasswordAPIView,
+    ProfessorSettingsPrivacyAPIView,
+    ProfessorSettingsRevokeSessionsAPIView,
+    ProfessorSettingsSessionDetailAPIView,
+    ProfessorSettingsSessionsAPIView,
+)
+from apps.academic_recruitment.views.professor_certificates_api import (
+    ProfessorCertificateDetailAPIView,
+    ProfessorCertificateDownloadView,
+    ProfessorCertificatePreviewView,
+    ProfessorCertificatesAPIView,
+)
+from apps.academic_recruitment.views.professor_portal import (
+    ProfessorApplicationDetailView,
+    ProfessorApplicationWithdrawView,
+    ProfessorApplicationsView,
+    ProfessorApplyVacancyView,
+    ProfessorBrowseJobsView,
+    ProfessorCertificatesView,
+    ProfessorDashboardView,
+    ProfessorInterviewDetailView,
+    ProfessorInterviewPrintView,
+    ProfessorInterviewsView,
+    ProfessorMessagesView,
+    ProfessorNotificationReadView,
+    ProfessorNotificationsMarkAllReadView,
+    ProfessorNotificationsView,
+    ProfessorProfileView,
+    ProfessorResearchView,
+    ProfessorResumeView,
+    ProfessorSaveVacancyView,
+    ProfessorSavedJobToggleAPIView,
+    ProfessorSavedJobsView,
+    ProfessorSettingsView,
+    ProfessorTrackerView,
+    ProfessorVacancyDetailView,
+)
+
+urlpatterns = [
+    path("dashboard/", ProfessorDashboardView.as_view(), name="professor_dashboard"),
+    path("jobs/", ProfessorBrowseJobsView.as_view(), name="professor_browse_jobs"),
+    path("profile/", ProfessorProfileView.as_view(), name="professor_profile"),
+    path("settings/", ProfessorSettingsView.as_view(), name="professor_settings"),
+    path("research/", ProfessorResearchView.as_view(), name="professor_research"),
+    path(
+        "applications/",
+        ProfessorApplicationsView.as_view(),
+        name="professor_applications",
+    ),
+    path(
+        "applications/<uuid:application_id>/",
+        ProfessorApplicationDetailView.as_view(),
+        name="professor_application_detail",
+    ),
+    path(
+        "applications/<uuid:application_id>/withdraw/",
+        ProfessorApplicationWithdrawView.as_view(),
+        name="professor_application_withdraw",
+    ),
+    path(
+        "applications/<uuid:application_id>/offer/",
+        ProfessorApplicationOfferAPIView.as_view(),
+        name="professor_application_offer_api",
+    ),
+    path(
+        "api/applications/",
+        ProfessorApplicationsAPIView.as_view(),
+        name="professor_applications_api",
+    ),
+
+    path("saved-jobs/", ProfessorSavedJobsView.as_view(), name="professor_saved_jobs"),
+    path("tracker/", ProfessorTrackerView.as_view(), name="professor_tracker"),
+    path("resume/", ProfessorResumeView.as_view(), name="professor_resume"),
+    path(
+        "certificates/",
+        ProfessorCertificatesView.as_view(),
+        name="professor_certificates",
+    ),
+    path("interviews/", ProfessorInterviewsView.as_view(), name="professor_interviews"),
+    path(
+        "interviews/<uuid:application_id>/",
+        ProfessorInterviewDetailView.as_view(),
+        name="professor_interview_detail",
+    ),
+    path(
+        "interviews/<uuid:application_id>/print/",
+        ProfessorInterviewPrintView.as_view(),
+        name="professor_interview_print",
+    ),
+    path("messages/", ProfessorMessagesView.as_view(), name="professor_messages"),
+    path(
+        "notifications/",
+        ProfessorNotificationsView.as_view(),
+        name="professor_notifications",
+    ),
+    path(
+        "notifications/<uuid:notification_id>/read/",
+        ProfessorNotificationReadView.as_view(),
+        name="professor_notification_read",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        ProfessorNotificationsMarkAllReadView.as_view(),
+        name="professor_notifications_mark_all_read",
+    ),
+    path(
+        "vacancies/<uuid:vacancy_id>/",
+        ProfessorVacancyDetailView.as_view(),
+        name="professor_vacancy_detail",
+    ),
+    path(
+        "vacancies/<uuid:vacancy_id>/apply/",
+        ProfessorApplyVacancyView.as_view(),
+        name="professor_apply_vacancy",
+    ),
+    path(
+        "vacancies/<uuid:vacancy_id>/save/",
+        ProfessorSaveVacancyView.as_view(),
+        name="professor_save_vacancy",
+    ),
+    path(
+        "api/saved-vacancies/toggle/",
+        ProfessorSavedJobToggleAPIView.as_view(),
+        name="professor_saved_job_toggle_api",
+    ),
+    path(
+        "api/saved-vacancies/",
+        ProfessorSavedVacanciesAPIView.as_view(),
+        name="professor_saved_vacancies_api",
+    ),
+    path(
+        "api/saved-vacancies/status/",
+        ProfessorSavedVacancyStatusAPIView.as_view(),
+        name="professor_saved_vacancy_status_api",
+    ),
+    path(
+        "api/dashboard-insights/",
+        ProfessorDashboardInsightsAPIView.as_view(),
+        name="professor_dashboard_insights_api",
+    ),
+    path(
+        "api/recommended-jobs-partial/",
+        ProfessorRecommendedJobsPartialAPIView.as_view(),
+        name="professor_recommended_jobs_partial_api",
+    ),
+    path(
+        "api/profile-completion/animation-shown/",
+        ProfessorProfileCompletionAnimationAPIView.as_view(),
+        name="professor_profile_completion_animation_api",
+    ),
+    path(
+        "api/profile/", ProfessorProfileAPIView.as_view(), name="professor_profile_api"
+    ),
+    path(
+        "api/profile/sections/<str:section>/",
+        ProfessorProfileSectionAPIView.as_view(),
+        name="professor_profile_section_api",
+    ),
+    path(
+        "api/profile/photo/",
+        ProfessorProfilePhotoAPIView.as_view(),
+        name="professor_profile_photo_api",
+    ),
+    path(
+        "api/profile/cv/",
+        ProfessorProfileCVAPIView.as_view(),
+        name="professor_profile_cv_api",
+    ),
+    path(
+        "api/profile/cv/download/",
+        ProfessorProfileCVDownloadView.as_view(),
+        name="professor_profile_cv_download",
+    ),
+    path(
+        "api/profile/cv/preview/",
+        ProfessorProfileCVPreviewView.as_view(),
+        name="professor_profile_cv_preview",
+    ),
+    path(
+        "api/profile/qualifications/",
+        ProfessorProfileQualificationsAPIView.as_view(),
+        name="professor_profile_qualifications_api",
+    ),
+    path(
+        "api/profile/qualifications/<uuid:qualification_id>/",
+        ProfessorProfileQualificationDetailAPIView.as_view(),
+        name="professor_profile_qualification_detail_api",
+    ),
+    path(
+        "api/tracker/", ProfessorTrackerAPIView.as_view(), name="professor_tracker_api"
+    ),
+    path(
+        "api/tracker/export/",
+        ProfessorTrackerExportView.as_view(),
+        name="professor_tracker_export",
+    ),
+    path(
+        "api/interviews/<uuid:application_id>/confirm/",
+        ProfessorInterviewConfirmAPIView.as_view(),
+        name="professor_interview_confirm_api",
+    ),
+    path(
+        "api/interviews/<uuid:application_id>/reschedule/",
+        ProfessorInterviewRescheduleAPIView.as_view(),
+        name="professor_interview_reschedule_api",
+    ),
+    path(
+        "api/settings/account/",
+        ProfessorSettingsAccountAPIView.as_view(),
+        name="professor_settings_account_api",
+    ),
+    path(
+        "api/settings/password/",
+        ProfessorSettingsPasswordAPIView.as_view(),
+        name="professor_settings_password_api",
+    ),
+    path(
+        "api/settings/notifications/",
+        ProfessorSettingsNotificationsAPIView.as_view(),
+        name="professor_settings_notifications_api",
+    ),
+    path(
+        "api/settings/privacy/",
+        ProfessorSettingsPrivacyAPIView.as_view(),
+        name="professor_settings_privacy_api",
+    ),
+    path(
+        "api/settings/sessions/",
+        ProfessorSettingsSessionsAPIView.as_view(),
+        name="professor_settings_sessions_api",
+    ),
+    path(
+        "api/settings/sessions/<uuid:session_id>/",
+        ProfessorSettingsSessionDetailAPIView.as_view(),
+        name="professor_settings_session_detail_api",
+    ),
+    path(
+        "api/settings/sessions/revoke-others/",
+        ProfessorSettingsRevokeSessionsAPIView.as_view(),
+        name="professor_settings_revoke_sessions_api",
+    ),
+    path(
+        "api/settings/delete/",
+        ProfessorSettingsDeleteAccountAPIView.as_view(),
+        name="professor_settings_delete_api",
+    ),
+    path(
+        "api/settings/audit/",
+        ProfessorSettingsAuditAPIView.as_view(),
+        name="professor_settings_audit_api",
+    ),
+    path(
+        "api/settings/connected/<str:provider>/",
+        ProfessorSettingsConnectedAPIView.as_view(),
+        name="professor_settings_connected_detail_api",
+    ),
+    path(
+        "api/settings/connected/",
+        ProfessorSettingsConnectedAPIView.as_view(),
+        name="professor_settings_connected_api",
+    ),
+    path(
+        "api/certificates/",
+        ProfessorCertificatesAPIView.as_view(),
+        name="professor_certificates_api",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/",
+        ProfessorCertificateDetailAPIView.as_view(),
+        name="professor_certificate_detail_api",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/download/",
+        ProfessorCertificateDownloadView.as_view(),
+        name="professor_certificate_download",
+    ),
+    path(
+        "api/certificates/<uuid:certification_id>/preview/",
+        ProfessorCertificatePreviewView.as_view(),
+        name="professor_certificate_preview",
+    ),
+]

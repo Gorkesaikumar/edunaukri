@@ -1,0 +1,87 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Notifications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/professor-dashboard.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="icd-page-head__title">Notifications</h1>
+            <p class="icd-page-head__desc">Your latest alerts about applications, vacancies, and verification.</p>
+        </div>
+        {% if notifications_page.unread_count %}
+        <form method="post" action="{% portal_url 'college_notifications_mark_all_read' %}" id="fjdNotifMarkAllForm">
+            {% csrf_token %}
+            <button type="submit" class="icd-btn icd-btn--soft">Mark all read</button>
+        </form>
+        {% endif %}
+    </div>
+</header>
+
+<section class="icd-card icd-reporting-panel mb-3">
+    <div class="icd-frd-message-stats">
+        <div><span>Total</span><strong>{{ notifications_page.total_count }}</strong></div>
+        <div><span>Unread</span><strong>{{ notifications_page.unread_count }}</strong></div>
+    </div>
+    <form method="get" class="icd-filters">
+        <select name="state" class="icd-filters__select" aria-label="Filter by read state">
+            <option value="all"{% if notifications_filters.state == "all" %} selected{% endif %}>All</option>
+            <option value="unread"{% if notifications_filters.state == "unread" %} selected{% endif %}>Unread</option>
+            <option value="read"{% if notifications_filters.state == "read" %} selected{% endif %}>Read</option>
+        </select>
+        <select name="event" class="icd-filters__select" aria-label="Filter by event type">
+            <option value="">All event types</option>
+            {% for opt in notifications_page.event_filters %}
+            <option value="{{ opt.value }}"{% if notifications_filters.event == opt.value %} selected{% endif %}>
+                {{ opt.label }} ({{ opt.count }})
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="icd-btn icd-btn--primary icd-btn--sm">Apply</button>
+    </form>
+</section>
+
+{% if notifications_page.notifications %}
+<ul class="fjd-notif-list">
+    {% for note in notifications_page.notifications %}
+    <li class="fjd-card fjd-notif-list__item{% if not note.is_read %} fjd-notif-list__item--unread{% endif %}">
+        <div class="fjd-notification__icon fjd-notification__icon--{{ note.tone }}">
+            <i class="bi {{ note.icon }}" aria-hidden="true"></i>
+        </div>
+        <div class="flex-grow-1">
+            <p class="fjd-notification__title">{{ note.title }}</p>
+            {% if note.body %}<p class="fjd-notification__body">{{ note.body }}</p>{% endif %}
+            <p class="fjd-notification__time">{{ note.created_at }} • {{ note.event_label }}</p>
+        </div>
+        <a href="{{ note.action_url }}" class="icd-btn icd-btn--soft icd-btn--sm">{{ note.action_label }}</a>
+        {% if not note.is_read %}
+        <form method="post" action="{{ note.mark_read_url }}" class="fjd-notif-page-mark-form">
+            {% csrf_token %}
+            <button type="submit" class="icd-btn icd-btn--soft">Mark read</button>
+        </form>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+{% if notifications_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Notification pages">
+    {% if notifications_page.page > 1 %}<a class="fjd-page-btn" href="?page={{ notifications_page.page|add:'-1' }}{% if notifications_filters.state and notifications_filters.state != 'all' %}&state={{ notifications_filters.state }}{% endif %}{% if notifications_filters.event %}&event={{ notifications_filters.event }}{% endif %}">Previous</a>{% endif %}
+    <span>Page {{ notifications_page.page }} of {{ notifications_page.total_pages }}</span>
+    {% if notifications_page.page < notifications_page.total_pages %}<a class="fjd-page-btn" href="?page={{ notifications_page.page|add:'1' }}{% if notifications_filters.state and notifications_filters.state != 'all' %}&state={{ notifications_filters.state }}{% endif %}{% if notifications_filters.event %}&event={{ notifications_filters.event }}{% endif %}">Next</a>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="icd-card icd-empty">
+    <i class="bi bi-bell"></i>
+    <h2>You're all caught up</h2>
+    <p>New notifications about applications, interviews, and vacancy updates will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

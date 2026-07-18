@@ -1,0 +1,24 @@
+<aside class="icd-sidebar" aria-label="Sidebar navigation">
+
+    <div class="icd-sidebar__profile">
+
+        <p class="icd-sidebar__profile-label">Institution</p>
+
+        <p class="icd-sidebar__profile-name">{{ sidebar_profile.display_name }}</p>
+
+        <p class="icd-sidebar__profile-headline">{{ sidebar_profile.headline }}</p>
+
+    </div>
+
+    {% include "academic/college/partials/sidebar_nav.html" %}
+
+    <a class="icd-sidebar__logout" href="{{ logout_url }}">
+
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+
+        <span>Logout</span>
+
+    </a>
+
+</aside>
+

@@ -1,0 +1,183 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load portal_urls static %}
+
+{% block title %}Post Vacancy | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<link href="{% static 'css/professor-dashboard.css' %}" rel="stylesheet">
+<link href="{% static 'css/ats-preview.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+{% if not create_page %}
+<div class="icd-card icd-empty"><p>Unable to load form.</p></div>
+{% elif not create_page.has_institution %}
+<div class="icd-card icd-empty">
+    <i class="bi bi-building"></i>
+    <h2>Institution profile required</h2>
+    <p>Set up your institution before posting faculty vacancies.</p>
+    <a href="{{ create_page.urls.profile }}" class="icd-btn icd-btn--primary mt-2">Set Up Institution</a>
+</div>
+{% else %}
+<header class="jsd-page-head mb-5">
+    <h1 class="jsd-page-head__title">Post Faculty Vacancy</h1>
+    <p class="jsd-page-head__desc">Create a draft vacancy for <span class="fw-bold">{{ create_page.institution.name }}</span>.</p>
+</header>
+
+{% if not create_page.can_publish %}
+<div class="alert alert-warning">Institution verification is required before publishing vacancies to candidates.</div>
+{% endif %}
+
+{% if form_errors %}
+<div class="alert alert-danger">
+    <ul class="mb-0">{% for err in form_errors %}<li>{{ err }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<div class="jsd-card p-4 p-md-5 shadow-sm rounded-4 border-0">
+    <form method="post" action="" id="vacancyForm">
+        <input type="hidden" name="action" id="formAction" value="publish">
+        {% csrf_token %}
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label fw-semibold text-dark" for="vacTitle">Title *</label>
+                <input class="form-control px-3" id="vacTitle" name="title" required maxlength="300" placeholder="e.g. Assistant Professor of Computer Science" value="{{ form_data.title|default:'' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-dark" for="vacDept">Department</label>
+                <input class="form-control px-3" id="vacDept" name="department" placeholder="e.g. Computer Science" value="{{ form_data.department|default:'' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-dark" for="vacEmployment">Employment Type</label>
+                <select class="form-select px-3" id="vacEmployment" name="employment_type">
+                    {% for val, label in create_page.employment_types %}
+                    <option value="{{ val }}"{% if form_data.employment_type == val %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-dark" for="vacWorkType">Work Type</label>
+                <select class="form-select px-3" id="vacWorkType" name="work_type">
+                    {% for val, label in create_page.work_types %}
+                    <option value="{{ val }}"{% if form_data.work_type == val %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-dark" for="vacCity">City</label>
+                <input class="form-control px-3" id="vacCity" name="city" placeholder="e.g. Bangalore" value="{{ form_data.city|default:'' }}">
+            </div>
+            <div class="col-12 mt-4">
+                <hr class="border-light m-0 mb-4">
+                <label class="form-label fw-bold text-dark" for="vacDesc">Description *</label>
+                <textarea class="form-control rounded" id="vacDesc" name="description" rows="6" required placeholder="Describe the role, responsibilities, and expectations...">{{ form_data.description|default:'' }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark" for="vacReq">Requirements</label>
+                <textarea class="form-control rounded" id="vacReq" name="requirements" rows="4" placeholder="List the qualifications, skills, and experience needed...">{{ form_data.requirements|default:'' }}</textarea>
+            </div>
+            <div class="col-12 mt-4">
+                <hr class="border-light m-0 mb-4">
+                <h3 class="fs-6 fw-bold text-dark mb-3">Experience & Compensation</h3>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-dark" for="vacExpMin">Exp. Min (yrs)</label>
+                <input class="form-control px-3" id="vacExpMin" name="experience_min" type="number" min="0" value="{{ form_data.experience_min|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-dark" for="vacExpMax">Exp. Max (yrs)</label>
+                <input class="form-control px-3" id="vacExpMax" name="experience_max" type="number" min="0" value="{{ form_data.experience_max|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-dark" for="vacSalMin">Salary Min (LPA)</label>
+                <input class="form-control px-3" id="vacSalMin" name="salary_min" type="number" step="0.1" value="{{ form_data.salary_min|default:'' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-dark" for="vacSalMax">Salary Max (LPA)</label>
+                <input class="form-control px-3" id="vacSalMax" name="salary_max" type="number" step="0.1" value="{{ form_data.salary_max|default:'' }}">
+            </div>
+        </div>
+        <div class="d-flex gap-3 mt-5 pt-3 border-top">
+            <button type="button" id="btnReviewJob" class="jsd-btn jsd-btn--primary px-5 rounded-pill shadow-sm">Review Job</button>
+            <a href="{{ create_page.urls.manage_vacancies }}" class="jsd-btn jsd-btn--outline px-4 rounded-pill">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- ATS Style Preview Modal -->
+<div class="modal fade ats-preview-modal" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+            <h5 class="modal-title fw-bold" id="previewModalLabel">Preview Before Publishing</h5>
+            <p class="text-muted mb-0 small">This is exactly how your vacancy will appear to faculty job seekers.</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+          <div class="ats-preview-container">
+              <div class="row justify-content-center">
+                  <div class="col-lg-8 col-xl-7">
+                      <header class="fjd-page-head bg-white p-4 rounded-top border">
+                          <div class="fjd-vacancy-head">
+                              <div class="fjd-vacancy-head__logo">
+                                  {% if create_page.institution.logo_file %}
+                                  <img src="{{ create_page.institution.logo_file.url }}" alt="">
+                                  {% else %}
+                                  <i class="bi bi-building"></i>
+                                  {% endif %}
+                              </div>
+                              <div>
+                                  <h1 class="fjd-page-head__title" id="previewTitle">Job Title</h1>
+                                  <p class="fjd-page-head__desc">
+                                      {{ create_page.institution.name }} • <span id="previewLocation">Location</span>
+                                  </p>
+                                  <p class="fjd-vacancy-head__meta">Posted Just Now</p>
+                              </div>
+                          </div>
+                      </header>
+
+                      <div class="fjd-vacancy-layout mt-0">
+                          <section class="fjd-card fjd-vacancy-main bg-white p-4 rounded-bottom border border-top-0">
+                              <div class="fjd-job-card__tags mb-4" id="previewTags">
+                                  <!-- Tags injected via JS -->
+                              </div>
+                              
+                              <dl class="fjd-profile-dl fjd-vacancy-meta mb-4" id="previewMeta">
+                                  <!-- Meta injected via JS -->
+                              </dl>
+
+                              <div class="fjd-detail-block mb-4" id="previewDescBlock">
+                                  <h2 class="fjd-widget__title">Job Description</h2>
+                                  <div class="fjd-vacancy-content" id="previewDescContent"></div>
+                              </div>
+
+                              <div class="fjd-detail-block mb-4" id="previewReqBlock">
+                                  <h2 class="fjd-widget__title">Requirements</h2>
+                                  <div class="fjd-vacancy-content" id="previewReqContent"></div>
+                              </div>
+                          </section>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between align-items-center">
+        <button type="button" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold" data-bs-dismiss="modal">Edit</button>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary px-5 rounded-pill fw-bold shadow-sm" id="btnPublishJob">Publish Job</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script src="{% static 'js/college-vacancy-preview.js' %}"></script>
+{% endblock %}

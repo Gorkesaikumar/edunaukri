@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile.name }} | Institutions | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/institution-marketplace.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="im-profile">
+    <div class="im-profile__banner{% if not profile.banner_url %} im-profile__banner--{{ profile.domain }}{% endif %}"
+         {% if profile.banner_url %}style="background-image:url('{{ profile.banner_url }}');"{% endif %}></div>
+
+    <div class="container-xl im-profile__wrap">
+        <header class="im-profile__header">
+            <div class="im-profile__brand">
+                <div class="im-profile__logo">
+                    {% if profile.logo_url %}
+                    <img src="{{ profile.logo_url }}" alt="{{ profile.name }} logo">
+                    {% else %}
+                    <span class="ed-logo-monogram">{{ profile.logo_initial }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h1 class="im-profile__title">{{ profile.name }}</h1>
+                        {% if profile.verified %}<i class="bi bi-patch-check-fill ed-verified"></i>{% endif %}
+                        <span class="im-domain-badge im-domain-badge--{{ profile.domain }}">
+                            <i class="bi {{ profile.domain_icon }}"></i> {{ profile.domain_label }}
+                        </span>
+                    </div>
+                    <p class="im-profile__subtitle">{{ profile.type_label }}{% if profile.industry %} · {{ profile.industry }}{% endif %}</p>
+                    {% if profile.is_hiring %}
+                    <span class="im-hiring-badge im-hiring-badge--lg"><span class="im-hiring-badge__dot"></span>{{ profile.hiring_label }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="im-profile__actions">
+                <button type="button" class="ed-btn ed-btn--outline im-share-btn" data-share-url="{{ profile.share_url }}">
+                    <i class="bi bi-share"></i> Share
+                </button>
+            </div>
+        </header>
+
+        <div class="im-profile__layout">
+            <div class="im-profile__main">
+                {% if profile.description %}
+                <section class="im-section">
+                    <h2>About</h2>
+                    <div class="im-prose">{{ profile.description|linebreaks }}</div>
+                </section>
+                {% endif %}
+
+                {% if profile.mission or profile.vision %}
+                <section class="im-section im-section--grid">
+                    {% if profile.mission %}
+                    <div>
+                        <h3>Mission</h3>
+                        <p>{{ profile.mission|linebreaksbr }}</p>
+                    </div>
+                    {% endif %}
+                    {% if profile.vision %}
+                    <div>
+                        <h3>Vision</h3>
+                        <p>{{ profile.vision|linebreaksbr }}</p>
+                    </div>
+                    {% endif %}
+                </section>
+                {% endif %}
+
+                {% if profile.culture %}
+                <section class="im-section">
+                    <h2>Why Join Us</h2>
+                    <div class="im-prose">{{ profile.culture|linebreaks }}</div>
+                </section>
+                {% endif %}
+
+                <section class="im-section" id="openings">
+                    <div class="im-section__head">
+                        <h2>Current Openings</h2>
+                        <span class="im-openings-count">{{ profile.open_positions }} live</span>
+                    </div>
+                    {% if profile.openings %}
+                    <div class="im-openings-list">
+                        {% for job in profile.openings %}
+                        <article class="im-opening" id="opening-{{ job.id }}">
+                            <div>
+                                <h3><a href="{{ job.detail_url }}">{{ job.title }}</a></h3>
+                                <div class="im-opening__chips">
+                                    {% if job.location %}<span class="ed-chip ed-chip--slate">{{ job.location }}</span>{% endif %}
+                                    {% if job.salary_display %}<span class="ed-chip ed-chip--amber">{{ job.salary_display }}</span>{% endif %}
+                                    {% if job.experience_label %}<span class="ed-chip ed-chip--purple">{{ job.experience_label }}</span>{% endif %}
+                                    <span class="ed-chip ed-chip--blue">{{ job.work_mode_label }}</span>
+                                    <span class="ed-chip ed-chip--blue">{{ job.employment_type_label }}</span>
+                                </div>
+                                <p class="im-opening__posted"><i class="bi bi-clock"></i> {{ job.posted_display }}</p>
+                            </div>
+                            <div class="im-opening__actions">
+                                {% if is_job_seeker and job.domain == 'it' %}
+                                <button type="button"
+                                        class="ed-icon-btn ed-icon-btn--lg jsd-save-btn"
+                                        data-save-job-toggle
+                                        data-job-id="{{ job.id }}"
+                                        aria-label="Save job">
+                                    <i class="bi bi-bookmark"></i>
+                                </button>
+                                {% endif %}
+                                <a href="{{ job.detail_url }}" class="ed-btn ed-btn--outline">View</a>
+                                {% if is_job_seeker and job.domain == 'it' %}
+                                <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply</a>
+                                {% else %}
+                                <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Sign in to Apply</a>
+                                {% endif %}
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No active openings at the moment. Check back soon.</p>
+                    {% endif %}
+                </section>
+
+                {% if profile.benefits %}
+                <section class="im-section">
+                    <h2>Benefits</h2>
+                    <ul class="im-benefits">
+                        {% for benefit in profile.benefits %}
+                        <li><i class="bi bi-check-circle-fill"></i> {{ benefit }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+                {% endif %}
+
+                {% if profile.gallery %}
+                <section class="im-section">
+                    <h2>Gallery</h2>
+                    <div class="im-gallery">
+                        {% for image in profile.gallery %}
+                        <figure class="im-gallery__item">
+                            <img src="{{ image.url }}" alt="{{ image.label }}" loading="lazy">
+                        </figure>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+
+            <aside class="im-profile__aside">
+                <div class="im-aside-card">
+                    <h3>Organization Details</h3>
+                    <ul class="im-aside-list">
+                        {% if profile.founded_year %}<li><span>Founded</span><strong>{{ profile.founded_year }}</strong></li>{% endif %}
+                        {% if profile.headquarters %}<li><span>Headquarters</span><strong>{{ profile.headquarters }}</strong></li>{% endif %}
+                        {% if profile.company_size_label %}<li><span>Size</span><strong>{{ profile.company_size_label }}</strong></li>{% endif %}
+                        {% if profile.employee_label %}<li><span>People</span><strong>{{ profile.employee_label }}</strong></li>{% endif %}
+                        <li><span>Open roles</span><strong>{{ profile.open_positions }}</strong></li>
+                        <li><span>Recruiters</span><strong>{{ profile.recruiter_count }}</strong></li>
+                        <li><span>Applicants</span><strong>{{ profile.total_applicants }}</strong></li>
+                    </ul>
+                </div>
+
+                <div class="im-aside-card">
+                    <h3>Contact</h3>
+                    <ul class="im-contact-list">
+                        {% if profile.website_url %}
+                        <li><a href="{{ profile.website_url }}" target="_blank" rel="noopener"><i class="bi bi-globe2"></i> Website</a></li>
+                        {% endif %}
+                        {% if profile.email %}<li><i class="bi bi-envelope"></i> {{ profile.email }}</li>{% endif %}
+                        {% if profile.phone %}<li><i class="bi bi-telephone"></i> {{ profile.phone }}</li>{% endif %}
+                        {% if profile.address %}<li><i class="bi bi-geo-alt"></i> {{ profile.address }}</li>{% endif %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/institution-marketplace.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}{{ page_title|default:"Control Center" }} | {{ PLATFORM_NAME }} Super Admin{% endblock %}</title>
+
+    {% include "partials/site_icons.html" %}
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS with Minimal Luxury Design Tokens -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#4F46E5",
+                            "surface-container": "#f0ecf9",
+                            "on-surface": "#1b1b24",
+                            "on-surface-variant": "#464555",
+                            "outline-variant": "#c7c4d8",
+                            "background": "#FCFCFD",
+                            "surface": "#ffffff",
+                            "error": "#ba1a1a",
+                            "success": "#10b981"
+                        },
+                        borderRadius: {
+                            "DEFAULT": "0.25rem",
+                            "lg": "16px",
+                            "xl": "20px",
+                            "full": "9999px"
+                        },
+                        spacing: {
+                            "gutter": "16px",
+                            "md": "1.25rem",
+                            "sm": "0.75rem",
+                            "xs": "0.5rem"
+                        },
+                        fontSize: {
+                            "display-lg": ["32px", {"lineHeight": "1.1", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                            "headline-md": ["18px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                            "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                            "body-md": ["13px", {"lineHeight": "1.4"}],
+                            "caption": ["11px", {"lineHeight": "1.2", "fontWeight": "500"}]
+                        }
+                    }
+                }
+            };
+        } catch (_e) {}
+    </script>
+    
+    <link href="{% static 'css/super-admin.css' %}" rel="stylesheet">
+    <link href="{% static 'css/edu-notify.css' %}" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-surface text-body-md antialiased selection:bg-primary/20 selection:text-primary">
+
+    <!-- Top Navigation -->
+    {% include "super_admin/partials/header.html" %}
+
+    <!-- Compact Sidebar -->
+    {% include "super_admin/partials/sidebar.html" %}
+
+    <!-- Main High-Density Content Area -->
+    <main class="lg:ml-56 pt-14 min-h-screen transition-all duration-200">
+        <div class="p-5 max-w-[1600px] mx-auto space-y-6">
+            
+            {% if page_title or page_description %}
+            <!-- Executive Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-outline-variant/20">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-on-surface tracking-tight">{{ page_title }}</h1>
+                    {% if page_description %}
+                    <p class="text-xs text-on-surface-variant font-medium mt-1">{{ page_description }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if messages %}
+            <!-- Django Messages -->
+            <div class="space-y-2">
+                {% for message in messages %}
+                <div class="p-3 rounded-xl border {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-indigo-50 border-indigo-200 text-indigo-800{% endif %} flex items-center justify-between text-xs font-bold shadow-sm">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()" class="text-current opacity-60 hover:opacity-100">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Dynamic View Content -->
+            {% block content %}{% endblock %}
+
+        </div>
+    </main>
+
+    <!-- Modals -->
+    {% block modals %}{% endblock %}
+
+    <script src="{% static 'js/edu-notify.js' %}"></script>
+    <script src="{% static 'js/super-admin.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

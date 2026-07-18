@@ -1,0 +1,324 @@
+"""Clean URL routes for Recruiter portal pages."""
+
+from django.urls import path
+
+from apps.it_recruitment.views.portal import (
+    RecruiterAnalyticsView,
+    RecruiterCandidateMarketplaceDetailView,
+    RecruiterCandidateMarketplaceView,
+    RecruiterCandidatesView,
+    RecruiterDashboardView,
+    RecruiterInterviewsView,
+    RecruiterJobCreateView,
+    RecruiterJobEditView,
+    RecruiterJobsView,
+    RecruiterMessagesView,
+    RecruiterNotificationReadView,
+    RecruiterNotificationsMarkAllReadView,
+    RecruiterNotificationsView,
+    RecruiterProfileView,
+    RecruiterSavedCandidatesView,
+    RecruiterSettingsView,
+)
+from apps.it_recruitment.views.recruiter_portal import (
+    RecruiterShortlistedCandidatesView,
+    RecruiterSelectedCandidatesView,
+    RecruiterJoinedCandidatesView,
+)
+from apps.invoices.views.recruiter import RecruiterInvoicesView
+from apps.it_recruitment.views.recruiter_portal_api import (
+    RecruiterApplicationDetailAPIView,
+    RecruiterApplicationNotesAPIView,
+    RecruiterApplicationResumeAPIView,
+    RecruiterApplicationStatusAPIView,
+    RecruiterApplicantsListAPIView,
+    RecruiterCompanyAPIView,
+    RecruiterCompanyCreateAPIView,
+    RecruiterInterviewCancelAPIView,
+    RecruiterInterviewCompleteAPIView,
+    RecruiterInterviewFeedbackAPIView,
+    RecruiterInterviewRescheduleAPIView,
+    RecruiterInterviewScheduleAPIView,
+    RecruiterInterviewScheduleCandidatesAPIView,
+    RecruiterInterviewStatusAPIView,
+    RecruiterInterviewsListAPIView,
+    RecruiterJobApplicantsAPIView,
+    RecruiterJobArchiveAPIView,
+    RecruiterJobCloseAPIView,
+    RecruiterJobCreateAPIView,
+    RecruiterJobDeleteAPIView,
+    RecruiterJobDetailAPIView,
+    RecruiterJobDuplicateAPIView,
+    RecruiterJobPauseAPIView,
+    RecruiterJobPublishAPIView,
+    RecruiterJobReopenAPIView,
+    RecruiterJobsListAPIView,
+    RecruiterMarketplaceResumeAPIView,
+    RecruiterProfileAPIView,
+    RecruiterSkillSuggestAPIView,
+)
+from apps.it_recruitment.views.dashboard_api import (
+    RecruiterAnalyticsExportAPIView,
+    RecruiterDashboardInsightsAPIView,
+)
+from apps.it_recruitment.views.recruiter_settings_api import (
+    RecruiterSettingsAccountAPIView,
+    RecruiterSettingsAuditAPIView,
+    RecruiterSettingsConnectedAPIView,
+    RecruiterSettingsDeleteAccountAPIView,
+    RecruiterSettingsNotificationsAPIView,
+    RecruiterSettingsPasswordAPIView,
+    RecruiterSettingsRevokeSessionsAPIView,
+    RecruiterSettingsSessionDetailAPIView,
+    RecruiterSettingsSessionsAPIView,
+)
+
+urlpatterns = [
+    path("invoices/", RecruiterInvoicesView.as_view(), name="it_recruiter_invoices"),
+    path("dashboard/", RecruiterDashboardView.as_view(), name="recruiter_dashboard"),
+    path("profile/", RecruiterProfileView.as_view(), name="recruiter_profile"),
+    path("settings/", RecruiterSettingsView.as_view(), name="recruiter_settings"),
+    path("jobs/", RecruiterJobsView.as_view(), name="recruiter_jobs"),
+    path("jobs/create/", RecruiterJobCreateView.as_view(), name="recruiter_job_create"),
+    path(
+        "jobs/<uuid:job_id>/edit/",
+        RecruiterJobEditView.as_view(),
+        name="recruiter_job_edit",
+    ),
+    path("candidates/", RecruiterCandidatesView.as_view(), name="recruiter_candidates"),
+    path("candidates/shortlisted/", RecruiterShortlistedCandidatesView.as_view(), name="recruiter_shortlisted_dashboard"),
+    path("candidates/selected/", RecruiterSelectedCandidatesView.as_view(), name="recruiter_selected_dashboard"),
+    path("candidates/joined/", RecruiterJoinedCandidatesView.as_view(), name="recruiter_joined_dashboard"),
+    path(
+        "api/applicants/",
+        RecruiterApplicantsListAPIView.as_view(),
+        name="recruiter_applicants_list_api",
+    ),
+    path(
+        "candidates/marketplace/",
+        RecruiterCandidateMarketplaceView.as_view(),
+        name="recruiter_candidate_marketplace",
+    ),
+    path(
+        "candidates/marketplace/<uuid:seeker_id>/",
+        RecruiterCandidateMarketplaceDetailView.as_view(),
+        name="recruiter_candidate_marketplace_detail",
+    ),
+    path(
+        "saved-candidates/",
+        RecruiterSavedCandidatesView.as_view(),
+        name="recruiter_saved_candidates",
+    ),
+    path("messages/", RecruiterMessagesView.as_view(), name="recruiter_messages"),
+    path("interviews/", RecruiterInterviewsView.as_view(), name="recruiter_interviews"),
+    path(
+        "api/interviews/",
+        RecruiterInterviewsListAPIView.as_view(),
+        name="recruiter_interviews_list_api",
+    ),
+    path(
+        "api/interviews/schedule-candidates/",
+        RecruiterInterviewScheduleCandidatesAPIView.as_view(),
+        name="recruiter_interview_schedule_candidates_api",
+    ),
+    path("analytics/", RecruiterAnalyticsView.as_view(), name="recruiter_analytics"),
+    path(
+        "notifications/",
+        RecruiterNotificationsView.as_view(),
+        name="recruiter_notifications",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        RecruiterNotificationsMarkAllReadView.as_view(),
+        name="recruiter_notifications_mark_all_read",
+    ),
+    path(
+        "notifications/<uuid:notification_id>/read/",
+        RecruiterNotificationReadView.as_view(),
+        name="recruiter_notification_read",
+    ),
+    path(
+        "api/settings/account/",
+        RecruiterSettingsAccountAPIView.as_view(),
+        name="recruiter_settings_account_api",
+    ),
+    path(
+        "api/settings/password/",
+        RecruiterSettingsPasswordAPIView.as_view(),
+        name="recruiter_settings_password_api",
+    ),
+    path(
+        "api/settings/notifications/",
+        RecruiterSettingsNotificationsAPIView.as_view(),
+        name="recruiter_settings_notifications_api",
+    ),
+    path(
+        "api/settings/sessions/",
+        RecruiterSettingsSessionsAPIView.as_view(),
+        name="recruiter_settings_sessions_api",
+    ),
+    path(
+        "api/settings/sessions/<uuid:session_id>/",
+        RecruiterSettingsSessionDetailAPIView.as_view(),
+        name="recruiter_settings_session_detail_api",
+    ),
+    path(
+        "api/settings/sessions/revoke-others/",
+        RecruiterSettingsRevokeSessionsAPIView.as_view(),
+        name="recruiter_settings_revoke_sessions_api",
+    ),
+    path(
+        "api/settings/connected/<str:provider>/",
+        RecruiterSettingsConnectedAPIView.as_view(),
+        name="recruiter_settings_connected_detail_api",
+    ),
+    path(
+        "api/settings/connected/",
+        RecruiterSettingsConnectedAPIView.as_view(),
+        name="recruiter_settings_connected_api",
+    ),
+    path(
+        "api/settings/delete/",
+        RecruiterSettingsDeleteAccountAPIView.as_view(),
+        name="recruiter_settings_delete_api",
+    ),
+    path(
+        "api/settings/audit/",
+        RecruiterSettingsAuditAPIView.as_view(),
+        name="recruiter_settings_audit_api",
+    ),
+    path(
+        "api/dashboard-insights/",
+        RecruiterDashboardInsightsAPIView.as_view(),
+        name="recruiter_dashboard_insights_api",
+    ),
+    path(
+        "api/analytics/export/",
+        RecruiterAnalyticsExportAPIView.as_view(),
+        name="recruiter_analytics_export_api",
+    ),
+    path(
+        "api/profile/", RecruiterProfileAPIView.as_view(), name="recruiter_profile_api"
+    ),
+    path(
+        "api/company/", RecruiterCompanyAPIView.as_view(), name="recruiter_company_api"
+    ),
+    path(
+        "api/company/create/",
+        RecruiterCompanyCreateAPIView.as_view(),
+        name="recruiter_company_create_api",
+    ),
+    path(
+        "api/skills/suggest/",
+        RecruiterSkillSuggestAPIView.as_view(),
+        name="recruiter_skill_suggest_api",
+    ),
+    path(
+        "api/jobs/", RecruiterJobsListAPIView.as_view(), name="recruiter_jobs_list_api"
+    ),
+    path(
+        "api/jobs/create/",
+        RecruiterJobCreateAPIView.as_view(),
+        name="recruiter_job_create_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/",
+        RecruiterJobDetailAPIView.as_view(),
+        name="recruiter_job_detail_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/publish/",
+        RecruiterJobPublishAPIView.as_view(),
+        name="recruiter_job_publish_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/close/",
+        RecruiterJobCloseAPIView.as_view(),
+        name="recruiter_job_close_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/pause/",
+        RecruiterJobPauseAPIView.as_view(),
+        name="recruiter_job_pause_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/reopen/",
+        RecruiterJobReopenAPIView.as_view(),
+        name="recruiter_job_reopen_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/duplicate/",
+        RecruiterJobDuplicateAPIView.as_view(),
+        name="recruiter_job_duplicate_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/archive/",
+        RecruiterJobArchiveAPIView.as_view(),
+        name="recruiter_job_archive_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/delete/",
+        RecruiterJobDeleteAPIView.as_view(),
+        name="recruiter_job_delete_api",
+    ),
+    path(
+        "api/jobs/<uuid:job_id>/applicants/",
+        RecruiterJobApplicantsAPIView.as_view(),
+        name="recruiter_job_applicants_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/status/",
+        RecruiterApplicationStatusAPIView.as_view(),
+        name="recruiter_application_status_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/notes/",
+        RecruiterApplicationNotesAPIView.as_view(),
+        name="recruiter_application_notes_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/resume/",
+        RecruiterApplicationResumeAPIView.as_view(),
+        name="recruiter_application_resume_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/",
+        RecruiterApplicationDetailAPIView.as_view(),
+        name="recruiter_application_detail_api",
+    ),
+    path(
+        "api/interviews/<uuid:interview_id>/cancel/",
+        RecruiterInterviewCancelAPIView.as_view(),
+        name="recruiter_interview_cancel_api",
+    ),
+    path(
+        "api/interviews/<uuid:interview_id>/reschedule/",
+        RecruiterInterviewRescheduleAPIView.as_view(),
+        name="recruiter_interview_reschedule_api",
+    ),
+    path(
+        "api/interviews/<uuid:interview_id>/feedback/",
+        RecruiterInterviewFeedbackAPIView.as_view(),
+        name="recruiter_interview_feedback_api",
+    ),
+    path(
+        "api/interviews/<uuid:interview_id>/status/",
+        RecruiterInterviewStatusAPIView.as_view(),
+        name="recruiter_interview_status_api",
+    ),
+    path(
+        "api/interviews/<uuid:application_id>/complete/",
+        RecruiterInterviewCompleteAPIView.as_view(),
+        name="recruiter_interview_complete_api",
+    ),
+    path(
+        "api/applications/<uuid:application_id>/interview/",
+        RecruiterInterviewScheduleAPIView.as_view(),
+        name="recruiter_interview_schedule_api",
+    ),
+    path(
+        "api/marketplace/<uuid:seeker_id>/resume/",
+        RecruiterMarketplaceResumeAPIView.as_view(),
+        name="recruiter_marketplace_resume_api",
+    ),
+]

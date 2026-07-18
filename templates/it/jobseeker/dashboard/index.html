@@ -1,0 +1,346 @@
+{% extends "it/jobseeker/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}{{ PLATFORM_NAME }} | Dashboard{% endblock %}
+
+{% block dashboard_content %}
+{% if dashboard.show_completion_card %}
+{# Profile completion hero — hidden once profile is 100% complete and celebration has played #}
+<section class="jsd-card jsd-card--hover jsd-welcome jsd-hero" id="jsdHeroCard"
+         data-insights-url="{% portal_url 'jobseeker_dashboard_insights_api' %}"
+         {% if dashboard.completion.play_celebration %}
+         data-play-celebration="true"
+         data-celebration-message="{{ dashboard.completion.celebration_message|escape }}"
+         data-mark-animation-url="{% portal_url 'jobseeker_profile_completion_animation_api' %}"
+         {% endif %}>
+    <canvas class="jsd-hero__confetti" id="jsdHeroConfetti" aria-hidden="true"></canvas>
+    <div class="jsd-hero__celebration" id="jsdHeroCelebration" hidden>
+        <div class="jsd-hero__celebration-check" aria-hidden="true">
+            <i class="bi bi-check-lg"></i>
+        </div>
+        <p class="jsd-hero__celebration-message" id="jsdHeroCelebrationMessage"></p>
+    </div>
+    <div class="jsd-card__body jsd-hero__body">
+        <div class="jsd-hero__main">
+            <h1 class="jsd-welcome__title">{{ dashboard.greeting }}, {{ dashboard.display_name }} 👋</h1>
+            <p class="jsd-welcome__text" id="jsdHeroMessage">
+                {% if dashboard.hero %}{{ dashboard.hero.message }}{% else %}{{ dashboard.welcome_message }}{% endif %}
+            </p>
+
+            <div class="jsd-progress jsd-hero__progress">
+                <div class="jsd-progress__head">
+                    <div>
+                        <span class="jsd-progress__label">Profile Completion</span>
+                        {% if dashboard.hero %}
+                        <span class="jsd-hero__status">{{ dashboard.hero.completion_status }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="jsd-progress__value" id="jsdHeroCompletion" data-target="{{ dashboard.profile_completion }}">
+                        {{ dashboard.profile_completion }}%
+                    </span>
+                </div>
+                <div class="jsd-progress__track" role="progressbar"
+                     aria-valuenow="{{ dashboard.profile_completion }}" aria-valuemin="0" aria-valuemax="100"
+                     aria-label="Profile completion">
+                    <div class="jsd-progress__bar jsd-progress__bar--animated" id="jsdHeroProgressBar"
+                         style="width: {{ dashboard.profile_completion }}%;"></div>
+                </div>
+            </div>
+
+            <div class="jsd-welcome__actions jsd-hero__actions">
+                {% if dashboard.hero and dashboard.hero.primary_action %}
+                <a href="{{ dashboard.hero.primary_action.url }}"
+                   class="jsd-btn jsd-btn--{{ dashboard.hero.primary_action.variant|default:'primary' }}">
+                    {{ dashboard.hero.primary_action.label }}
+                </a>
+                {% else %}
+                <a href="{% url 'jobseeker_profile' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary">Update Profile</a>
+                {% endif %}
+                {% if dashboard.hero and dashboard.hero.secondary_action %}
+                <a href="{{ dashboard.hero.secondary_action.url }}"
+                   class="jsd-btn jsd-btn--{{ dashboard.hero.secondary_action.variant|default:'outline' }}">
+                    {{ dashboard.hero.secondary_action.label }}
+                </a>
+                {% else %}
+                <a href="{% url 'jobseeker_resume' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--outline">Resume Tips</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if dashboard.hero and dashboard.hero.insight_stats %}
+        <aside class="jsd-hero__insights" aria-label="Personalized insights">
+            {% for stat in dashboard.hero.insight_stats %}
+            <div class="jsd-hero__insight">
+                <div class="jsd-hero__insight-icon"><i class="bi {{ stat.icon }}" aria-hidden="true"></i></div>
+                <div>
+                    <p class="jsd-hero__insight-value">{{ stat.value }}</p>
+                    <p class="jsd-hero__insight-label">{{ stat.label }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </aside>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+{# Live activity ticker #}
+{% if dashboard.kpis and dashboard.kpis.activity_insights %}
+<section class="jsd-insights-ticker" id="jsdInsightsStrip" aria-label="Live career updates">
+    <div class="jsd-insights-ticker__badge" aria-hidden="true">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>Live</span>
+    </div>
+    <div class="jsd-insights-ticker__track">
+        <div class="jsd-insights-ticker__scroll" id="jsdInsightsScroll">
+            <ul class="jsd-insights-ticker__list" id="jsdInsightsList">
+                {% for insight in dashboard.kpis.activity_insights %}
+                <li><span class="jsd-insights-ticker__dot" aria-hidden="true"></span>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+            <ul class="jsd-insights-ticker__list jsd-insights-ticker__list--clone" aria-hidden="true">
+                {% for insight in dashboard.kpis.activity_insights %}
+                <li><span class="jsd-insights-ticker__dot" aria-hidden="true"></span>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% if dashboard.kpis.updated_at %}
+    <time class="jsd-insights-ticker__time" id="jsdInsightsUpdated" datetime="">{{ dashboard.kpis.updated_at }}</time>
+    {% else %}
+    <time class="jsd-insights-ticker__time" id="jsdInsightsUpdated" datetime="" hidden></time>
+    {% endif %}
+</section>
+{% endif %}
+
+{# Stats row #}
+<section class="jsd-stats" id="jsdStatsRow" aria-label="Dashboard statistics"
+         data-insights-url="{% portal_url 'jobseeker_dashboard_insights_api' %}">
+    {% for stat in dashboard.stats %}
+    <article class="jsd-card jsd-card--hover jsd-stat" data-stat-key="{{ stat.key }}"
+             {% if stat.tooltip %}title="{{ stat.tooltip }}"{% endif %}>
+        <div class="jsd-stat__top">
+            <div class="jsd-stat__icon jsd-stat__icon--{{ stat.icon_tone }}">
+                <i class="bi {{ stat.icon }}" aria-hidden="true"></i>
+            </div>
+            <span class="jsd-stat__trend jsd-stat__trend--{{ stat.trend_tone }}">
+                {% if stat.trend_icon %}<i class="bi {{ stat.trend_icon }}" aria-hidden="true"></i>{% endif %}
+                {{ stat.trend_label }}
+            </span>
+        </div>
+        <p class="jsd-stat__label">{{ stat.label }}</p>
+        <p class="jsd-stat__value" data-stat-value>{{ stat.value }}</p>
+        {% if stat.subtitle %}
+        <p class="jsd-stat__subtitle" data-stat-subtitle>{{ stat.subtitle }}</p>
+        {% endif %}
+        {% if stat.pct_badge %}
+        <span class="jsd-stat__pct" data-stat-pct>{{ stat.pct_badge }}</span>
+        {% endif %}
+    </article>
+    {% empty %}
+    <article class="jsd-card jsd-stat jsd-empty"><p>Statistics will appear once you start applying.</p></article>
+    {% endfor %}
+</section>
+
+<div class="jsd-grid-main">
+    <div>
+        {# Recommended jobs #}
+        <section class="mb-4">
+            <div class="jsd-section__head">
+                <h2 class="jsd-section__title">Recommended for You</h2>
+                <a class="jsd-section__link" href="{% url 'marketplace_browse_jobs' %}">View All</a>
+            </div>
+            <div class="jsd-jobs-grid" id="jsdRecommendedJobs">
+                {% for job in dashboard.recommended_jobs %}
+                <article class="jsd-card jsd-card--hover jsd-job-card">
+                    <a href="{{ job.detail_url }}" class="text-decoration-none text-reset d-block">
+                        <div class="jsd-job-card__top">
+                            <div class="jsd-job-card__logo">
+                                {% if job.logo_url %}
+                                <img src="{{ job.logo_url }}" alt="">
+                                {% else %}
+                                <i class="bi bi-building text-muted"></i>
+                                {% endif %}
+                            </div>
+                            <span class="jsd-job-card__match">{{ job.match_percent }}% Match</span>
+                        </div>
+                        <h3 class="jsd-job-card__title">{{ job.title }}</h3>
+                        <p class="jsd-job-card__company">{{ job.company_name }}</p>
+                        <div class="jsd-job-card__tags">
+                            {% for tag in job.tags %}
+                            <span class="jsd-tag">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </a>
+                    <div class="jsd-job-card__foot">
+                        <span class="jsd-job-card__salary">{{ job.salary_display }} <span>/ year</span></span>
+                        <div class="d-flex gap-2">
+                            <button type="button"
+                                    class="jsd-btn jsd-btn--outline py-1 px-2 jsd-save-btn{% if job.is_saved %} is-saved{% endif %}"
+                                    data-save-job-toggle
+                                    data-job-id="{{ job.id }}"
+                                    title="Save job"
+                                    aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
+                                <i class="bi {% if job.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                            </button>
+                            <form method="post" action="{{ job.apply_url }}">
+                                {% csrf_token %}
+                                <button type="submit" class="jsd-btn jsd-btn--soft">Apply Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="jsd-card jsd-empty">
+                    <i class="bi bi-briefcase"></i>
+                    <p>No recommendations yet. Complete your profile to get matched jobs.</p>
+                    <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-btn jsd-btn--primary mt-2">Browse Jobs</a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# Recent applications #}
+        <section>
+            <div class="jsd-section__head">
+                <h2 class="jsd-section__title">Recent Applications</h2>
+                <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}" class="jsd-icon-btn" aria-label="View all applications">
+                    <i class="bi bi-three-dots"></i>
+                </a>
+            </div>
+            <div class="jsd-card jsd-card--hover jsd-table-wrap">
+                {% if dashboard.recent_applications %}
+                <table class="jsd-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Position</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Applied Date</th>
+                            <th scope="col" class="jsd-table__action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in dashboard.recent_applications %}
+                        <tr>
+                            <td>
+                                <div class="jsd-table__position">
+                                    <div class="jsd-table__logo">
+                                        {% if app.logo_url %}<img src="{{ app.logo_url }}" alt="">{% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="jsd-table__title">{{ app.title }}</p>
+                                        <p class="jsd-table__sub">{{ app.company_name }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="jsd-badge {{ app.status_class }}">{{ app.status_label }}</span></td>
+                            <td class="jsd-table__date">{{ app.applied_date }}</td>
+                            <td class="jsd-table__action">
+                                <a href="{{ app.track_url }}" class="jsd-link">Track</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="jsd-empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>You have not applied to any jobs yet.</p>
+                    <a href="{% url 'marketplace_browse_jobs' %}" class="jsd-link">Browse open roles</a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <aside class="d-flex flex-column gap-4">
+        {# Profile summary #}
+        <section class="jsd-card jsd-card--hover jsd-profile-card">
+            <div class="jsd-profile-card__banner"></div>
+            <div class="jsd-profile-card__body">
+                <div class="jsd-profile-card__avatar">
+                    {% if dashboard.avatar_url %}
+                    <img src="{{ dashboard.avatar_url }}" alt="{{ dashboard.display_name }}">
+                    {% else %}
+                    <span class="jsd-header__avatar-initials">{{ header_user.initials }}</span>
+                    {% endif %}
+                </div>
+                <h3 class="jsd-profile-card__name">{{ dashboard.display_name }}</h3>
+                <p class="jsd-profile-card__headline">{{ dashboard.headline }}</p>
+                <div class="jsd-profile-card__skills">
+                    {% for skill in dashboard.skills %}
+                    <span class="jsd-skill-pill">{{ skill }}</span>
+                    {% empty %}
+                    <span class="jsd-skill-pill">Add skills in profile</span>
+                    {% endfor %}
+                </div>
+                <div class="jsd-profile-card__stats">
+                    <div>
+                        <p class="jsd-profile-card__stat-label">Experience</p>
+                        <p class="jsd-profile-card__stat-value">{{ dashboard.experience_display }}</p>
+                    </div>
+                    <div>
+                        <p class="jsd-profile-card__stat-label">Notice Period</p>
+                        <p class="jsd-profile-card__stat-value">{{ dashboard.notice_period_display }}</p>
+                    </div>
+                </div>
+                {% if dashboard.kpis %}
+                <div class="jsd-profile-card__kpis">
+                    <span class="jsd-profile-card__kpi" title="Profile completion">
+                        <i class="bi bi-person-check" aria-hidden="true"></i> {{ dashboard.kpis.profile_completion }}%
+                    </span>
+                    <span class="jsd-profile-card__kpi" title="Resume match score">
+                        <i class="bi bi-stars" aria-hidden="true"></i> {{ dashboard.kpis.resume_match_score }}% match
+                    </span>
+                    <span class="jsd-profile-card__kpi" title="Recruiter interest">
+                        <i class="bi bi-graph-up-arrow" aria-hidden="true"></i> {{ dashboard.kpis.recruiter_interest_score }}% interest
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {# Upcoming interviews #}
+        <section class="jsd-card jsd-card--hover jsd-timeline">
+            <h2 class="jsd-timeline__title">Upcoming Interviews</h2>
+            {% for interview in dashboard.upcoming_interviews %}
+            <div class="jsd-timeline__item{% if not interview.is_today %} jsd-timeline__item--muted{% endif %}">
+                <span class="jsd-timeline__dot" aria-hidden="true"></span>
+                <p class="jsd-timeline__when">{{ interview.schedule_label }}</p>
+                <h3 class="jsd-timeline__name">{{ interview.title }}</h3>
+                <p class="jsd-timeline__org">{{ interview.company_name }}</p>
+                {% if interview.meet_url and interview.is_today %}
+                <a href="{{ interview.meet_url }}" class="jsd-btn jsd-btn--meet" target="_blank" rel="noopener noreferrer">Join Google Meet</a>
+                {% elif interview.is_today %}
+                <a href="{{ interview.detail_url }}" class="jsd-btn jsd-btn--meet">View Details</a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="jsd-empty py-3">
+                <p class="mb-0">No interviews scheduled.</p>
+            </div>
+            {% endfor %}
+        </section>
+
+        {# Salary benchmark #}
+        <section class="jsd-card jsd-chart">
+            <div class="jsd-chart__head">
+                <h2 class="jsd-chart__title">Salary Benchmark</h2>
+                <i class="bi bi-info-circle text-muted" title="Based on your profile salary data" aria-hidden="true"></i>
+            </div>
+            <div class="jsd-chart__bars">
+                <div class="jsd-chart__bar" style="height: {{ dashboard.salary_benchmark.current_pct }}%;"></div>
+                <div class="jsd-chart__bar jsd-chart__bar--avg" style="height: {{ dashboard.salary_benchmark.average_pct }}%;"></div>
+                <div class="jsd-chart__bar jsd-chart__bar--top" style="height: {{ dashboard.salary_benchmark.top_pct }}%;">
+                    <span class="jsd-chart__bar-label">Target</span>
+                </div>
+            </div>
+            <div class="jsd-chart__legend">
+                <span>Current</span>
+                <span>Average</span>
+                <span>Top 10%</span>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends "academic/college/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Settings | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/college-settings.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="icd-page-head">
+    <div class="icd-page-head__row">
+        <div>
+            <h1 class="icd-page-head__title">Account Settings</h1>
+            <p class="icd-page-head__desc">Manage your account, institution profile, security, and notification preferences.</p>
+        </div>
+    </div>
+</header>
+
+{% if settings_page %}
+<div class="icd-set-layout" id="icdSettingsPage"
+     data-api-account="{{ settings_page.api_urls.account }}"
+     data-api-institution="{% url 'college_institution_api' portal_user_uuid %}"
+     data-api-password="{{ settings_page.api_urls.password }}"
+     data-api-notifications="{{ settings_page.api_urls.notifications }}"
+     data-api-privacy="{{ settings_page.api_urls.privacy }}"
+     data-api-sessions="{{ settings_page.api_urls.sessions }}"
+     data-api-revoke-others="{{ settings_page.api_urls.revoke_others }}"
+     data-api-audit="{{ settings_page.api_urls.audit }}"
+     data-api-delete="{{ settings_page.api_urls.delete_account }}"
+     data-api-connected="{{ settings_page.api_urls.connected }}">
+
+    <nav class="icd-set-nav" aria-label="Settings sections">
+        <a href="#account" class="icd-set-nav__link is-active"><i class="bi bi-person"></i> Account</a>
+        <a href="#institution" class="icd-set-nav__link"><i class="bi bi-building"></i> Institution</a>
+        <a href="#password" class="icd-set-nav__link"><i class="bi bi-shield-lock"></i> Password</a>
+        <a href="#notifications" class="icd-set-nav__link"><i class="bi bi-bell"></i> Notifications</a>
+        <a href="#privacy" class="icd-set-nav__link"><i class="bi bi-eye"></i> Contact</a>
+        <a href="#connected" class="icd-set-nav__link"><i class="bi bi-link-45deg"></i> Connected</a>
+        <a href="#sessions" class="icd-set-nav__link"><i class="bi bi-laptop"></i> Sessions</a>
+        <a href="#activity" class="icd-set-nav__link"><i class="bi bi-shield-check"></i> Activity</a>
+    </nav>
+
+    <div class="icd-set-main">
+        <section class="icd-card icd-set-section" id="account" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-person-badge"></i> Account Information</h2>
+            <div class="icd-set-info-grid">
+                <div><span>Full Name</span><strong id="icdSetFullName">{{ settings_page.account.full_name }}</strong></div>
+                <div><span>Email</span><strong>{{ settings_page.account.email }}</strong></div>
+                <div><span>Mobile</span><strong id="icdSetPhoneDisplay">{{ settings_page.account.phone|default:"—" }}</strong></div>
+                <div><span>Username</span><strong>{{ settings_page.account.username }}</strong></div>
+                <div><span>Registered</span><strong>{{ settings_page.account.registered_label }}</strong></div>
+                <div><span>Last Login</span><strong>{{ settings_page.account.last_login_label }}</strong></div>
+                <div><span>Account Status</span><strong>{{ settings_page.account.account_status_label }}</strong></div>
+                <div><span>Email Verified</span><strong>{% if settings_page.account.email_verified %}<span class="icd-set-badge icd-set-badge--ok">Verified</span>{% else %}<span class="icd-set-badge icd-set-badge--warn">Pending</span>{% endif %}</strong></div>
+                <div><span>Mobile Verified</span><strong>{% if settings_page.account.phone_verified %}<span class="icd-set-badge icd-set-badge--ok">Verified</span>{% else %}<span class="icd-set-badge icd-set-badge--warn">Not verified</span>{% endif %}</strong></div>
+            </div>
+            {% if settings_page.security.recommendations %}
+            <ul class="icd-set-recs">
+                {% for rec in settings_page.security.recommendations %}
+                <li><i class="bi bi-info-circle"></i> {{ rec }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <hr style="border-color: rgba(199, 196, 216, 0.25); margin: 1.5rem 0;">
+            <form id="icdSetAccountForm" class="icd-set-form row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="icdSetFirstName">First Name</label>
+                    <input type="text" class="form-control" id="icdSetFirstName" value="{{ settings_page.account.first_name }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="icdSetLastName">Last Name</label>
+                    <input type="text" class="form-control" id="icdSetLastName" value="{{ settings_page.account.last_name }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="icdSetPhone">Mobile Number</label>
+                    <input type="tel" class="form-control" id="icdSetPhone" value="{{ settings_page.account.phone }}">
+                </div>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="icd-set-btn icd-set-btn--primary">
+                        <span class="icd-set-btn__label">Save Account Info</span>
+                        <div class="icd-set-btn__spinner d-none"></div>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="icd-card icd-set-section" id="institution" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-building"></i> Institution Profile</h2>
+            <p class="icd-set-hint">Update details like description, contact emails, website, and location.</p>
+            <form id="icdSetInstitutionForm" class="icd-set-form row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstEmail">Contact Email</label>
+                    <input type="email" class="form-control" id="icdSetInstEmail" value="{{ institution_branding.contact_email|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstPhone">Contact Phone</label>
+                    <input type="tel" class="form-control" id="icdSetInstPhone" value="{{ institution_branding.contact_phone|default:'' }}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label" for="icdSetInstWeb">Website URL</label>
+                    <input type="url" class="form-control" id="icdSetInstWeb" value="{{ institution_branding.website_url|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstCity">City</label>
+                    <input type="text" class="form-control" id="icdSetInstCity" value="{{ institution_branding.city|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstState">State/Province</label>
+                    <input type="text" class="form-control" id="icdSetInstState" value="{{ institution_branding.state|default:'' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="icdSetInstDesc">Description</label>
+                    <textarea class="form-control" id="icdSetInstDesc" rows="3">{{ institution_branding.description|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstVision">Vision</label>
+                    <textarea class="form-control" id="icdSetInstVision" rows="2">{{ institution_branding.vision|default:'' }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="icdSetInstMission">Mission</label>
+                    <textarea class="form-control" id="icdSetInstMission" rows="2">{{ institution_branding.mission|default:'' }}</textarea>
+                </div>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="icd-set-btn icd-set-btn--primary">
+                        <span class="icd-set-btn__label">Save Institution Details</span>
+                        <div class="icd-set-btn__spinner d-none"></div>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="icd-card icd-set-section" id="password" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-shield-lock"></i> Change Password</h2>
+            <p class="icd-set-hint">Last changed: <span data-password-changed-label>{{ settings_page.security.password_changed_label }}</span></p>
+            <form id="icdSetPasswordForm" class="icd-set-form" novalidate style="max-width: 480px;">
+                <div class="icd-set-form-error" id="icdSetPasswordError" hidden role="alert"></div>
+                <div class="icd-set-pass-field">
+                    <label class="form-label" for="icdSetCurrentPass">Current Password</label>
+                    <div class="icd-set-pass-wrap">
+                        <input type="password" class="form-control" id="icdSetCurrentPass" autocomplete="current-password" required>
+                        <button type="button" class="icd-set-pass-toggle" data-target="icdSetCurrentPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <div class="icd-set-pass-field">
+                    <label class="form-label" for="icdSetNewPass">New Password</label>
+                    <div class="icd-set-pass-wrap">
+                        <input type="password" class="form-control" id="icdSetNewPass" autocomplete="new-password" required minlength="8">
+                        <button type="button" class="icd-set-pass-toggle" data-target="icdSetNewPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                    </div>
+                    <div class="icd-set-strength"><div class="icd-set-strength__bar" id="icdSetStrengthBar"></div></div>
+                    <p class="icd-set-strength__label" id="icdSetStrengthLabel">Password strength</p>
+                </div>
+                <div class="icd-set-pass-field mb-4">
+                    <label class="form-label" for="icdSetConfirmPass">Confirm New Password</label>
+                    <div class="icd-set-pass-wrap">
+                        <input type="password" class="form-control" id="icdSetConfirmPass" autocomplete="new-password" required minlength="8">
+                        <button type="button" class="icd-set-pass-toggle" data-target="icdSetConfirmPass" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="icd-set-btn icd-set-btn--primary" id="icdSetPasswordBtn">
+                    <span class="icd-set-btn__label">Update Password</span>
+                    <div class="icd-set-btn__spinner d-none"></div>
+                </button>
+            </form>
+        </section>
+
+        <section class="icd-card icd-set-section" id="notifications" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-bell"></i> Notification Preferences</h2>
+            <div class="icd-set-toggles">
+                {% for item in notification_toggles %}
+                <label class="icd-set-toggle" data-toggle-row="{{ item.key }}">
+                    <span class="icd-set-toggle__label">{{ item.label }}</span>
+                    <span class="icd-set-toggle__controls">
+                        <span class="icd-set-toggle__status" aria-live="polite"></span>
+                        <input type="checkbox" class="icd-set-toggle__input" id="notify-{{ item.key }}" data-notify-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                        <span class="icd-set-toggle__switch" aria-hidden="true"></span>
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="icd-card icd-set-section" id="privacy" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-eye"></i> Contact Preferences</h2>
+            <p class="icd-set-hint">Control how faculty applicants can reach you through the platform.</p>
+            <div class="icd-set-toggles">
+                {% for item in privacy_toggles %}
+                <label class="icd-set-toggle" data-toggle-row="{{ item.key }}">
+                    <span class="icd-set-toggle__label">{{ item.label }}</span>
+                    <span class="icd-set-toggle__controls">
+                        <span class="icd-set-toggle__status" aria-live="polite"></span>
+                        <input type="checkbox" class="icd-set-toggle__input" id="privacy-{{ item.key }}" data-privacy-key="{{ item.key }}"{% if item.enabled %} checked{% endif %}>
+                        <span class="icd-set-toggle__switch" aria-hidden="true"></span>
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="icd-card icd-set-section" id="connected" style="padding: var(--icd-space-lg);">
+            <h2><i class="bi bi-link-45deg"></i> Connected Accounts</h2>
+            <p class="icd-set-hint">Link Google or LinkedIn for faster sign-in. The social account email must match your {{ PLATFORM_NAME }} email.</p>
+            <div class="icd-set-connected" id="icdSetConnectedList">
+                {% for account in settings_page.connected_accounts %}
+                <article class="icd-set-connected__item" data-provider="{{ account.provider }}">
+                    <div>
+                        <strong>
+                            {% if account.provider == "google" %}<i class="bi bi-google"></i>{% else %}<i class="bi bi-linkedin"></i>{% endif %}
+                            {{ account.label }}
+                        </strong>
+                        {% if account.connected %}
+                        <p class="mb-0 text-muted small">{{ account.provider_email|default:settings_page.account.email }}</p>
+                        <p class="mb-0 text-muted small">Connected {{ account.connected_label }}</p>
+                        {% elif not account.configured %}
+                        <p class="mb-0 text-muted small">Not available — OAuth is not configured.</p>
+                        {% else %}
+                        <p class="mb-0 text-muted small">Not connected</p>
+                        {% endif %}
+                    </div>
+                    {% if account.connected %}
+                    <button type="button" class="icd-set-btn icd-set-btn--danger-outline icd-set-btn--sm icd-set-disconnect" data-provider="{{ account.provider }}">Disconnect</button>
+                    {% elif account.configured %}
+                    <a href="{{ account.connect_url }}" class="icd-set-btn icd-set-btn--outline icd-set-btn--sm">Connect</a>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="icd-card icd-set-section" id="sessions" style="padding: var(--icd-space-lg);">
+            <div class="icd-set-section-head">
+                <h2><i class="bi bi-laptop"></i> Active Login Sessions</h2>
+                <button type="button" class="icd-set-btn icd-set-btn--outline icd-set-btn--sm" id="icdSetRevokeOthers">Sign Out Other Devices</button>
+            </div>
+            <p class="icd-set-hint">Each sign-in creates a unique session. Sign out devices you no longer use.</p>
+            <div class="icd-set-sessions" id="icdSetSessionsList">
+                {% for session in settings_page.sessions %}
+                <article class="icd-set-session{% if session.is_current %} is-current{% endif %}">
+                    <div>
+                        <strong>{{ session.device_label }}</strong>
+                        {% if session.is_current %}<span class="icd-set-badge icd-set-badge--ok">Current session</span>{% endif %}
+                        <p class="mb-0 text-muted small">{{ session.browser }} · {{ session.os_name }} · {{ session.ip_address }}</p>
+                        <p class="mb-0 text-muted small">Logged in {{ session.login_label }} · Last active {{ session.last_active_label }}</p>
+                    </div>
+                    {% if not session.is_current %}
+                    <button type="button" class="icd-set-btn icd-set-btn--danger-outline icd-set-btn--sm icd-set-revoke-session" data-session-id="{{ session.id }}">Sign Out</button>
+                    {% endif %}
+                </article>
+                {% empty %}
+                <p class="text-muted mb-0">No active sessions recorded yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="icd-card icd-set-section" id="activity" style="padding: var(--icd-space-lg);">
+            <div class="icd-set-section-head">
+                <h2><i class="bi bi-shield-check"></i> Security Activity</h2>
+                <button type="button" class="icd-set-btn icd-set-btn--outline icd-set-btn--sm" id="icdSetRefreshActivity">Refresh</button>
+            </div>
+            <p class="icd-set-hint">Recent sign-ins, password changes, and session actions.</p>
+            <div class="icd-set-audit" id="icdSetActivityList">
+                {% for event in settings_page.audit_log %}
+                <article class="icd-set-audit__item">
+                    <div>
+                        <strong>{{ event.title }}</strong>
+                        {% if event.description %}<p class="mb-0 text-muted small">{{ event.description }}</p>{% endif %}
+                        <p class="mb-0 text-muted small">{{ event.occurred_label }}{% if event.ip_address %} · {{ event.ip_address }}{% endif %}</p>
+                    </div>
+                </article>
+                {% empty %}
+                <p class="text-muted mb-0">No security activity recorded yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="icd-card icd-set-section icd-set-danger" id="delete" style="padding: var(--icd-space-lg);">
+            <h2 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Account</h2>
+            <p class="icd-set-hint">Permanently deactivate your institution recruiter account. This action cannot be undone.</p>
+            <button type="button" class="icd-set-btn icd-set-btn--danger" id="icdSetDeleteOpen">Delete My Account</button>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade" id="icdSetDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: var(--icd-radius-xl); border: none; box-shadow: var(--icd-shadow-lg);">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This will permanently deactivate your institution recruiter account and sign you out of all devices.</p>
+                <div class="icd-set-form">
+                    <label class="form-label" for="icdSetDeletePass">Confirm your password</label>
+                    <input type="password" class="form-control" id="icdSetDeletePass">
+                </div>
+                <p class="icd-set-error mt-2" id="icdSetDeleteError" hidden></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="icd-set-btn icd-set-btn--outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="icd-set-btn icd-set-btn--danger" id="icdSetDeleteConfirm">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="icd-card icd-empty"><p>Sign in to manage your account settings.</p></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  window.FJD_SETTINGS = {
+    csrfToken: "{{ csrf_token|escapejs }}",
+    loginUrl: "/faculty/login/institution/"
+  };
+</script>
+<script src="{% static 'js/college-settings.js' %}"></script>
+{% endblock %}

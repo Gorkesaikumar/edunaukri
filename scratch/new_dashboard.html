@@ -1,0 +1,450 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex bg-gray-100 p-1 rounded-lg">
+    <a href="{{ nav_urls.dashboard|default:'#' }}" class="px-4 py-1 text-[11px] font-bold rounded-md bg-white shadow-sm text-primary">Overview</a>
+    <a href="{{ nav_urls.analytics|default:'#' }}" class="px-4 py-1 text-[11px] font-bold rounded-md text-on-surface-variant hover:text-on-surface transition-colors">Analytics</a>
+    <a href="{{ nav_urls.audit_logs|default:'#' }}" class="px-4 py-1 text-[11px] font-bold rounded-md text-on-surface-variant hover:text-on-surface transition-colors">Audits</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Real-time Dashboard KPIs -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <!-- Revenue Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Total Revenue</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">₹{{ kpis.financials.total_revenue|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <span class="material-symbols-outlined">payments</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">This Month: <span class="font-bold text-on-surface">₹{{ kpis.financials.revenue_this_month|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Today: <span class="font-bold text-on-surface">₹{{ kpis.financials.revenue_today|default:"0" }}</span></span>
+        </div>
+    </div>
+
+    <!-- Users Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Recruiters</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.users.active_it_recruiters|add:kpis.users.active_faculty_recruiters|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">groups</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">IT: <span class="font-bold text-on-surface">{{ kpis.users.active_it_recruiters|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Faculty: <span class="font-bold text-on-surface">{{ kpis.users.active_faculty_recruiters|default:"0" }}</span></span>
+        </div>
+    </div>
+
+    <!-- Postings Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Active Postings</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.postings.published_jobs.current|add:kpis.postings.published_vacancies.current|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                <span class="material-symbols-outlined">work</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1 {% if kpis.postings.published_jobs.is_positive %}text-emerald-600{% elif kpis.postings.published_jobs.is_negative %}text-error{% else %}text-on-surface-variant{% endif %} font-bold">
+                <span class="material-symbols-outlined text-[14px]">{% if kpis.postings.published_jobs.is_positive %}trending_up{% elif kpis.postings.published_jobs.is_negative %}trending_down{% else %}trending_flat{% endif %}</span>
+                <span>{{ kpis.postings.published_jobs.growth_pct }}% jobs</span>
+            </div>
+            <div class="flex items-center gap-1 {% if kpis.postings.published_vacancies.is_positive %}text-emerald-600{% elif kpis.postings.published_vacancies.is_negative %}text-error{% else %}text-on-surface-variant{% endif %} font-bold">
+                <span class="material-symbols-outlined text-[14px]">{% if kpis.postings.published_vacancies.is_positive %}trending_up{% elif kpis.postings.published_vacancies.is_negative %}trending_down{% else %}trending_flat{% endif %}</span>
+                <span>{{ kpis.postings.published_vacancies.growth_pct }}% vacs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Card -->
+    <div class="bg-white rounded-xl p-5 border border-outline-variant/30 shadow-xs relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Hires</p>
+                <h3 class="text-3xl font-extrabold text-on-surface mt-1">{{ kpis.pipeline.successful_hires|default:"0" }}</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <span class="material-symbols-outlined">how_to_reg</span>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-[11px]">
+            <span class="text-on-surface-variant">Apps: <span class="font-bold text-on-surface">{{ kpis.pipeline.applications_today|default:"0" }} today</span></span>
+            <span class="text-on-surface-variant">Intvs: <span class="font-bold text-on-surface">{{ kpis.pipeline.interviews_scheduled|default:"0" }}</span></span>
+            <span class="text-on-surface-variant">Offers: <span class="font-bold text-on-surface">{{ kpis.pipeline.offers_released|default:"0" }}</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+    <!-- Chart 1: Revenue Analytics -->
+    <div class="col-span-1 lg:col-span-2 bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-sm font-extrabold text-on-surface">Revenue Analytics</h3>
+                <p class="text-xs text-on-surface-variant">Platform revenue growth over time</p>
+            </div>
+            <select class="text-xs border-outline-variant/30 rounded-md py-1 bg-gray-50 text-on-surface font-medium focus:ring-primary focus:border-primary">
+                <option value="12M">Last 12 Months</option>
+                <option value="6M">Last 6 Months</option>
+                <option value="30D">Last 30 Days</option>
+            </select>
+        </div>
+        <div class="relative h-64 w-full">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart 2: Real-Time Active Users -->
+    <div class="col-span-1 bg-white p-5 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col">
+        <div class="mb-4">
+            <h3 class="text-sm font-extrabold text-on-surface flex items-center gap-2">
+                Active Users Trend
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+            </h3>
+            <p class="text-xs text-on-surface-variant">Daily active unique users</p>
+        </div>
+        <div class="relative flex-1 w-full min-h-[200px]">
+            <canvas id="activeUsersChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Section: Activity & Action Center -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+    
+    <!-- Action Center (Replaces Moderation Queue) -->
+    <div class="col-span-1 bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-outline-variant/20 bg-gray-50 flex justify-between items-center">
+            <div>
+                <h3 class="text-sm font-extrabold text-on-surface">Action Center</h3>
+                <p class="text-[10px] text-on-surface-variant">Pending tasks requiring attention</p>
+            </div>
+            <span class="bg-error/10 text-error text-[10px] font-bold px-2 py-1 rounded-md">{{ action_center.pending_colleges|length|add:action_center.pending_companies|length|add:action_center.open_claims|length }} items</span>
+        </div>
+        <div class="p-4 flex-1 space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar">
+            
+            {% if action_center.pending_companies %}
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Pending Companies</h4>
+                {% for company in action_center.pending_companies %}
+                <div class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/20 bg-background hover:bg-gray-50 transition-colors">
+                    <div>
+                        <p class="text-xs font-bold text-on-surface">{{ company.name }}</p>
+                        <p class="text-[10px] text-on-surface-variant">{{ company.created_at|slice:":10" }}</p>
+                    </div>
+                    <a href="{{ nav_urls.organizations|default:'#' }}?type=company" class="text-primary hover:text-primary/80 font-bold text-xs">Review</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if action_center.pending_colleges %}
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-4">Pending Colleges</h4>
+                {% for college in action_center.pending_colleges %}
+                <div class="flex items-center justify-between p-3 rounded-lg border border-outline-variant/20 bg-background hover:bg-gray-50 transition-colors">
+                    <div>
+                        <p class="text-xs font-bold text-on-surface">{{ college.name }}</p>
+                        <p class="text-[10px] text-on-surface-variant">{{ college.created_at|slice:":10" }}</p>
+                    </div>
+                    <a href="{{ nav_urls.organizations|default:'#' }}?type=college" class="text-primary hover:text-primary/80 font-bold text-xs">Review</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if action_center.open_claims %}
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-4">Open Claims</h4>
+                {% for claim in action_center.open_claims %}
+                <div class="flex items-center justify-between p-3 rounded-lg border border-error/20 bg-error/5 hover:bg-error/10 transition-colors">
+                    <div>
+                        <p class="text-xs font-bold text-error">₹{{ claim.amount }}</p>
+                        <p class="text-[10px] text-error/80">{{ claim.reason|truncatechars:25 }}</p>
+                    </div>
+                    <a href="{{ nav_urls.billing|default:'#' }}" class="text-error font-bold text-xs">Resolve</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not action_center.pending_companies and not action_center.pending_colleges and not action_center.open_claims %}
+            <div class="text-center py-8">
+                <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 mx-auto flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                </div>
+                <p class="text-xs font-bold text-on-surface">All caught up!</p>
+                <p class="text-[10px] text-on-surface-variant mt-1">No pending actions required.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Real-Time Activity Feed -->
+    <div class="col-span-1 lg:col-span-2 bg-white rounded-xl border border-outline-variant/30 shadow-xs flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-outline-variant/20 flex justify-between items-center bg-gray-50">
+            <div>
+                <h3 class="text-sm font-extrabold text-on-surface">Real-Time Global Audit Feed</h3>
+                <p class="text-[10px] text-on-surface-variant">Live platform activity and events</p>
+            </div>
+            <a href="{{ nav_urls.audit_logs|default:'#' }}" class="text-[10px] font-bold text-primary px-3 py-1.5 bg-primary/10 rounded-md hover:bg-primary/20 transition-colors">View All</a>
+        </div>
+        <div class="flex-1 overflow-x-auto custom-scrollbar max-h-[400px]">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-white text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/20 z-10 shadow-sm">
+                    <tr>
+                        <th class="p-3 pl-4">Actor</th>
+                        <th class="p-3">Event</th>
+                        <th class="p-3">Domain</th>
+                        <th class="p-3 pr-4 text-right">Time</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs divide-y divide-outline-variant/10">
+                    {% for item in recent_activities %}
+                    <tr class="hover:bg-gray-50/50 transition-colors group">
+                        <td class="p-3 pl-4">
+                            <div class="font-bold text-on-surface">{{ item.actor_type|default:"System"|title }}</div>
+                            <div class="text-[10px] text-on-surface-variant font-mono">{{ item.actor_id|slice:":8"|default:"sys" }}</div>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-bold text-on-surface">{{ item.event_type }}</span>
+                            <span class="text-[10px] text-on-surface-variant block">{{ item.entity_type|title }}</span>
+                        </td>
+                        <td class="p-3">
+                            {% if item.domain == 'faculty' %}
+                            <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">Faculty</span>
+                            {% elif item.domain == 'it' %}
+                            <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary border border-primary/20">IT</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-gray-100 text-gray-600 border border-gray-200">{{ item.domain|default:"Global" }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-3 pr-4 text-right text-[11px] text-on-surface-variant">
+                            {{ item.occurred_at|slice:":16"|default:"Just now" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-8 text-center text-on-surface-variant text-xs">No recent activity.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Executive Insights -->
+<div class="mt-5 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 shadow-lg text-white">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-widest text-slate-200 flex items-center gap-2">
+                <span class="material-symbols-outlined !text-[18px] text-amber-400">workspace_premium</span> 
+                Executive Insights
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Platform performance highlights</p>
+        </div>
+        <div class="text-right">
+            <span class="text-[10px] font-bold bg-slate-800/50 text-slate-300 px-2 py-1 rounded-md border border-slate-700">Auto-Generated</span>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Top Recruiters -->
+        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Top Recruiters</p>
+            <div class="space-y-3">
+                {% for recruiter in analytics.top_recruiters|slice:":3" %}
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-200 truncate pr-2">{{ recruiter.name }}</span>
+                    <span class="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-1.5 rounded">{{ recruiter.companies }} co.</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-500">Not enough data.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Top Companies -->
+        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Top Companies</p>
+            <div class="space-y-3">
+                {% for company in analytics.top_companies|slice:":3" %}
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-200 truncate pr-2">{{ company.name }}</span>
+                    <span class="text-xs font-bold text-primary bg-primary/20 px-1.5 rounded">{{ company.jobs }} jobs</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-500">Not enough data.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Colleges -->
+        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">Top Institutions</p>
+            <div class="space-y-3">
+                {% for college in analytics.top_colleges|slice:":3" %}
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-200 truncate pr-2">{{ college.name }}</span>
+                    <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-1.5 rounded">{{ college.vacancies }} vacs</span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-500">Not enough data.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- System Core -->
+        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 hover:bg-slate-800 transition-colors">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">System Core</p>
+            <div class="space-y-2 mt-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-300">Database</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize {% if system_health.checks.database == 'ok' %}bg-emerald-500/20 text-emerald-400{% else %}bg-error/20 text-error{% endif %}">{{ system_health.checks.database|default:"ok" }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-300">Redis Cache</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize {% if system_health.checks.redis == 'ok' %}bg-emerald-500/20 text-emerald-400{% else %}bg-error/20 text-error{% endif %}">{{ system_health.checks.redis|default:"ok" }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-300">Celery Workers</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize {% if system_health.checks.celery == 'ok' %}bg-emerald-500/20 text-emerald-400{% else %}bg-error/20 text-error{% endif %}">{{ system_health.checks.celery|default:"ok" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add Chart.js for beautiful analytics charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Prepare Data for Charts from Django context
+        const revenueData = {{ analytics.revenue_trends|safe|default:"[]" }};
+        const activeUsersData = {{ analytics.active_users_trend|safe|default:"[]" }};
+        
+        // 1. Revenue Chart
+        const revCtx = document.getElementById('revenueChart');
+        if (revCtx && revenueData.length > 0) {
+            new Chart(revCtx, {
+                type: 'line',
+                data: {
+                    labels: revenueData.map(d => d.month),
+                    datasets: [{
+                        label: 'Total Collected (₹)',
+                        data: revenueData.map(d => parseFloat(d.total_collected)),
+                        borderColor: '#4F46E5', // primary
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#4F46E5',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        },
+                        y: {
+                            border: { dash: [4, 4] },
+                            grid: { color: '#f3f4f6', tickLength: 0 },
+                            ticks: { 
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    if (value >= 1000) return '₹' + (value / 1000) + 'k';
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                }
+            });
+        }
+
+        // 2. Active Users Chart
+        const usersCtx = document.getElementById('activeUsersChart');
+        if (usersCtx && activeUsersData.length > 0) {
+            new Chart(usersCtx, {
+                type: 'bar',
+                data: {
+                    labels: activeUsersData.map(d => {
+                        const date = new Date(d.date);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
+                    datasets: [{
+                        label: 'Active Users',
+                        data: activeUsersData.map(d => d.active_users),
+                        backgroundColor: '#10b981', // emerald-500
+                        borderRadius: 4,
+                        barThickness: 'flex',
+                        maxBarThickness: 16
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 9 }, maxTicksLimit: 7 }
+                        },
+                        y: {
+                            border: { display: false },
+                            grid: { color: '#f3f4f6' },
+                            ticks: { font: { size: 9 }, precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

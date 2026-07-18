@@ -1,0 +1,32 @@
+{% load static %}
+{# Mobile Navigation Sidebar (Bootstrap offcanvas) — shown on < lg viewports, toggled from the navbar burger #}
+<div class="offcanvas offcanvas-end ed-offcanvas" tabindex="-1" id="edMobileNav" aria-labelledby="edMobileNavLabel">
+    <div class="offcanvas-header">
+        <a class="ed-brand d-flex align-items-center gap-2" href="{% url 'home' %}" id="edMobileNavLabel">
+            <img class="ed-brand__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
+                 onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLtuLCVpL1N1oSPKLcPHJRmyivmb4A1iI35dPnvur1lnoyD2XaihcDYTQ6HiiWw5Zas7PI5OXBoUp97qg3il_RkUaLKLx7XYr2pmsQTQOfS0X7yXtgYD4Ss4l5u6H2OojavLVKMQLPJYC29fBSBswXy7EElwgL8UqiIi8I5FtdobJbCwsatU62Q57DWJwiyNQp8HFd-c8YxrcxnO8MzCbfEZch8AhcAcQqkofRxIkxkGovmD8EO5bg87CQg';">
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column">
+        <nav class="ed-nav-links flex-column align-items-stretch gap-0" aria-label="Mobile navigation">
+            <a class="ed-nav-link{% if nav.active == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if nav.active == 'home' %} aria-current="page"{% endif %}>Home</a>
+            <a class="ed-nav-link{% if nav.active == 'jobs' %} active{% endif %}" href="{% url 'marketplace_browse_jobs' %}"{% if nav.active == 'jobs' %} aria-current="page"{% endif %}>Jobs</a>
+            <a class="ed-nav-link{% if nav.active == 'institutions' %} active{% endif %}" href="{% url 'institutions_browse' %}"{% if nav.active == 'institutions' %} aria-current="page"{% endif %}>Institutions</a>
+            <a class="ed-nav-link" href="#">About</a>
+            <a class="ed-nav-link" href="#">Contact</a>
+        </nav>
+
+        {% if nav.is_authenticated %}
+        <div class="ed-mobile-user mt-4">
+            <p class="ed-mobile-user__label">Account</p>
+            {% include "partials/nav_user_menu.html" with mobile=True %}
+        </div>
+        {% else %}
+        <div class="d-grid gap-3 mt-4">
+            <a href="{% url 'domain_selection' %}" class="ed-btn ed-btn-link text-start">Sign In</a>
+            <a href="{% url 'signup_domain_selection' %}" class="ed-btn ed-btn--primary">Get Started</a>
+        </div>
+        {% endif %}
+    </div>
+</div>

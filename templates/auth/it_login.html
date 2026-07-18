@@ -1,0 +1,107 @@
+{% extends "auth/base.html" %}
+{% load static %}
+
+{% block title %}Login | {{ PLATFORM_NAME }} — IT Recruitment{% endblock %}
+{% block meta_description %}Sign in to your IT Recruitment account on {{ PLATFORM_NAME }}.{% endblock %}
+
+{% block content %}
+<div class="ed-auth-wrap">
+    <div class="ed-auth-card">
+        <header class="ed-auth-card__header text-center">
+            <img class="ed-auth-card__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
+                 onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY';">
+            <h1 class="ed-auth-card__title">Welcome Back</h1>
+            <p class="ed-auth-card__subtitle">Sign in to your IT Recruitment account</p>
+        </header>
+
+        <div class="ed-auth-segmented" role="group" aria-label="Select account type">
+            <a href="{% url 'it_login_job_seeker' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}"
+               class="ed-auth-segmented__btn{% if active_role == 'seeker' %} is-active{% endif %}"
+               {% if active_role == 'seeker' %}aria-current="page"{% endif %}>Job Seeker</a>
+            <a href="{% url 'it_login_recruiter' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}"
+               class="ed-auth-segmented__btn{% if active_role == 'recruiter' %} is-active{% endif %}"
+               {% if active_role == 'recruiter' %}aria-current="page"{% endif %}>Recruiter</a>
+        </div>
+
+        <form class="ed-auth-form" id="login-panel" method="post" novalidate
+              data-login-action="{% if active_role == 'recruiter' %}{{ login_endpoints.recruiter }}{% else %}{{ login_endpoints.seeker }}{% endif %}"
+              data-oauth-google="{{ oauth_endpoints.google }}"
+              data-oauth-linkedin="{{ oauth_endpoints.linkedin }}">
+            {% csrf_token %}
+            <input type="hidden" name="role" id="authRoleInput" value="{{ active_role }}">
+            {% if next_url %}<input type="hidden" name="next" id="authNextInput" value="{{ next_url }}">{% endif %}
+
+            <div class="ed-auth-form-error d-none" id="formError" role="alert" aria-live="polite"></div>
+
+            <div class="mb-2">
+                <label class="ed-auth-label" for="email">Email Address</label>
+                <input class="form-control ed-auth-input" type="email" id="email" name="email"
+                       placeholder="name@company.com" autocomplete="email"
+                       aria-describedby="emailError" inputmode="email">
+                <div class="ed-auth-field-error" id="emailError" role="alert"></div>
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="ed-auth-label mb-0" for="password">Password</label>
+                    <a class="ed-auth-link" href="{% url 'web_forgot_password' %}?domain=it&amp;role={{ active_role }}">Forgot Password?</a>
+                </div>
+                <div class="ed-auth-password">
+                    <input class="form-control ed-auth-input" type="password" id="password" name="password"
+                           placeholder="••••••••" autocomplete="current-password"
+                           aria-describedby="passwordError">
+                    <button type="button" class="ed-auth-password__toggle" aria-label="Show password"
+                            data-auth-toggle-password>
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="ed-auth-field-error" id="passwordError" role="alert"></div>
+            </div>
+
+            <div class="form-check ed-auth-remember mb-3">
+                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                <label class="form-check-label ed-auth-check-label" for="remember">Remember Me</label>
+            </div>
+
+            <button type="submit" class="btn ed-auth-btn ed-auth-btn--primary w-100" id="signInBtn">
+                <span class="ed-auth-btn__label">Sign In</span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+
+            <div class="ed-auth-divider" role="separator" aria-label="Or continue with">OR</div>
+
+            <button type="button" class="ed-auth-btn ed-auth-btn--social w-100" id="googleBtn"
+                    data-oauth-provider="google">
+                <span class="ed-auth-btn__label d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-google ed-auth-btn__icon" aria-hidden="true"></i>
+                    Continue with Google
+                </span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+            <button type="button" class="ed-auth-btn ed-auth-btn--social w-100" id="linkedinBtn"
+                    data-oauth-provider="linkedin">
+                <span class="ed-auth-btn__label d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-linkedin ed-auth-btn__icon ed-auth-btn__icon--linkedin" aria-hidden="true"></i>
+                    Continue with LinkedIn
+                </span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+        </form>
+    </div>
+
+    <p class="ed-auth-footer">
+        Don&rsquo;t have an account?
+        <a href="{% if active_role == 'recruiter' %}{{ signup_urls.recruiter }}{% else %}{{ signup_urls.seeker }}{% endif %}">Create Account</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/auth/it-login.js' %}?v=2"></script>
+{% endblock %}

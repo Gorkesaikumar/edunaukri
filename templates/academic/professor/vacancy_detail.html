@@ -1,0 +1,108 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}{{ page_title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if vacancy_page %}
+<header class="fjd-page-head">
+    <a href="{{ vacancy_page.browse_url }}" class="fjd-link-sm d-inline-flex align-items-center gap-1 mb-2">
+        <i class="bi bi-arrow-left"></i> Back to Job Search
+    </a>
+    <div class="fjd-vacancy-head">
+        <div class="fjd-vacancy-head__logo">
+            {% if vacancy_page.logo_url %}
+            <img src="{{ vacancy_page.logo_url }}" alt="">
+            {% else %}
+            <i class="bi bi-building"></i>
+            {% endif %}
+        </div>
+        <div>
+            <h1 class="fjd-page-head__title">{{ vacancy_page.title }}</h1>
+            <p class="fjd-page-head__desc">
+                {% if vacancy_page.institution_url %}
+                <a href="{{ vacancy_page.institution_url }}" class="fjd-link-sm">{{ vacancy_page.institution_name }}</a>
+                {% else %}
+                {{ vacancy_page.institution_name }}
+                {% endif %}
+                • {{ vacancy_page.location }}
+            </p>
+            <p class="fjd-vacancy-head__meta">Posted {{ vacancy_page.posted_display }}{% if vacancy_page.deadline_display %} · Apply by {{ vacancy_page.deadline_display }}{% endif %}</p>
+        </div>
+    </div>
+</header>
+
+<div class="fjd-vacancy-layout">
+    <section class="fjd-card fjd-vacancy-main">
+        <div class="fjd-job-card__tags mb-3">
+            {% for tag in vacancy_page.tags %}
+            <span class="fjd-tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        
+        {% if vacancy_page.has_applied %}
+        <div class="fjd-alert fjd-alert--info mb-4">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <p><strong>Already Applied</strong></p>
+                <p>You have already submitted an application for this vacancy. Current status: <strong>{{ vacancy_page.application_status }}</strong>.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if vacancy_page.meta %}
+        <dl class="fjd-profile-dl fjd-vacancy-meta">
+            {% for row in vacancy_page.meta %}
+            <div class="fjd-profile-dl__row">
+                <dt>{{ row.label }}</dt>
+                <dd>{{ row.value }}</dd>
+            </div>
+            {% endfor %}
+        </dl>
+        {% endif %}
+
+        {% for section in vacancy_page.sections %}
+        <div class="fjd-detail-block">
+            <h2 class="fjd-widget__title">{{ section.title }}</h2>
+            <div class="fjd-vacancy-content">{{ section.content|linebreaksbr }}</div>
+        </div>
+        {% empty %}
+        <p class="fjd-empty-text">No additional details provided for this vacancy.</p>
+        {% endfor %}
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            {% if vacancy_page.has_applied %}
+            <a href="{{ vacancy_page.application_detail_url }}" class="fjd-btn fjd-btn--primary fjd-apply-action-btn">
+                <i class="bi bi-file-earmark-text"></i> View My Application
+            </a>
+            {% else %}
+                {% if vacancy_page.is_eligible %}
+                <button type="button" class="fjd-btn fjd-btn--primary fjd-apply-action-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#fjdApplyModal"
+                        data-job-id="{{ vacancy_page.id }}"
+                        data-job-title="{{ vacancy_page.title }}"
+                        data-job-institution="{{ vacancy_page.institution_name }}"
+                        data-apply-url="{{ vacancy_page.apply_url }}">
+                    Apply Now
+                </button>
+                {% else %}
+                <a href="{% portal_url 'professor_profile' %}" class="fjd-btn fjd-btn--primary" title="{{ vacancy_page.eligibility_message|escape }}">Complete Profile to Apply</a>
+                {% endif %}
+            {% endif %}
+            <button type="button"
+                    class="fjd-btn fjd-btn--outline fjd-save-btn{% if vacancy_page.is_saved %} is-saved{% endif %}"
+                    data-save-vacancy-toggle
+                    data-vacancy-id="{{ vacancy_page.id }}"
+                    aria-pressed="{{ vacancy_page.is_saved|yesno:'true,false' }}">
+                <i class="bi {% if vacancy_page.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                {% if vacancy_page.is_saved %}Saved{% else %}Save Job{% endif %}
+            </button>
+            <a href="{{ vacancy_page.browse_url }}" class="fjd-btn fjd-btn--outline">Browse More Jobs</a>
+        </div>
+    </section>
+</div>
+{% else %}
+<div class="fjd-card fjd-empty"><p>Vacancy not found.</p></div>
+{% endif %}
+{% endblock %}

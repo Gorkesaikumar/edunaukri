@@ -1,0 +1,71 @@
+{% load static %}
+<!-- Compact Sidebar Navigation -->
+<aside id="superAdminSidebar" class="fixed left-0 top-14 h-[calc(100vh-56px)] w-56 bg-white border-r border-outline-variant/30 flex flex-col py-4 z-40 -translate-x-full lg:translate-x-0 transition-transform duration-200 shadow-lg lg:shadow-none">
+    <nav class="flex-1 overflow-y-auto sidebar-scroll px-3 space-y-4">
+        <!-- Management -->
+        <div>
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">Management</p>
+            <div class="space-y-0.5">
+                <a href="{{ nav_urls.dashboard|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'dashboard' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">dashboard</span> Dashboard
+                </a>
+                <a href="{{ nav_urls.users|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'users' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">group</span> User Registry
+                </a>
+                <a href="{{ nav_urls.jobs|default:'#' }}?type=it" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'jobs' and current_type != 'faculty' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">developer_board</span> IT Postings
+                </a>
+                <a href="{{ nav_urls.jobs|default:'#' }}?type=faculty" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'jobs' and current_type == 'faculty' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">school</span> Faculty Vacancies
+                </a>
+                <a href="{{ nav_urls.applications|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'applications' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">assignment</span> Applications
+                </a>
+            </div>
+        </div>
+
+        <!-- Financials & Organizations -->
+        <div>
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">Financials & Orgs</p>
+            <div class="space-y-0.5">
+                <a href="{{ nav_urls.billing|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'billing' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">receipt_long</span> Billing & Invoices
+                </a>
+                <a href="{{ nav_urls.invoice_config|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'invoice_config' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">request_quote</span> Global Invoice Template
+                </a>
+                <a href="{{ nav_urls.claims|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'billing_claims' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">verified_user</span> Guarantee Claims
+                </a>
+                <a href="{{ nav_urls.organizations|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'organizations' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">domain</span> Organizations
+                </a>
+                <a href="{{ nav_urls.analytics|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'analytics' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">insights</span> Enterprise Analytics
+                </a>
+                <a href="{{ nav_urls.reports|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'reports' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">summarize</span> Data Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- System Control -->
+        <div>
+            <p class="px-3 text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-2">System Control</p>
+            <div class="space-y-0.5">
+                <a href="{{ nav_urls.settings|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'settings' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">settings</span> Platform Settings
+                </a>
+                <a href="{{ nav_urls.notifications|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'notifications' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">notifications</span> Notifications
+                </a>
+                <a href="{{ nav_urls.support|default:'#' }}" class="flex items-center gap-3 px-3 py-1.5 rounded-lg {% if sidebar_active == 'support' %}text-primary bg-primary/5 font-bold{% else %}text-on-surface-variant hover:bg-gray-50 font-medium{% endif %} transition-colors">
+                    <span class="material-symbols-outlined !text-base">support_agent</span> Support Desk
+                </a>
+            </div>
+        </div>
+    </nav>
+</aside>
+
+<!-- Mobile Sidebar Backdrop -->
+<div id="sidebarBackdrop" class="fixed inset-0 bg-on-surface/40 backdrop-blur-xs z-30 hidden lg:hidden"></div>

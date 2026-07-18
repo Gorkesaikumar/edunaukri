@@ -1,0 +1,40 @@
+{% extends "academic/college/base_dashboard.html" %}
+
+{% load portal_urls %}
+
+
+
+{% block title %}{{ stub_page.title }} | {{ PLATFORM_NAME }}{% endblock %}
+
+
+
+{% block dashboard_content %}
+
+<header class="icd-page-head">
+
+    <h1 class="icd-page-head__title">{{ stub_page.title }}</h1>
+
+    {% if stub_page.description %}
+
+    <p class="icd-page-head__desc">{{ stub_page.description }}</p>
+
+    {% endif %}
+
+</header>
+
+
+
+<div class="icd-card icd-empty">
+
+    <i class="bi {{ stub_page.icon }}" aria-hidden="true"></i>
+
+    <h2>Coming Soon</h2>
+
+    <p>{{ stub_page.message }}</p>
+
+    <a href="{{ stub_page.cta_url }}" class="icd-btn icd-btn--primary mt-2">{{ stub_page.cta_label }}</a>
+
+</div>
+
+{% endblock %}
+

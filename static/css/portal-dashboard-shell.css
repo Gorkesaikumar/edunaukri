@@ -1,0 +1,101 @@
+/**
+ * Shared portal page shell utilities (IT jsd-* classes reused on Faculty pages).
+ * Requires --jsd-* tokens (jobseeker-dashboard.css or professor-dashboard.css aliases).
+ */
+
+.jsd-page-head {
+  margin-bottom: var(--jsd-space-lg);
+}
+
+.jsd-page-head__title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.jsd-page-head__desc {
+  color: var(--jsd-on-surface-variant);
+  margin: 0;
+}
+
+.jsd-page-head__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.jsd-card {
+  background: var(--jsd-surface-container-lowest, #fff);
+  border-radius: var(--jsd-radius-xl, 1.5rem);
+  box-shadow: var(--jsd-shadow-premium, 0 4px 20px -2px rgba(15, 23, 42, 0.05));
+  border: 1px solid rgba(199, 196, 216, 0.15);
+}
+
+.jsd-card__body {
+  padding: var(--jsd-space-md, 1.5rem);
+}
+
+.jsd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--jsd-radius-full, 9999px);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--jsd-transition, 0.2s ease), color var(--jsd-transition, 0.2s ease);
+}
+
+.jsd-btn--primary {
+  background: var(--jsd-primary);
+  color: #fff;
+}
+
+.jsd-btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.jsd-btn--outline {
+  background: transparent;
+  border-color: rgba(199, 196, 216, 0.45);
+  color: var(--jsd-on-surface);
+}
+
+.jsd-btn--outline:hover {
+  background: var(--jsd-surface-container-low);
+}
+
+.jsd-btn--soft {
+  background: var(--jsd-surface-container-low);
+  color: var(--jsd-primary);
+}
+
+.jsd-btn--danger-outline {
+  background: transparent;
+  border-color: rgba(186, 26, 26, 0.35);
+  color: var(--jsd-error);
+}
+
+.jsd-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--jsd-primary);
+  text-decoration: none;
+}
+
+.jsd-link:hover {
+  text-decoration: underline;
+}
+
+.jsd-empty {
+  text-align: center;
+  color: var(--jsd-on-surface-variant);
+}

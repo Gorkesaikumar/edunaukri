@@ -1,0 +1,22 @@
+{# Reusable Live Hiring Activity card. Expects an `a` dict (see ActivityFeedSelector). #}
+<article class="ed-activity ed-activity--{{ a.domain }}" tabindex="0">
+    <div class="ed-activity__logo">
+        {% if a.logo_url %}
+            <img src="{{ a.logo_url }}" alt="{{ a.org_name }} logo" loading="lazy">
+        {% else %}
+            <span class="ed-logo-monogram" aria-hidden="true">{{ a.initial }}</span>
+        {% endif %}
+        <span class="ed-activity__icon" aria-hidden="true"><i class="bi {{ a.icon }}"></i></span>
+    </div>
+    <div class="ed-activity__body">
+        <p class="ed-activity__text mb-0">
+            <span class="ed-activity__org">{{ a.org_name }}</span> {{ a.headline }}
+        </p>
+        <div class="ed-activity__meta">
+            <span class="ed-domain-badge ed-domain-badge--{{ a.domain }}">
+                <span class="ed-activity__dot"></span>{{ a.domain_label }}
+            </span>
+            <span class="ed-activity__time"><i class="bi bi-clock" aria-hidden="true"></i> {{ a.time_display }}</span>
+        </div>
+    </div>
+</article>

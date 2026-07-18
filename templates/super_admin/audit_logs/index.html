@@ -1,0 +1,78 @@
+{% extends "super_admin/base.html" %}
+{% load static %}
+
+{% block page_actions %}
+<div class="flex items-center gap-2">
+    <a href="?export=csv&domain={{ current_domain }}&event_type={{ current_event_type }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition-all">
+        <span class="material-symbols-outlined !text-sm">download</span> Export Audit CSV
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Controls -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+    <form method="get" class="flex flex-wrap items-center gap-3 w-full md:w-auto flex-1">
+        <select name="domain" onchange="this.form.submit()" class="text-xs rounded-lg border border-outline-variant/40 py-2 px-3 bg-gray-50/50 text-on-surface font-medium">
+            <option value="" {% if not current_domain %}selected{% endif %}>All Domains</option>
+            <option value="it" {% if current_domain == 'it' %}selected{% endif %}>IT Recruitment</option>
+            <option value="faculty" {% if current_domain == 'faculty' %}selected{% endif %}>Faculty Domain</option>
+            <option value="admin" {% if current_domain == 'admin' %}selected{% endif %}>Super Admin</option>
+        </select>
+        
+        <div class="relative w-full max-w-xs">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant/50 !text-lg">search</span>
+            <input type="text" name="event_type" value="{{ current_event_type }}" placeholder="Filter event action..." class="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary bg-gray-50/50">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Filter Trail</button>
+    </form>
+    
+    <div class="text-xs text-on-surface-variant font-medium">
+        <span>Showing <strong class="text-on-surface">{{ audit_events|length }}</strong> immutable events</span>
+    </div>
+</div>
+
+<!-- Audit Trail Table -->
+<div class="bg-white rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
+    <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider border-b border-outline-variant/20">
+                <tr>
+                    <th class="p-3.5">Occurred Timestamp</th>
+                    <th class="p-3.5">Actor & Identity</th>
+                    <th class="p-3.5">Domain</th>
+                    <th class="p-3.5">Event Action & Entity</th>
+                    <th class="p-3.5">Target UUID</th>
+                    <th class="p-3.5 text-right">Verification</th>
+                </tr>
+            </thead>
+            <tbody class="text-xs divide-y divide-outline-variant/10 font-mono">
+                {% for evt in audit_events %}
+                <tr class="hover:bg-gray-50/80 transition-colors">
+                    <td class="p-3.5 text-on-surface-variant text-[11px]">{{ evt.occurred_at|slice:":19"|default:"N/A" }}</td>
+                    <td class="p-3.5 font-sans">
+                        <span class="font-bold text-on-surface block">{{ evt.actor_type|default:"System Daemon" }}</span>
+                        <span class="text-[10px] text-on-surface-variant/60 font-mono">ID: {{ evt.actor_id|slice:":8"|default:"00000000" }}...</span>
+                    </td>
+                    <td class="p-3.5 font-sans">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase {% if evt.domain == 'faculty' %}bg-amber-50 text-amber-800{% elif evt.domain == 'admin' %}bg-slate-100 text-slate-800{% else %}bg-indigo-50 text-indigo-800{% endif %}">{{ evt.domain|default:"it" }}</span>
+                    </td>
+                    <td class="p-3.5 font-sans">
+                        <span class="font-extrabold text-on-surface text-sm block">{{ evt.event_type }}</span>
+                        <span class="text-[11px] text-on-surface-variant/70">{{ evt.entity_type }}</span>
+                    </td>
+                    <td class="p-3.5 text-[11px] text-on-surface-variant/80">{{ evt.entity_id|slice:":8"|default:"N/A" }}...</td>
+                    <td class="p-3.5 text-right font-sans">
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Immutable</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-12 text-center text-on-surface-variant/50 text-xs font-sans">No audit events recorded matching filter criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

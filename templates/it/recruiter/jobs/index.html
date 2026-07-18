@@ -1,0 +1,244 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Manage Jobs | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if not jobs_page %}
+<div class="rcd-bento rcd-empty"><p>Your jobs could not be loaded.</p></div>
+{% else %}
+<header class="rcd-section-head mb-4" id="create">
+    <div>
+        <h1 class="rcd-section-head__title">Manage Jobs</h1>
+        <p class="mb-0 text-muted">Central job management — track applications, analytics, and hiring progress in real time.</p>
+    </div>
+    {% if jobs_page.has_company %}
+    <a href="{% url 'recruiter_job_create' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--primary">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        New Job
+    </a>
+    {% endif %}
+</header>
+
+<section class="rcd-stats rcd-stats--jobs mb-4" aria-label="Job summary">
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Total</p><p class="rcd-stat__value" data-stat="total">{{ jobs_page.stats.total }}</p></article>
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Published</p><p class="rcd-stat__value" data-stat="published">{{ jobs_page.stats.published }}</p></article>
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Drafts</p><p class="rcd-stat__value" data-stat="draft">{{ jobs_page.stats.draft }}</p></article>
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Paused</p><p class="rcd-stat__value" data-stat="paused">{{ jobs_page.stats.paused }}</p></article>
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Closed</p><p class="rcd-stat__value" data-stat="closed">{{ jobs_page.stats.closed }}</p></article>
+    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Archived</p><p class="rcd-stat__value" data-stat="archived">{{ jobs_page.stats.archived }}</p></article>
+</section>
+
+<form class="rcd-filters mb-3" method="get" action="{% url 'recruiter_jobs' user_uuid=portal_user_uuid %}" id="recJobsFilterForm">
+    <label class="rcd-filters__search">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input type="search" name="q" value="{{ jobs_page.filters.q }}" placeholder="Search jobs by title, department, or location" id="recJobsSearch">
+    </label>
+    <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Search</button>
+</form>
+
+<div class="d-flex flex-wrap gap-2 mb-4" role="tablist" aria-label="Job status filters">
+    {% for opt in jobs_page.status_options %}
+    <a href="?{% if jobs_page.filters.q %}q={{ jobs_page.filters.q|urlencode }}&{% endif %}{% if opt.key %}status={{ opt.key }}{% endif %}"
+       class="rcd-btn rcd-btn--soft rcd-btn--sm rec-jobs-status-tab{% if jobs_page.filters.status == opt.key %} active{% endif %}"
+       data-status="{{ opt.key }}">{{ opt.label }}</a>
+    {% endfor %}
+</div>
+
+{% if not jobs_page.has_company %}
+<div class="alert alert-info">Set up your <a href="{% url 'recruiter_profile' user_uuid=portal_user_uuid %}">company profile</a> before posting jobs.</div>
+{% elif not jobs_page.can_publish %}
+<div class="alert alert-warning">Complete your <a href="{% url 'recruiter_profile' user_uuid=portal_user_uuid %}">company profile</a> to publish jobs.</div>
+{% endif %}
+
+<div id="recJobsPage"
+     data-api-list="{{ jobs_page.api_urls.list }}"
+     data-api-create="{{ jobs_page.api_urls.create_job }}"
+     data-publish-template="{{ jobs_page.api_urls.publish_template }}"
+     data-close-template="{{ jobs_page.api_urls.close_template }}"
+     data-pause-template="{{ jobs_page.api_urls.pause_template }}"
+     data-reopen-template="{{ jobs_page.api_urls.reopen_template }}"
+     data-duplicate-template="{{ jobs_page.api_urls.duplicate_template }}"
+     data-archive-template="{{ jobs_page.api_urls.archive_template }}"
+     data-delete-template="{{ jobs_page.api_urls.delete_template }}"
+     data-applicants-template="{{ jobs_page.api_urls.applicants_template }}"
+     data-status-template="{{ jobs_page.api_urls.status_template }}"
+     data-notes-template="{{ jobs_page.api_urls.notes_template }}"
+     data-resume-template="{{ jobs_page.api_urls.resume_template }}"
+     data-detail-template="{{ jobs_page.api_urls.detail_template }}"
+     data-interview-template="{{ jobs_page.api_urls.interview_schedule_template }}"
+     data-current-status="{{ jobs_page.filters.status }}"
+     data-current-q="{{ jobs_page.filters.q }}"
+     data-current-page="{{ jobs_page.pagination.page }}">
+
+    <div class="rcd-jobs-skeleton" id="recJobsSkeleton" hidden aria-hidden="true">
+        <div class="rcd-jobs-skeleton__row"></div>
+        <div class="rcd-jobs-skeleton__row"></div>
+        <div class="rcd-jobs-skeleton__row"></div>
+    </div>
+
+    <div class="rcd-bento overflow-hidden rcd-jobs-table-wrap" id="recJobsTableWrap">
+        <div class="rcd-table-wrap rcd-table-wrap--sticky">
+            <table class="rcd-table rcd-jobs-table">
+                <thead>
+                    <tr>
+                        <th>Job</th>
+                        <th class="rcd-jobs-table__hide-sm">Type / Mode</th>
+                        <th class="rcd-jobs-table__hide-md">Location</th>
+                        <th class="rcd-jobs-table__hide-lg">Salary</th>
+                        <th>Status</th>
+                        <th>Apps</th>
+                        <th class="rcd-jobs-table__hide-md">Pipeline</th>
+                        <th class="rcd-jobs-table__hide-lg">Views</th>
+                        <th class="rcd-jobs-table__hide-sm">Published</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recJobsTableBody">
+                    {% for job in jobs_page.jobs %}
+                    {% include "it/recruiter/jobs/partials/job_row.html" with job=job %}
+                    {% empty %}
+                    <tr><td colspan="10" class="text-center text-muted py-5">
+                        <span class="material-symbols-outlined d-block mb-2" style="font-size:2rem">work_off</span>
+                        No jobs in this view. Create your first draft to get started.
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if jobs_page.pagination.total_pages > 1 %}
+    <nav class="rcd-pagination mt-3" aria-label="Jobs pagination" id="recJobsPagination">
+        <span class="rcd-pagination__info">
+            Showing {{ jobs_page.pagination.start_index }}–{{ jobs_page.pagination.end_index }} of {{ jobs_page.pagination.total_count }}
+        </span>
+        <div class="rcd-pagination__controls">
+            {% if jobs_page.pagination.has_previous %}
+            <a href="?page={{ jobs_page.pagination.page|add:'-1' }}{% if jobs_page.filters.status %}&status={{ jobs_page.filters.status }}{% endif %}{% if jobs_page.filters.q %}&q={{ jobs_page.filters.q|urlencode }}{% endif %}" class="rcd-btn rcd-btn--soft rcd-btn--xs">Previous</a>
+            {% endif %}
+            <span class="rcd-pagination__page">Page {{ jobs_page.pagination.page }} of {{ jobs_page.pagination.total_pages }}</span>
+            {% if jobs_page.pagination.has_next %}
+            <a href="?page={{ jobs_page.pagination.page|add:'1' }}{% if jobs_page.filters.status %}&status={{ jobs_page.filters.status }}{% endif %}{% if jobs_page.filters.q %}&q={{ jobs_page.filters.q|urlencode }}{% endif %}" class="rcd-btn rcd-btn--soft rcd-btn--xs">Next</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+</div>
+
+{# Applicants panel #}
+<div class="offcanvas offcanvas-end rcd-applicants-panel" tabindex="-1" id="recApplicantsPanel" aria-labelledby="recApplicantsPanelLabel">
+    <div class="offcanvas-header border-bottom">
+        <div>
+            <h5 class="offcanvas-title" id="recApplicantsPanelLabel">Applicants</h5>
+            <p class="text-muted small mb-0" id="recApplicantsJobTitle"></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="rcd-applicants-panel__filters p-3 border-bottom">
+            <input type="search" class="form-control form-control-sm mb-2" id="recApplicantsSearch" placeholder="Search by name, email, skills…">
+            <select class="form-select form-select-sm" id="recApplicantsStatusFilter" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                {% for opt in candidates_status_options %}
+                <option value="{{ opt.value }}">{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="recApplicantsList" class="rcd-applicants-panel__list"></div>
+        <div id="recApplicantsEmpty" class="rcd-empty py-5" hidden>
+            <span class="material-symbols-outlined">person_off</span>
+            <p>No applicants match your filters.</p>
+        </div>
+        <div id="recApplicantsLoading" class="text-center py-4 text-muted" hidden>Loading applicants…</div>
+    </div>
+</div>
+
+{# Candidate profile drawer #}
+<div class="offcanvas offcanvas-end rcd-candidate-drawer" tabindex="-1" id="recCandidateDrawer" aria-labelledby="recCandidateDrawerLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="recCandidateDrawerLabel">Candidate Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" id="recCandidateDrawerBody"></div>
+</div>
+
+{# Interview schedule modal #}
+<div class="modal fade" id="recInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="recInterviewForm" class="row g-3">
+                    <div class="col-12"><label class="form-label">Candidate</label><p class="mb-0 fw-semibold" id="recInterviewCandidateName">—</p></div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="recInterviewDate">Date</label>
+                        <input type="date" class="form-control" id="recInterviewDate" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="recInterviewTime">Time</label>
+                        <input type="time" class="form-control" id="recInterviewTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="recInterviewMode">Type</label>
+                        <select class="form-select" id="recInterviewMode">
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="recInterviewType">Round</label>
+                        <input type="text" class="form-control" id="recInterviewType" placeholder="Technical Interview" value="Technical Interview">
+                    </div>
+                    <div class="col-12" id="recInterviewMeetWrap">
+                        <label class="form-label" for="recInterviewMeet">Meeting Link</label>
+                        <input type="url" class="form-control" id="recInterviewMeet" placeholder="https://meet.google.com/...">
+                    </div>
+                    <div class="col-12" id="recInterviewLocationWrap" hidden>
+                        <label class="form-label" for="recInterviewLocation">Location</label>
+                        <input type="text" class="form-control" id="recInterviewLocation" placeholder="Office address">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="recInterviewNotes">Notes</label>
+                        <textarea class="form-control" id="recInterviewNotes" rows="2"></textarea>
+                    </div>
+                </form>
+                <p class="text-danger small mt-2" id="recInterviewError" hidden></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="recInterviewSubmit">Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Resume preview modal #}
+<div class="modal fade" id="recResumeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Resume Preview</h5>
+                <div class="d-flex gap-2 ms-auto me-2">
+                    <a href="#" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeDownload" target="_blank" rel="noopener">Download</a>
+                    <a href="#" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeOpenTab" target="_blank" rel="noopener">Open in Tab</a>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumePrint">Print</button>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="recResumeFrame" class="rcd-resume-frame" title="Resume preview"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.REC_PORTAL = { csrfToken: "{{ csrf_token|escapejs }}" };</script>
+<script src="{% static 'js/recruiter-jobs.js' %}"></script>
+{% endblock %}

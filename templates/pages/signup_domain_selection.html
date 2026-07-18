@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Get Started | Choose Your Domain | {{ PLATFORM_NAME }}{% endblock %}
+{% block meta_description %}Choose your {{ PLATFORM_NAME }} domain to create an account — IT recruitment or Faculty recruitment registration.{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/domain-selection.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="ed-domain-page" aria-labelledby="signupDomainTitle">
+    <span class="ed-domain-page__blob ed-domain-page__blob--primary" aria-hidden="true"></span>
+    <span class="ed-domain-page__blob ed-domain-page__blob--secondary" aria-hidden="true"></span>
+
+    <div class="ed-container ed-domain-page__inner">
+        <header class="ed-domain-page__head ed-reveal">
+            <span class="ed-eyebrow ed-mb-md d-inline-block">Get Started</span>
+            <h1 id="signupDomainTitle" class="ed-display-lg ed-text-on-surface ed-mb-md">Choose Your Domain</h1>
+            <p class="ed-body-lg ed-text-variant mx-auto ed-domain-page__subtitle">Select the platform where you want to create your account.</p>
+        </header>
+
+        <div class="ed-domain-grid ed-reveal" role="list">
+            {% for domain in domains %}
+            <article class="ed-domain-card ed-domain-card--{{ domain.tone }}"
+                     role="listitem"
+                     data-domain-key="{{ domain.key }}"
+                     tabindex="0"
+                     aria-labelledby="signup-domain-title-{{ domain.key }}">
+                <div class="ed-domain-card__icon-wrap" aria-hidden="true">
+                    <span class="ed-domain-card__icon">
+                        <i class="bi {{ domain.icon }}" aria-hidden="true"></i>
+                    </span>
+                </div>
+                <div class="ed-domain-card__body">
+                    <h2 class="ed-domain-card__title" id="signup-domain-title-{{ domain.key }}">{{ domain.title }}</h2>
+                    <p class="ed-domain-card__desc">{{ domain.description }}</p>
+                    <ul class="ed-domain-card__features">
+                        {% for feature in domain.features %}
+                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="ed-domain-card__foot">
+                    <a href="{{ domain.url }}"
+                       class="ed-btn ed-btn--primary ed-domain-card__cta"
+                       data-domain-nav="{{ domain.key }}">
+                        <span class="ed-domain-card__cta-label">{{ domain.button_label }}</span>
+                        <span class="ed-domain-card__cta-spinner d-none" aria-hidden="true">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                        </span>
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <p class="ed-domain-page__help ed-reveal">
+            Already have an account?
+            <a href="{% url 'domain_selection' %}">Sign in</a>
+            ·
+            <a href="{% url 'home' %}">Return to homepage</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/domain-selection.js' %}"></script>
+{% endblock %}

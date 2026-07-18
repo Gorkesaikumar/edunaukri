@@ -1,0 +1,769 @@
+/* ==========================================================================
+   EduNaukri IT Recruiter Settings — Premium Enterprise Design System v2
+   ========================================================================== */
+
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+
+.rcd-set-layout {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+  padding: 0.25rem 0 2rem;
+}
+
+/* ── Sticky Sidebar Nav ────────────────────────────────────────────────────── */
+
+.rcd-set-nav {
+  position: sticky;
+  top: calc(var(--rcd-header-h, 4rem) + 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 1.125rem;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), 0 1px 4px rgba(15, 23, 42, 0.04);
+}
+
+.rcd-set-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.01em;
+}
+
+.rcd-set-nav__link i {
+  font-size: 1.0625rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.rcd-set-nav__link:hover {
+  background: rgba(99, 102, 241, 0.06);
+  color: #4f46e5;
+  transform: translateX(2px);
+}
+
+.rcd-set-nav__link.is-active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
+  color: #4f46e5;
+  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.18);
+}
+
+.rcd-set-nav__link.is-active i {
+  transform: scale(1.1);
+}
+
+/* ── Main Content Column ───────────────────────────────────────────────────── */
+
+.rcd-set-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Section Cards ─────────────────────────────────────────────────────────── */
+
+.rcd-set-section {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 16px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease;
+}
+
+.rcd-set-section:hover {
+  box-shadow: 0 6px 30px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.rcd-bento__body,
+.rcd-set-section .rcd-bento__body {
+  padding: 2rem 2.25rem;
+}
+
+/* ── Section Header ────────────────────────────────────────────────────────── */
+
+.rcd-set-section h2 {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.rcd-set-section h2 i {
+  font-size: 1.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
+  color: #4f46e5;
+  border-radius: 0.625rem;
+  flex-shrink: 0;
+}
+
+.rcd-set-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.rcd-set-section-head h2 {
+  margin-bottom: 0;
+}
+
+.rcd-set-hint {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0.5rem 0 1.5rem;
+  line-height: 1.6;
+}
+
+/* Divider between info grid and form */
+.rcd-set-section hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* ── Account Info Grid ─────────────────────────────────────────────────────── */
+
+.rcd-set-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 1.25rem 1.5rem;
+  margin-top: 1.25rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8faff 0%, #f3f4ff 100%);
+  border-radius: 0.875rem;
+  border: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+.rcd-set-info-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rcd-set-info-grid span {
+  display: block;
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+}
+
+.rcd-set-info-grid strong {
+  font-size: 0.9375rem;
+  color: #1e293b;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ── Verification Badges ───────────────────────────────────────────────────── */
+
+.rcd-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Form Styles ───────────────────────────────────────────────────────────── */
+
+.rcd-set-form {
+  max-width: 40rem;
+}
+
+.rcd-set-form .form-label {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: #374151;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+
+.rcd-set-form .form-control {
+  border-radius: 0.625rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  background: #fafafa;
+  font-size: 0.875rem;
+  color: #0f172a;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.rcd-set-form .form-control::placeholder {
+  color: #cbd5e1;
+}
+
+.rcd-set-form .form-control:hover {
+  border-color: #c7d2fe;
+  background: #fff;
+}
+
+.rcd-set-form .form-control:focus {
+  border-color: #6366f1;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+  outline: none;
+}
+
+.rcd-set-form textarea.form-control {
+  resize: vertical;
+  min-height: 5rem;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+
+.rcd-btn-primary,
+.rcd-btn.rcd-btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.rcd-btn-primary:hover,
+.rcd-btn.rcd-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+  filter: brightness(1.05);
+}
+
+.rcd-btn-primary:active,
+.rcd-btn.rcd-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+}
+
+.rcd-btn-outline,
+.rcd-btn.rcd-btn-outline {
+  background: transparent;
+  color: #4f46e5;
+  border: 1.5px solid rgba(99, 102, 241, 0.35);
+  padding: 0.55rem 1.25rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rcd-btn-outline:hover,
+.rcd-btn.rcd-btn-outline:hover {
+  background: rgba(99, 102, 241, 0.06);
+  border-color: #6366f1;
+}
+
+.rcd-btn-outline-danger,
+.rcd-btn.rcd-btn-outline-danger {
+  background: transparent;
+  color: #dc2626;
+  border: 1.5px solid rgba(220, 38, 38, 0.3);
+  padding: 0.5rem 1.125rem;
+  border-radius: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rcd-btn-outline-danger:hover,
+.rcd-btn.rcd-btn-outline-danger:hover {
+  background: rgba(220, 38, 38, 0.06);
+  border-color: #dc2626;
+}
+
+/* ── Password Fields ───────────────────────────────────────────────────────── */
+
+.rcd-set-pass-field {
+  margin-bottom: 1.25rem;
+}
+
+.rcd-set-pass-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rcd-set-pass-wrap .form-control {
+  padding-right: 3rem;
+}
+
+.rcd-set-pass-toggle {
+  position: absolute;
+  right: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.rcd-set-pass-toggle:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+/* ── Password Strength ─────────────────────────────────────────────────────── */
+
+.rcd-set-strength {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  margin-top: 0.625rem;
+  overflow: hidden;
+}
+
+.rcd-set-strength__bar {
+  height: 100%;
+  width: 0;
+  background: #dc2626;
+  border-radius: 999px;
+  transition: width 0.35s ease, background 0.35s ease;
+}
+
+.rcd-set-strength__label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0.4rem 0 0.6rem;
+  font-weight: 600;
+}
+
+.rcd-set-pass-rules {
+  list-style: none;
+  padding: 0.875rem 1rem;
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  background: #f8faff;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(99, 102, 241, 0.08);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 1rem;
+}
+
+.rcd-set-pass-rules li {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.rcd-set-pass-rules li::before {
+  content: "\F28A";
+  font-family: "bootstrap-icons";
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.rcd-set-pass-rules li.is-valid {
+  color: #059669;
+}
+
+.rcd-set-pass-rules li.is-valid::before {
+  content: "\F26A";
+  color: #059669;
+}
+
+/* ── Form Errors ───────────────────────────────────────────────────────────── */
+
+.rcd-set-form-error {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rcd-set-field-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.rcd-set-pass-wrap .form-control.is-invalid {
+  border-color: #dc2626;
+  background-image: none;
+}
+
+/* ── Notification Toggles ──────────────────────────────────────────────────── */
+
+.rcd-set-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.rcd-set-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  border-radius: 0.875rem;
+  border: 1.5px solid #e2e8f0;
+  background: #fafafa;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #1e293b;
+}
+
+.rcd-set-toggle:hover {
+  border-color: #c7d2fe;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
+}
+
+.rcd-set-toggle.is-saving {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.rcd-set-toggle__label {
+  flex: 1;
+  min-width: 0;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.rcd-set-toggle__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.rcd-set-toggle__status {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  min-width: 3rem;
+  text-align: right;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rcd-set-toggle.is-saving .rcd-set-toggle__status::after { content: "Saving…"; color: #4f46e5; }
+.rcd-set-toggle.is-saved .rcd-set-toggle__status::after  { content: "Saved";   color: #059669; }
+.rcd-set-toggle.is-error .rcd-set-toggle__status::after  { content: "Failed";  color: #dc2626; }
+
+.rcd-set-toggle__input {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+.rcd-set-toggle__switch {
+  flex: 0 0 2.75rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  position: relative;
+  transition: background 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.rcd-set-toggle__switch::after {
+  content: "";
+  position: absolute;
+  top: 0.175rem; left: 0.175rem;
+  width: 1.15rem; height: 1.15rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+}
+
+.rcd-set-toggle__input:checked + .rcd-set-toggle__switch {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
+.rcd-set-toggle__input:checked + .rcd-set-toggle__switch::after {
+  transform: translateX(1.25rem);
+}
+
+/* ── Sessions / Connected / Audit Items ────────────────────────────────────── */
+
+.rcd-set-sessions,
+.rcd-set-connected,
+.rcd-set-audit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rcd-set-session,
+.rcd-set-connected__item,
+.rcd-set-audit__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.125rem 1.375rem;
+  border-radius: 0.875rem;
+  border: 1.5px solid #e2e8f0;
+  background: #fafafa;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rcd-set-session:hover,
+.rcd-set-connected__item:hover,
+.rcd-set-audit__item:hover {
+  background: #fff;
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
+}
+
+.rcd-set-session.is-current {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(139, 92, 246, 0.03));
+}
+
+.rcd-set-session strong,
+.rcd-set-connected__item strong,
+.rcd-set-audit__item strong {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.rcd-set-session p,
+.rcd-set-connected__item p,
+.rcd-set-audit__item p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin-bottom: 0.15rem;
+  line-height: 1.5;
+}
+
+/* Connected account icons */
+.rcd-set-connected__item .bi-google { color: #ea4335; }
+.rcd-set-connected__item .bi-linkedin { color: #0a66c2; }
+
+/* ── Danger Zone ───────────────────────────────────────────────────────────── */
+
+.rcd-set-danger {
+  background: #fff8f8;
+  border: 1.5px solid rgba(220, 38, 38, 0.2);
+}
+
+.rcd-set-danger:hover {
+  border-color: rgba(220, 38, 38, 0.35);
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.06);
+}
+
+.rcd-set-danger h2 {
+  color: #dc2626;
+}
+
+.rcd-set-danger h2 i {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.rcd-btn-danger,
+.rcd-btn.rcd-btn-danger {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.rcd-btn-danger:hover,
+.rcd-btn.rcd-btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35);
+}
+
+/* ── Loading / Spinner ─────────────────────────────────────────────────────── */
+
+.rcd-btn.is-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.rcd-set-btn__spinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+}
+
+/* ── Empty States ──────────────────────────────────────────────────────────── */
+
+.rcd-set-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.rcd-set-empty i {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+}
+
+/* ── Page-level Header ─────────────────────────────────────────────────────── */
+
+.rcd-set-page-header {
+  padding: 0.25rem 0 1.5rem;
+}
+
+.rcd-set-page-header h1 {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.375rem;
+}
+
+.rcd-set-page-header p {
+  font-size: 0.9375rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Bootstrap overrides for modal inside settings ─────────────────────────── */
+
+#rcdSetDeleteModal .modal-content {
+  border-radius: 1.25rem;
+  border: none;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+#rcdSetDeleteModal .modal-header {
+  padding: 1.5rem 1.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+#rcdSetDeleteModal .modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+#rcdSetDeleteModal .modal-body {
+  padding: 1.25rem 1.75rem;
+}
+
+#rcdSetDeleteModal .modal-footer {
+  padding: 1rem 1.75rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  gap: 0.75rem;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .rcd-set-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .rcd-set-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding: 0.75rem;
+  }
+
+  .rcd-set-nav__link {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    border: 1.5px solid transparent;
+  }
+
+  .rcd-set-nav__link.is-active {
+    border-color: rgba(99, 102, 241, 0.2);
+  }
+
+  .rcd-set-pass-rules {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .rcd-bento__body,
+  .rcd-set-section .rcd-bento__body {
+    padding: 1.25rem 1.25rem;
+  }
+
+  .rcd-set-info-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem;
+  }
+
+  .rcd-set-session,
+  .rcd-set-connected__item,
+  .rcd-set-audit__item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }

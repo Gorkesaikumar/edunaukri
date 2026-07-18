@@ -1,0 +1,67 @@
+{% extends "auth/base.html" %}
+{% load static %}
+
+{% block title %}Super Admin Login | {{ PLATFORM_NAME }}{% endblock %}
+{% block meta_description %}Secure access to the {{ PLATFORM_NAME }} Administration Portal.{% endblock %}
+
+{% block content %}
+<div class="ed-auth-wrap">
+    <div class="ed-auth-card">
+        <header class="ed-auth-card__header text-center">
+            <img class="ed-auth-card__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
+                 onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLvfsW1h3R7903D0Cf6h2Uwn9ry6dFyegrUNamV1mSaQ4gbYJIblxZnnAiq2M5ZFLTuIiHTvXDbzThtNd-wxQrbRnsCgxBCXaqx-ovvOZ-AWnX4idnJlrhhYO-HFwbDKHlsR5nqNliWqrd51HOnNsyu5dmenHcjZtiUof9JYI54LMKzuDZrWaXr7t77USe4jt5JAl26b5wW5wp9WiodICzN4n3lDjmJrXQkmSN9L9kd_f8yKUu_XZuxdwVY';">
+            <h1 class="ed-auth-card__title">Super Admin Login</h1>
+            <p class="ed-auth-card__subtitle">Secure access to the {{ PLATFORM_NAME }} Administration Portal</p>
+        </header>
+
+        <form class="ed-auth-form mt-4" id="login-panel" method="post" novalidate
+              data-login-action="{{ login_endpoint }}">
+            {% csrf_token %}
+            {% if next_url %}<input type="hidden" name="next" id="authNextInput" value="{{ next_url }}">{% endif %}
+
+            <div class="ed-auth-form-error d-none" id="formError" role="alert" aria-live="polite"></div>
+
+            <div class="mb-2">
+                <label class="ed-auth-label" for="email">Email Address</label>
+                <input class="form-control ed-auth-input" type="email" id="email" name="email"
+                       placeholder="admin@edunaukri.com" autocomplete="email"
+                       aria-describedby="emailError" inputmode="email">
+                <div class="ed-auth-field-error" id="emailError" role="alert"></div>
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="ed-auth-label mb-0" for="password">Password</label>
+                    <a class="ed-auth-link" href="{% url 'web_forgot_password' %}?domain=admin">Forgot Password?</a>
+                </div>
+                <div class="ed-auth-password">
+                    <input class="form-control ed-auth-input" type="password" id="password" name="password"
+                           placeholder="••••••••" autocomplete="current-password"
+                           aria-describedby="passwordError">
+                    <button type="button" class="ed-auth-password__toggle" aria-label="Show password"
+                            data-auth-toggle-password>
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="ed-auth-field-error" id="passwordError" role="alert"></div>
+            </div>
+
+            <div class="form-check ed-auth-remember mb-4">
+                <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                <label class="form-check-label ed-auth-check-label" for="remember">Remember Me</label>
+            </div>
+
+            <button type="submit" class="btn ed-auth-btn ed-auth-btn--primary w-100" id="signInBtn">
+                <span class="ed-auth-btn__label">Sign In</span>
+                <span class="ed-auth-btn__spinner d-none" aria-hidden="true">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/auth/super-admin-login.js' %}"></script>
+{% endblock %}

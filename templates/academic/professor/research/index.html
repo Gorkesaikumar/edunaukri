@@ -1,0 +1,78 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Research & Publications | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'css/professor-profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Research & Publications</h1>
+            <p class="fjd-page-head__desc">Showcase your academic research, qualifications, and publication record.</p>
+        </div>
+        {% if research_page %}
+        <a href="{{ research_page.profile_edit_url }}" class="fjd-btn fjd-btn--outline">Edit Research Profile</a>
+        {% endif %}
+    </div>
+</header>
+
+{% if research_page %}
+{% if research_page.has_research %}
+<div class="fjd-research-grid">
+    <section class="fjd-card fjd-research-stat">
+        <i class="bi bi-journal-richtext fjd-research-stat__icon"></i>
+        <p class="fjd-research-stat__value">{{ research_page.publications_count }}</p>
+        <p class="fjd-research-stat__label">Publications</p>
+    </section>
+
+    <section class="fjd-card fjd-research-block">
+        <h2 class="fjd-widget__title"><i class="bi bi-lightbulb"></i> Research Interests</h2>
+        {% if research_page.research_interests %}
+        <p class="fjd-research-text">{{ research_page.research_interests|linebreaksbr }}</p>
+        {% else %}
+        <p class="fjd-empty-text">Add research interests on your profile to help institutions find you.</p>
+        {% endif %}
+    </section>
+
+    <section class="fjd-card fjd-research-block">
+        <h2 class="fjd-widget__title"><i class="bi bi-mortarboard"></i> Specialization</h2>
+        {% if research_page.specialization %}
+        <p class="fjd-research-text">{{ research_page.specialization }}</p>
+        {% else %}
+        <p class="fjd-empty-text">Add your area of specialization on your profile.</p>
+        {% endif %}
+    </section>
+
+    <section class="fjd-card fjd-research-block fjd-research-block--wide">
+        <h2 class="fjd-widget__title"><i class="bi bi-award"></i> Qualifications</h2>
+        {% if research_page.qualifications %}
+        <ul class="fjd-research-quals">
+            {% for q in research_page.qualifications %}
+            <li class="fjd-research-qual">
+                <strong>{{ q.name }}</strong>
+                <span>{{ q.institution_name }}{% if q.year_obtained %} · {{ q.year_obtained }}{% endif %}</span>
+                {% if q.has_certificate %}<span class="fjd-badge fjd-badge--success">Certificate uploaded</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="fjd-empty-text">No qualifications added yet. Update your profile to add education details.</p>
+        {% endif %}
+    </section>
+</div>
+{% else %}
+<div class="fjd-card fjd-empty">
+    <p>You have not added research details yet.</p>
+    <a href="{{ research_page.profile_edit_url }}" class="fjd-btn fjd-btn--primary mt-2">Add Research Information</a>
+</div>
+{% endif %}
+{% else %}
+<div class="fjd-card fjd-empty">
+    <p>Your professor profile is not set up yet.</p>
+</div>
+{% endif %}
+{% endblock %}

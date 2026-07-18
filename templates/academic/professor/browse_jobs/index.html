@@ -1,0 +1,100 @@
+{% extends "academic/professor/base_dashboard.html" %}
+{% load portal_urls %}
+
+{% block title %}Job Search | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+<header class="fjd-page-head">
+    <div class="fjd-page-head__row">
+        <div>
+            <h1 class="fjd-page-head__title">Job Search</h1>
+            <p class="fjd-page-head__desc">Browse published faculty vacancies across institutions.</p>
+        </div>
+        {% if browse_page %}
+        <span class="fjd-count-badge">{{ browse_page.total_count }} openings</span>
+        {% endif %}
+    </div>
+</header>
+
+{% if browse_page %}
+<form class="fjd-filters" method="get" action="{% portal_url 'professor_browse_jobs' %}">
+    <label class="fjd-filters__search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input type="search" name="q" value="{{ browse_page.filters.q }}" placeholder="Search role, institution, or keyword">
+    </label>
+    <input type="text" name="department" class="fjd-filters__select" placeholder="Department" value="{{ browse_page.filters.department }}" aria-label="Department">
+    <input type="text" name="city" class="fjd-filters__select" placeholder="City" value="{{ browse_page.filters.city }}" aria-label="City">
+    <button type="submit" class="fjd-btn fjd-btn--primary">Search</button>
+</form>
+
+{% if browse_page.vacancies %}
+<div class="fjd-jobs-grid">
+    {% for job in browse_page.vacancies %}
+    <article class="fjd-card fjd-card--hover fjd-job-card">
+        <div class="fjd-job-card__top">
+            <div class="fjd-job-card__logo">
+                {% if job.logo_url %}<img src="{{ job.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+            </div>
+            <button type="button"
+                    class="fjd-job-card__save fjd-save-btn{% if job.is_saved %} is-saved{% endif %}"
+                    data-save-vacancy-toggle
+                    data-vacancy-id="{{ job.id }}"
+                    title="Save job"
+                    aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
+                <i class="bi {% if job.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+            </button>
+        </div>
+        <h2 class="fjd-job-card__title">{{ job.title }}</h2>
+        <p class="fjd-job-card__institution">
+            {% if job.institution_url %}
+            <a href="{{ job.institution_url }}" class="fjd-link-sm">{{ job.institution_name }}</a>
+            {% else %}
+            {{ job.institution_name }}
+            {% endif %}
+            • {{ job.location }}
+        </p>
+        <p class="fjd-job-card__posted">Posted {{ job.posted_display }}</p>
+        <div class="fjd-job-card__tags">
+            {% for tag in job.tags %}<span class="fjd-tag">{{ tag }}</span>{% endfor %}
+            {% if job.has_applied %}<span class="fjd-tag fjd-tag--muted">{{ job.application_status|default:"Applied" }}</span>{% endif %}
+        </div>
+        <div class="fjd-job-card__actions">
+            {% if job.has_applied %}
+            <a href="{{ job.application_detail_url }}" class="fjd-btn fjd-btn--primary fjd-apply-action-btn">View Application</a>
+            {% else %}
+            <button type="button" class="fjd-btn fjd-btn--primary fjd-apply-action-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#fjdApplyModal"
+                    data-job-id="{{ job.id }}"
+                    data-job-title="{{ job.title }}"
+                    data-job-institution="{{ job.institution_name }}"
+                    data-apply-url="{{ job.apply_url }}">
+                Apply Now
+            </button>
+            {% endif %}
+            <a href="{{ job.detail_url }}" class="fjd-btn fjd-btn--outline">Details</a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if browse_page.total_pages > 1 %}
+<nav class="fjd-pagination" aria-label="Job search pages">
+    {% if browse_page.page > 1 %}
+    <a class="fjd-btn fjd-btn--outline" href="?page={{ browse_page.page|add:'-1' }}&q={{ browse_page.filters.q }}&department={{ browse_page.filters.department }}&city={{ browse_page.filters.city }}">Previous</a>
+    {% endif %}
+    <span class="fjd-pagination__info">Page {{ browse_page.page }} of {{ browse_page.total_pages }}</span>
+    {% if browse_page.page < browse_page.total_pages %}
+    <a class="fjd-btn fjd-btn--outline" href="?page={{ browse_page.page|add:'1' }}&q={{ browse_page.filters.q }}&department={{ browse_page.filters.department }}&city={{ browse_page.filters.city }}">Next</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="fjd-card fjd-empty">
+    <i class="bi bi-search"></i>
+    <p>No faculty vacancies match your search.</p>
+    <a href="{% portal_url 'professor_browse_jobs' %}" class="fjd-btn fjd-btn--outline mt-2">Clear Filters</a>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

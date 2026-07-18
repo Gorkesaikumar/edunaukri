@@ -1,0 +1,37 @@
+<article class="rcd-bento rcd-candidate-card" data-application-id="{{ app.id }}">
+    <div class="rcd-candidate-card__head">
+        <div class="rcd-candidate-card__identity">
+            <div class="rcd-pipeline-card__avatar">{{ app.initials }}</div>
+            <div>
+                <h2 class="rcd-candidate-card__title">{{ app.applicant_name }}</h2>
+                <p class="rcd-candidate-card__subtitle">{{ app.job_title }} · {{ app.company_name }}</p>
+            </div>
+        </div>
+        <span class="rcd-status-pill">{{ app.status_label }}</span>
+    </div>
+    <dl class="rcd-candidate-card__meta">
+        <div><dt>Applied</dt><dd>{{ app.applied_label }}</dd></div>
+        <div><dt>Location</dt><dd>{{ app.location }}</dd></div>
+        <div><dt>Notice</dt><dd>{{ app.notice_period }}</dd></div>
+        <div><dt>Expected salary</dt><dd>{{ app.expected_salary }}</dd></div>
+    </dl>
+    <div class="rcd-candidate-card__actions">
+        {% if not app.is_terminal and app.next_statuses %}
+        <select class="rcd-filters__select rec-candidate-status" data-url="{{ app.status_url }}" aria-label="Update status for {{ app.applicant_name }}">
+            <option value="">Move to…</option>
+            {% for next in app.next_statuses %}
+            <option value="{{ next.value }}">{{ next.label }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+        {% if app.has_resume %}
+        <a href="{{ app.resume_url }}" class="rcd-btn rcd-btn--outline rcd-btn--sm" download>Resume</a>
+        {% endif %}
+        <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-candidate-notes-toggle">Notes</button>
+    </div>
+    <div class="rec-candidate-notes mt-3" hidden>
+        <label class="form-label small text-muted" for="notes-{{ app.id }}">Recruiter notes</label>
+        <textarea id="notes-{{ app.id }}" class="form-control rec-candidate-notes-input" rows="3" data-url="{{ app.notes_url }}">{{ app.recruiter_notes }}</textarea>
+        <button type="button" class="rcd-btn rcd-btn--primary rcd-btn--sm mt-2 rec-candidate-notes-save">Save notes</button>
+    </div>
+</article>

@@ -1,0 +1,227 @@
+{% load static portal_urls %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <title>{% block title %}{{ PLATFORM_NAME }} | Institution Dashboard{% endblock %}</title>
+
+
+
+    {% include "partials/site_icons.html" %}
+
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <link href="{% static 'css/portal-dashboard-header.css' %}" rel="stylesheet">
+
+    <link href="{% static 'css/portal-dashboard-shell.css' %}" rel="stylesheet">
+
+    <link href="{% static 'css/institution-dashboard.css' %}" rel="stylesheet">
+
+    <link href="{% static 'css/edu-notify.css' %}" rel="stylesheet">
+
+
+
+    {% block extra_head %}{% endblock %}
+
+</head>
+
+<body class="icd-body">
+
+<div class="icd-app">
+
+    {% include "academic/college/partials/header.html" %}
+
+
+
+    <div class="icd-body-wrap">
+
+        {% include "academic/college/partials/sidebar.html" %}
+
+
+
+        <main class="icd-main custom-scrollbar" id="icdMainContent" tabindex="-1">
+
+            {% if messages %}
+
+            <div class="mb-3">
+
+                {% for message in messages %}
+
+                <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">{{ message }}</div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+            {% block dashboard_content %}{% endblock %}
+
+        </main>
+
+    </div>
+
+</div>
+
+
+
+<div class="offcanvas offcanvas-start icd-offcanvas" tabindex="-1" id="icdMobileSidebar" aria-labelledby="icdMobileSidebarLabel">
+
+    <div class="offcanvas-header">
+
+        <h5 class="offcanvas-title" id="icdMobileSidebarLabel">Navigation</h5>
+
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
+    </div>
+
+    <div class="offcanvas-body">
+
+        {% include "academic/college/partials/sidebar_nav.html" %}
+
+    </div>
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script src="{% static 'js/edu-notify.js' %}"></script>
+
+<script src="{% static 'js/portal-dashboard-header.js' %}"></script>
+
+<script src="{% static 'js/institution-dashboard.js' %}"></script>
+
+{% block extra_scripts %}{% endblock %}
+
+<!-- New Application Notification Modal -->
+<div class="modal fade icd-notification-modal" id="newApplicationModal" tabindex="-1" aria-labelledby="newApplicationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem;">
+      <div class="modal-header border-0 pb-0 position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 mt-3 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="w-100 text-center mt-3">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 64px; height: 64px;">
+                <i class="bi bi-bell-fill fs-2"></i>
+            </div>
+            <h5 class="modal-title fw-bold" id="newApplicationModalLabel">🎉 New Faculty Applications</h5>
+        </div>
+      </div>
+      <div class="modal-body text-center pt-2">
+        <p class="text-muted mb-4">You have received <br><span class="fs-1 fw-bold text-dark" id="newAppCountBadge">1</span><br> new application(s) for your published vacancies.</p>
+        
+        <div class="bg-light rounded p-3 mb-4 text-start">
+            <p class="fw-bold mb-2 text-dark fs-sm">Recent Activity</p>
+            <ul class="list-unstyled mb-0 fs-sm" id="recentAppsList">
+                <!-- Injected via JS -->
+            </ul>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="{% portal_url 'college_applications' %}" class="btn btn-primary btn-lg rounded-pill fw-semibold">Review Applications</a>
+            <button type="button" class="btn btn-light rounded-pill fw-semibold text-muted" data-bs-dismiss="modal">Later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const pollUrl = "{% portal_url 'college_notifications_poll_api' %}";
+        const pollInterval = 30000; // 30 seconds
+        
+        function checkNewApplications() {
+            fetch(pollUrl, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
+                }
+            })
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error("Network response was not ok.");
+            })
+            .then(data => {
+                const unreadCount = data.unread_applications_count || 0;
+                const recentApps = data.recent_applications || [];
+                
+                // Update sidebar badge
+                const sidebarBadge = document.getElementById('sidebar-applications-badge');
+                if (sidebarBadge) {
+                    if (unreadCount > 0) {
+                        sidebarBadge.textContent = unreadCount;
+                        sidebarBadge.classList.remove('d-none');
+                    } else {
+                        sidebarBadge.classList.add('d-none');
+                    }
+                }
+                
+                // Modal logic
+                let lastSeenCount = parseInt(sessionStorage.getItem('lastSeenUnreadCount') || "0");
+                
+                if (unreadCount > lastSeenCount && unreadCount > 0) {
+                    // Update Modal Content
+                    document.getElementById('newAppCountBadge').textContent = unreadCount;
+                    
+                    const recentList = document.getElementById('recentAppsList');
+                    recentList.innerHTML = '';
+                    recentApps.forEach(app => {
+                        const li = document.createElement('li');
+                        li.className = 'mb-2 text-truncate';
+                        li.innerHTML = `<strong>${app.candidate_name}</strong> applied for <span class="text-primary fw-semibold">${app.vacancy_name}</span>`;
+                        recentList.appendChild(li);
+                    });
+                    
+                    // Show Modal
+                    const modalEl = document.getElementById('newApplicationModal');
+                    if(modalEl) {
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                    }
+                    
+                    // Update session storage
+                    sessionStorage.setItem('lastSeenUnreadCount', unreadCount.toString());
+                } else if (unreadCount === 0) {
+                    sessionStorage.setItem('lastSeenUnreadCount', "0");
+                }
+            })
+            .catch(err => console.error("Error polling notifications:", err));
+        }
+
+        // Run immediately then poll
+        setTimeout(checkNewApplications, 2000);
+        setInterval(checkNewApplications, pollInterval);
+    });
+</script>
+
+</body>
+
+</html>
+

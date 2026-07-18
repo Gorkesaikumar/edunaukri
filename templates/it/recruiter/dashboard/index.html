@@ -1,0 +1,329 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static portal_urls %}
+
+{% block title %}Recruiter Dashboard | {{ PLATFORM_NAME }}{% endblock %}
+
+{% block dashboard_content %}
+{% if dashboard %}
+<div class="rcd-stack rcd-stack--dashboard" id="recDashboardPage"
+     data-insights-url="{% portal_url 'recruiter_dashboard_insights_api' %}"
+     data-csrf="{{ csrf_token }}"
+     data-detail-template="{{ dashboard.api_urls.detail_template }}"
+     data-status-template="{{ dashboard.api_urls.status_template }}"
+     data-notes-template="{{ dashboard.api_urls.notes_template }}"
+     data-resume-template="{{ dashboard.api_urls.resume_template }}">
+
+    {# Global filters #}
+    <section class="rcd-bento rcd-dashboard-filters" aria-label="Dashboard filters">
+        <form class="rcd-dashboard-filters__form" id="recDashboardFilters">
+            <div class="rcd-dashboard-filters__field">
+                <label for="rcFilterJob">Job</label>
+                <select id="rcFilterJob" name="job_id">
+                    <option value="">All jobs</option>
+                    {% for job in dashboard.filter_options.jobs %}
+                    <option value="{{ job.id }}"{% if dashboard.filters.job_id == job.id %} selected{% endif %}>{{ job.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="rcd-dashboard-filters__field">
+                <label for="rcFilterDept">Department</label>
+                <select id="rcFilterDept" name="department">
+                    <option value="">All departments</option>
+                    {% for dept in dashboard.filter_options.departments %}
+                    <option value="{{ dept }}"{% if dashboard.filters.department == dept %} selected{% endif %}>{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="rcd-dashboard-filters__field">
+                <label for="rcFilterLocation">Location</label>
+                <select id="rcFilterLocation" name="location">
+                    <option value="">All locations</option>
+                    {% for loc in dashboard.filter_options.locations %}
+                    <option value="{{ loc }}"{% if dashboard.filters.location == loc %} selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="rcd-dashboard-filters__field">
+                <label for="rcFilterFrom">From</label>
+                <input type="date" id="rcFilterFrom" name="date_from" value="{{ dashboard.filters.date_from }}">
+            </div>
+            <div class="rcd-dashboard-filters__field">
+                <label for="rcFilterTo">To</label>
+                <input type="date" id="rcFilterTo" name="date_to" value="{{ dashboard.filters.date_to }}">
+            </div>
+            <input type="hidden" name="source" id="rcFilterSource" value="{{ dashboard.filters.source }}">
+            <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Apply</button>
+            <button type="button" class="rcd-btn rcd-btn--outline rcd-btn--sm" id="recDashboardFiltersReset">Reset</button>
+        </form>
+    </section>
+
+    {# Summary KPIs — four primary executive metrics #}
+    <section class="rcd-stats rcd-stats--primary" id="recDashboardStats" aria-label="Recruiting statistics">
+        {% for stat in dashboard.stats %}
+        <article class="rcd-bento rcd-bento--press rcd-stat rcd-stat--primary" data-stat-key="{{ stat.key }}">
+            <div class="rcd-stat__top">
+                <div class="rcd-stat__icon rcd-stat__icon--{{ stat.tone }}">
+                    <span class="material-symbols-outlined" aria-hidden="true">{{ stat.icon }}</span>
+                </div>
+                {% if stat.trend.tone != 'muted' and stat.trend.label != 'No Change' %}
+                <span class="rcd-stat__trend rcd-stat__trend--{{ stat.trend.tone }}" data-stat-trend>{{ stat.trend.label }}</span>
+                {% else %}
+                <span class="rcd-stat__trend rcd-stat__trend--muted" data-stat-trend>No Change</span>
+                {% endif %}
+            </div>
+            <div class="rcd-stat__body">
+                <p class="rcd-stat__label">{{ stat.label }}</p>
+                <p class="rcd-stat__value" data-stat-value>{{ stat.value }}</p>
+                <p class="rcd-stat__subtitle" data-stat-subtitle>{{ stat.subtitle }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <div class="rcd-grid-2-1">
+        <div class="rcd-stack">
+            {# Hiring pipeline #}
+            <section class="rcd-pipeline-section">
+                <div class="rcd-section-head">
+                    <div>
+                        <h2 class="rcd-section-head__title">Hiring Pipeline</h2>
+                        <p class="rcd-section-head__desc">Live candidate flow across all open roles</p>
+                    </div>
+                    <div class="rcd-section-head__actions">
+                        <input type="search" class="rcd-pipeline-search" id="recPipelineSearch" placeholder="Search candidates..." aria-label="Search pipeline">
+                        <a href="{{ dashboard.urls.pipeline }}" class="rcd-section-head__link">View All Pipeline <span class="material-symbols-outlined">arrow_forward</span></a>
+                    </div>
+                </div>
+                <div class="rcd-bento rcd-pipeline-board" id="recPipelineBoard">
+                    <div class="rcd-pipeline hide-scrollbar" id="recPipelineColumns">
+                        {% for col in dashboard.pipeline %}
+                        <div class="rcd-pipeline__col" data-pipeline-key="{{ col.key }}" data-target-status="{{ col.target_status }}">
+                            <div class="rcd-pipeline__head rcd-pipeline__head--{{ col.accent }}">
+                                <span class="rcd-pipeline__label">{{ col.label }}</span>
+                                <span class="rcd-pipeline__count" data-pipeline-count>{{ col.count }}</span>
+                            </div>
+                            {% include "it/recruiter/dashboard/partials/pipeline_column.html" with col=col %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            {# Active jobs #}
+            <section>
+                <div class="rcd-section-head">
+                    <h2 class="rcd-section-head__title">Active Job Openings</h2>
+                    <a href="{{ dashboard.urls.manage_jobs }}" class="rcd-btn rcd-btn--outline rcd-btn--sm">View All Jobs</a>
+                </div>
+                <div class="rcd-jobs-grid" id="recActiveJobsGrid">
+                    {% if dashboard.active_jobs %}
+                    {% for job in dashboard.active_jobs %}
+                    {% include "it/recruiter/dashboard/partials/job_card.html" with job=job %}
+                    {% endfor %}
+                    {% else %}
+                    <div class="rcd-bento rcd-empty">
+                        <span class="material-symbols-outlined d-block">work_off</span>
+                        <h2>No active jobs</h2>
+                        <p>Publish a job to start receiving applications.</p>
+                        <a href="{{ dashboard.urls.post_job }}" class="rcd-btn rcd-btn--primary mt-2">Post New Job</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            {# Analytics #}
+            {% include "it/recruiter/dashboard/partials/analytics_section.html" %}
+        </div>
+
+        <div class="rcd-stack">
+            {# Interviews #}
+            <section class="rcd-bento rcd-interview-panel" id="recInterviewsPanel">
+                <div class="rcd-section-head rcd-section-head--compact mb-0">
+                    <h2 class="rcd-section-head__title rcd-section-head__title--sm">Upcoming Interviews</h2>
+                    {% if dashboard.interviews_today %}
+                    <span class="rcd-interview-panel__badge" id="recInterviewsTodayBadge">{{ dashboard.interviews_today }} Today</span>
+                    {% else %}
+                    <span class="rcd-interview-panel__badge" id="recInterviewsTodayBadge" hidden></span>
+                    {% endif %}
+                </div>
+                <div id="recInterviewsList" class="mt-3">
+                    {% if dashboard.upcoming_interviews %}
+                    {% for item in dashboard.upcoming_interviews %}
+                    <div class="rcd-interview-item{% if item.within_hour %} rcd-interview-item--urgent{% endif %}{% if not forloop.first %} rcd-interview-item--plain{% endif %}">
+                        <div class="rcd-interview-item__time">
+                            <span>{{ item.time_label }}</span>
+                            <span class="rcd-interview-timing rcd-interview-timing--{{ item.timing }}">{{ item.timing|title }}</span>
+                            {% if item.is_live %}<span class="rcd-interview-item__live" aria-label="Live now"></span>{% endif %}
+                        </div>
+                        <div class="rcd-interview-item__row">
+                            <div class="rcd-interview-item__avatar">{{ item.initials }}</div>
+                            <div>
+                                <p class="mb-0 fw-semibold" style="font-size:0.875rem">{{ item.candidate_name }}</p>
+                                <p class="mb-0 text-muted" style="font-size:0.75rem">{{ item.job_title }} · {{ item.round_label }}</p>
+                                <p class="mb-0 text-muted" style="font-size:0.6875rem">{{ item.mode }} · {{ item.duration_minutes }} min · {{ item.interviewer }}</p>
+                            </div>
+                        </div>
+                        <div class="rcd-interview-item__actions">
+                            {% if item.meet_url and item.is_online %}
+                            <a href="{{ item.meet_url }}" target="_blank" rel="noopener" class="rcd-btn rcd-btn--primary rcd-btn--sm">Join Meeting</a>
+                            {% endif %}
+                            {% if item.can_reschedule %}
+                            <button type="button" class="rcd-btn rcd-btn--outline rcd-btn--sm rec-interview-reschedule"
+                                    data-url="{{ item.reschedule_url }}"
+                                    data-scheduled="{{ item.scheduled_at_iso }}">Reschedule</button>
+                            {% endif %}
+                            {% if item.can_cancel %}
+                            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-interview-cancel"
+                                    data-url="{{ item.cancel_url }}">Cancel</button>
+                            {% endif %}
+                            <a href="{{ item.interviews_url }}" class="rcd-btn rcd-btn--outline rcd-btn--sm">Calendar</a>
+                            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-view-candidate"
+                                    data-application-id="{{ item.application_id }}">View Candidate</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="rcd-empty rcd-empty--compact">
+                        <span class="material-symbols-outlined">event_available</span>
+                        <h3>Nothing scheduled</h3>
+                        <p>Interviews appear here once scheduled with candidates.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <a href="{{ dashboard.urls.interviews }}" class="rcd-section-head__link d-block text-center mt-2">Open Full Calendar</a>
+            </section>
+
+            {# Notifications #}
+            <section class="rcd-bento rcd-interview-panel" id="recNotificationsPanel">
+                <div class="rcd-section-head rcd-section-head--compact">
+                    <h2 class="rcd-section-head__title rcd-section-head__title--sm">Notifications</h2>
+                    <a href="{{ dashboard.urls.notifications }}" class="rcd-section-head__link">View all</a>
+                </div>
+                <ul class="rcd-activity-list" id="recNotificationsList">
+                    {% for note in dashboard.notifications %}
+                    <li class="rcd-activity-item{% if not note.is_read %} rcd-activity-item--unread{% endif %}">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <div>
+                            <p class="mb-0 fw-semibold">{{ note.title }}</p>
+                            <p class="mb-0 text-muted small">{{ note.body|truncatechars:80 }}</p>
+                            <time class="text-muted" style="font-size:0.6875rem">{{ note.timestamp }}</time>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="rcd-empty rcd-empty--compact"><p>No notifications</p></li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            {# Candidate sources #}
+            <section class="rcd-bento rcd-interview-panel" id="recSourcesPanel">
+                <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Candidate Sources</h2>
+                <div class="rcd-donut-wrap">
+                    <div class="rcd-donut" id="recDonutChart">
+                        <svg viewBox="0 0 36 36" aria-hidden="true" id="recDonutSvg">
+                            <circle cx="18" cy="18" r="16" fill="none" stroke="#f0ecf9" stroke-width="4"></circle>
+                            {% for seg in dashboard.candidate_sources.segments %}
+                            {% if seg.pct %}
+                            <circle cx="18" cy="18" r="16" fill="none" stroke="{% if seg.tone == 'primary' %}#3525cd{% elif seg.tone == 'secondary' %}#8a4cfc{% elif seg.tone == 'tertiary' %}#a78bfa{% else %}#c4b5fd{% endif %}" stroke-width="4"
+                                    stroke-dasharray="{{ seg.pct }} 100" stroke-dashoffset="-{{ seg.stroke_offset|default:0 }}"
+                                    stroke-linecap="round" transform="rotate(-90 18 18)" data-source-key="{{ seg.key }}"></circle>
+                            {% endif %}
+                            {% endfor %}
+                        </svg>
+                        <div class="rcd-donut__center">
+                            <span class="rcd-donut__total" id="recDonutTotal">{{ dashboard.candidate_sources.total }}</span>
+                            <span class="rcd-donut__label">Total</span>
+                        </div>
+                    </div>
+                    <div class="rcd-donut-legend" id="recDonutLegend">
+                        {% for seg in dashboard.candidate_sources.segments %}
+                        <button type="button" class="rcd-donut-legend__row rcd-donut-legend__btn" data-source-filter="{{ seg.key }}">
+                            <span><span class="rcd-donut-legend__dot rcd-donut-legend__dot--{{ seg.tone }}"></span>{{ seg.label }}</span>
+                            <span><strong>{{ seg.pct }}%</strong> <small class="text-muted">{{ seg.trend }}</small></span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            {# Recent activity #}
+            <section class="rcd-bento rcd-interview-panel" id="recActivityPanel">
+                <h2 class="rcd-section-head__title rcd-section-head__title--sm mb-3">Recent Activity</h2>
+                <ul class="rcd-activity-list" id="recActivityList">
+                    {% for act in dashboard.recent_activity %}
+                    <li class="rcd-activity-item">
+                        <span class="material-symbols-outlined">timeline</span>
+                        <div>
+                            <p class="mb-0 fw-semibold">{{ act.label }}</p>
+                            <p class="mb-0 text-muted small">{{ act.candidate }} · {{ act.job_title }}</p>
+                            <time class="text-muted" style="font-size:0.6875rem">{{ act.timestamp }}</time>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="rcd-empty rcd-empty--compact"><p>No recent activity</p></li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    {# Recent applications #}
+    <section class="rcd-bento rcd-bento--press overflow-hidden">
+        <div class="rcd-section-head rcd-section-head--inset">
+            <h2 class="rcd-section-head__title">Recent Applications</h2>
+            <a href="{{ dashboard.urls.browse_candidates }}" class="rcd-section-head__link">View All</a>
+        </div>
+        {% if dashboard.recent_applications %}
+        <div class="rcd-table-wrap">
+            <table class="rcd-table">
+                <thead>
+                    <tr><th>Candidate</th><th>Job</th><th>Company</th><th>Status</th><th>Applied</th></tr>
+                </thead>
+                <tbody id="recRecentApplicationsBody">
+                    {% for app in dashboard.recent_applications %}
+                    <tr data-application-id="{{ app.id }}" class="rec-recent-app-row">
+                        <td><button type="button" class="rcd-table__link rec-view-candidate" data-application-id="{{ app.id }}">{{ app.candidate }}</button></td>
+                        <td>{{ app.job_title }}</td>
+                        <td>{{ app.company }}</td>
+                        <td><span class="rcd-status-pill">{{ app.status_label }}</span></td>
+                        <td>{{ app.applied_label }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="rcd-empty">
+            <span class="material-symbols-outlined d-block">inbox</span>
+            <h2>No applications yet</h2>
+            <p>Applications will appear here as candidates apply to your jobs.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+{# Candidate detail drawer #}
+<div class="offcanvas offcanvas-end rcd-candidate-drawer" tabindex="-1" id="recCandidateDrawer" aria-labelledby="recCandidateDrawerLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="recCandidateDrawerLabel">Candidate Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" id="recCandidateDrawerBody"></div>
+</div>
+
+<div class="rcd-dashboard-skeleton" id="recDashboardSkeleton" hidden aria-hidden="true">
+    <div class="rcd-skeleton-bar"></div>
+    <div class="rcd-skeleton-grid"></div>
+</div>
+{% else %}
+<div class="rcd-bento rcd-empty">
+    <h2>Dashboard unavailable</h2>
+    <p>Complete your recruiter profile to access the dashboard.</p>
+    <a href="{% url 'recruiter_profile' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--primary mt-2">Set Up Profile</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/recruiter-analytics-section.js' %}"></script>
+{% endblock %}

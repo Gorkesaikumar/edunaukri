@@ -1,0 +1,302 @@
+{% extends "it/recruiter/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Interviews | {{ PLATFORM_NAME }} Recruiter{% endblock %}
+
+{% block dashboard_content %}
+{% if interviews_page %}
+<header class="rcd-section-head mb-4">
+    <div>
+        <h1 class="rcd-section-head__title">Interviews</h1>
+        <p class="mb-0 text-muted">{{ page_description|default:"Schedule, manage, and track candidate interviews across your hiring pipeline." }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="rcd-btn rcd-btn--primary rcd-btn--sm" id="recScheduleInterviewBtn">
+            <span class="material-symbols-outlined" aria-hidden="true">event</span>
+            Schedule Interview
+        </button>
+        <a href="{% url 'recruiter_candidates' user_uuid=portal_user_uuid %}" class="rcd-btn rcd-btn--outline rcd-btn--sm">View Applicants</a>
+    </div>
+</header>
+
+<section class="rcd-stats rcd-stats--interviews mb-4" id="recInterviewsStats" aria-label="Interview summary">
+    {% for stat in interviews_page.summary %}
+    <article class="rcd-bento rcd-stat">
+        <div class="rcd-stat__top">
+            <div class="rcd-stat__icon rcd-stat__icon--{{ stat.tone }}">
+                <span class="material-symbols-outlined">{{ stat.icon }}</span>
+            </div>
+        </div>
+        <div>
+            <p class="rcd-stat__label">{{ stat.label }}</p>
+            <p class="rcd-stat__value" data-stat="{{ stat.key }}">{{ stat.value }}</p>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<form class="rcd-filters rcd-filters--interviews mb-3" method="get" action="{% url 'recruiter_interviews' user_uuid=portal_user_uuid %}">
+    <label class="rcd-filters__search">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input type="search" name="q" value="{{ interviews_page.filters.q }}" placeholder="Search candidate, job, or interviewer">
+    </label>
+    <select name="when" class="rcd-filters__select" aria-label="Time filter">
+        <option value="">All time</option>
+        <option value="today"{% if interviews_page.filters.when == 'today' %} selected{% endif %}>Today</option>
+        <option value="upcoming"{% if interviews_page.filters.when == 'upcoming' %} selected{% endif %}>Upcoming</option>
+        <option value="completed"{% if interviews_page.filters.when == 'completed' %} selected{% endif %}>Completed</option>
+        <option value="cancelled"{% if interviews_page.filters.when == 'cancelled' %} selected{% endif %}>Cancelled</option>
+    </select>
+    <select name="status" class="rcd-filters__select" aria-label="Status">
+        <option value="">All statuses</option>
+        {% for opt in interviews_page.status_options %}
+        <option value="{{ opt.value }}"{% if interviews_page.filters.status == opt.value %} selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+    </select>
+    <select name="job_id" class="rcd-filters__select" aria-label="Job">
+        <option value="">All jobs</option>
+        {% for job in interviews_page.job_filters %}
+        <option value="{{ job.id }}"{% if interviews_page.filters.job_id == job.id %} selected{% endif %}>{{ job.title }}</option>
+        {% endfor %}
+    </select>
+    <input type="date" name="date_from" class="rcd-filters__select" value="{{ interviews_page.filters.date_from }}" aria-label="From date">
+    <input type="date" name="date_to" class="rcd-filters__select" value="{{ interviews_page.filters.date_to }}" aria-label="To date">
+    <button type="submit" class="rcd-btn rcd-btn--primary rcd-btn--sm">Apply</button>
+</form>
+
+<div class="rcd-interviews-view-tabs d-flex flex-wrap gap-2 mb-4" role="tablist">
+    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm active rec-interviews-tab" data-view="list">List View</button>
+    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--sm rec-interviews-tab" data-view="calendar">Calendar</button>
+</div>
+
+<div id="recInterviewsPage"
+     data-api-list="{{ interviews_page.api_urls.list }}"
+     data-schedule-template="{{ interviews_page.api_urls.schedule }}"
+     data-schedule-candidates="{{ interviews_page.api_urls.schedule_candidates }}"
+     data-cancel-template="{{ interviews_page.api_urls.cancel_template }}"
+     data-reschedule-template="{{ interviews_page.api_urls.reschedule_template }}"
+     data-feedback-template="{{ interviews_page.api_urls.feedback_template }}"
+     data-status-template="{{ interviews_page.api_urls.status_template }}"
+     data-detail-template="{{ interviews_page.api_urls.detail_template }}"
+     data-application-status-template="{{ interviews_page.api_urls.application_status_template }}"
+     data-resume-template="{{ interviews_page.api_urls.resume_template }}"
+     data-pipeline-total="{{ interviews_page.pipeline_stages|length }}">
+
+{{ interviews_page.calendar_events|json_script:"recCalendarEventsData" }}
+
+    <div id="recInterviewsListView">
+        <div class="rcd-stack" id="recInterviewsList"{% if not interviews_page.interviews %} hidden{% endif %}>
+            {% for item in interviews_page.interviews %}
+            {% include "it/recruiter/interviews/partials/interview_card.html" with item=item %}
+            {% endfor %}
+        </div>
+        <div class="rcd-bento rcd-empty" id="recInterviewsEmpty"{% if interviews_page.interviews %} hidden{% endif %}>
+            <span class="material-symbols-outlined">event_busy</span>
+            <h2>No interviews found</h2>
+            <p>Schedule interviews for shortlisted candidates to get started.</p>
+            <button type="button" class="rcd-btn rcd-btn--primary mt-2" id="recScheduleInterviewEmpty">Schedule Interview</button>
+        </div>
+    </div>
+
+    <div id="recInterviewsCalendarView" class="rcd-bento rcd-interviews-calendar" hidden>
+        <div class="rcd-interviews-calendar__head">
+            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recCalPrev">&larr;</button>
+            <h3 class="mb-0" id="recCalTitle"></h3>
+            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recCalNext">&rarr;</button>
+        </div>
+        <div class="rcd-interviews-calendar__grid" id="recCalGrid"></div>
+    </div>
+
+    {% if interviews_page.pagination.total_pages > 1 %}
+    <nav class="rcd-pagination mt-3" aria-label="Interviews pagination">
+        <span class="rcd-pagination__info">Showing {{ interviews_page.pagination.start_index }}–{{ interviews_page.pagination.end_index }} of {{ interviews_page.pagination.total_count }}</span>
+        <div class="rcd-pagination__controls">
+            {% if interviews_page.pagination.has_previous %}
+            <a href="?page={{ interviews_page.pagination.page|add:'-1' }}" class="rcd-btn rcd-btn--soft rcd-btn--xs">Previous</a>
+            {% endif %}
+            <span class="rcd-pagination__page">Page {{ interviews_page.pagination.page }} of {{ interviews_page.pagination.total_pages }}</span>
+            {% if interviews_page.pagination.has_next %}
+            <a href="?page={{ interviews_page.pagination.page|add:'1' }}" class="rcd-btn rcd-btn--soft rcd-btn--xs">Next</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+</div>
+
+{# Schedule modal #}
+<div class="modal fade" id="recScheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Candidate</label>
+                        <select class="form-select mb-3" id="recScheduleCandidate">
+                            <option value="">Choose a shortlisted candidate…</option>
+                            {% for c in interviews_page.schedule_candidates %}
+                            <option value="{{ c.application_id }}"
+                                    data-name="{{ c.candidate_name }}"
+                                    data-job="{{ c.job_title }}"
+                                    data-company="{{ c.company_name }}"
+                                    data-exp="{{ c.experience_years }}"
+                                    data-skills="{{ c.skills_label }}"
+                                    data-photo="{{ c.photo_url }}"
+                                    data-resume="{% if c.has_resume %}1{% else %}0{% endif %}"
+                                    data-resume-url="{{ c.resume_preview_url }}"
+                                    data-schedule-url="{{ c.schedule_url }}">{{ c.candidate_name }} — {{ c.job_title }}</option>
+                            {% endfor %}
+                        </select>
+                        <div id="recScheduleCandidatePreview" class="rcd-schedule-preview" hidden>
+                            <div class="rcd-schedule-preview__head">
+                                <span class="rcd-pipeline-card__avatar" id="recScheduleAvatar"><span>?</span></span>
+                                <div><strong id="recScheduleName"></strong><p class="text-muted small mb-0" id="recScheduleJob"></p></div>
+                            </div>
+                            <p class="small mb-1"><strong>Experience:</strong> <span id="recScheduleExp"></span></p>
+                            <p class="small mb-2"><strong>Skills:</strong> <span id="recScheduleSkills"></span></p>
+                            <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recSchedulePreviewResume" hidden>Preview Resume</button>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <form id="recScheduleForm" class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="recScheduleRound">Interview Round</label>
+                                <select class="form-select" id="recScheduleRound">
+                                    {% for opt in interviews_page.round_options %}
+                                    <option value="{{ opt.value }}">{{ opt.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="recScheduleType">Interview Type</label>
+                                <select class="form-select" id="recScheduleType">
+                                    {% for opt in interviews_page.type_options %}
+                                    <option value="{{ opt.value }}" data-mode="{{ opt.mode }}">{{ opt.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6"><label class="form-label" for="recScheduleDate">Date</label><input type="date" class="form-control" id="recScheduleDate" required></div>
+                            <div class="col-md-6"><label class="form-label" for="recScheduleTime">Time</label><input type="time" class="form-control" id="recScheduleTime" required></div>
+                            <div class="col-md-6"><label class="form-label" for="recScheduleDuration">Duration (min)</label><input type="number" class="form-control" id="recScheduleDuration" value="45" min="15" step="15"></div>
+                            <div class="col-md-6"><label class="form-label" for="recScheduleInterviewer">Interviewer</label><input type="text" class="form-control" id="recScheduleInterviewer" placeholder="Interviewer name"></div>
+                            <div class="col-12" id="recScheduleMeetWrap"><label class="form-label" for="recScheduleMeet">Meeting Link</label><input type="url" class="form-control" id="recScheduleMeet" placeholder="https://meet.google.com/..."></div>
+                            <div class="col-12" id="recScheduleLocationWrap" hidden><label class="form-label" for="recScheduleLocation">Office Address</label><input type="text" class="form-control" id="recScheduleLocation"></div>
+                            <div class="col-12"><label class="form-label" for="recScheduleNotes">Interview Notes</label><textarea class="form-control" id="recScheduleNotes" rows="2"></textarea></div>
+                        </form>
+                    </div>
+                </div>
+                <p class="text-danger small mt-2" id="recScheduleError" hidden></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="recScheduleSubmit">Schedule Interview</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Feedback modal #}
+<div class="modal fade" id="recFeedbackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0"><h5 class="modal-title">Interview Feedback</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="text-muted small" id="recFeedbackCandidate"></p>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label small">Technical Skills</label><select class="form-select form-select-sm rec-feedback-rating" data-key="technical_skills"><option value="">—</option>{% for i in "12345" %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select></div>
+                    <div class="col-6"><label class="form-label small">Communication</label><select class="form-select form-select-sm rec-feedback-rating" data-key="communication"><option value="">—</option>{% for i in "12345" %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select></div>
+                    <div class="col-6"><label class="form-label small">Problem Solving</label><select class="form-select form-select-sm rec-feedback-rating" data-key="problem_solving"><option value="">—</option>{% for i in "12345" %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select></div>
+                    <div class="col-6"><label class="form-label small">Behaviour</label><select class="form-select form-select-sm rec-feedback-rating" data-key="behaviour"><option value="">—</option>{% for i in "12345" %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select></div>
+                    <div class="col-12"><label class="form-label small">Overall Rating</label><select class="form-select form-select-sm" id="recFeedbackOverall"><option value="">—</option>{% for i in "12345" %}<option value="{{ i }}">{{ i }} / 5</option>{% endfor %}</select></div>
+                    <div class="col-12"><label class="form-label small">Decision</label><select class="form-select form-select-sm" id="recFeedbackDecision"><option value="proceed">Proceed</option><option value="hold">Hold</option><option value="reject">Reject</option><option value="no_show">No Show</option></select></div>
+                    <div class="col-12"><label class="form-label small">Notes</label><textarea class="form-control form-control-sm" id="recFeedbackNotes" rows="3"></textarea></div>
+                </div>
+                <p class="text-danger small mt-2" id="recFeedbackError" hidden></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="recFeedbackSubmit">Save Feedback</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Reschedule modal #}
+<div class="modal fade" id="recRescheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0"><h5 class="modal-title">Reschedule Interview</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="text-muted small" id="recRescheduleCandidate"></p>
+                <div class="row g-2">
+                    <div class="col-6"><label class="form-label small" for="recRescheduleDate">Date</label><input type="date" class="form-control form-control-sm" id="recRescheduleDate" required></div>
+                    <div class="col-6"><label class="form-label small" for="recRescheduleTime">Time</label><input type="time" class="form-control form-control-sm" id="recRescheduleTime" required></div>
+                </div>
+                <p class="text-danger small mt-2" id="recRescheduleError" hidden></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="rcd-btn rcd-btn--primary" id="recRescheduleSubmit">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Email modal #}
+<div class="modal fade" id="recEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0"><h5 class="modal-title">Send Email Invitation</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <label class="form-label small" for="recEmailSubject">Subject</label>
+                <input type="text" class="form-control form-control-sm mb-2" id="recEmailSubject">
+                <label class="form-label small" for="recEmailBody">Message</label>
+                <textarea class="form-control" id="recEmailBody" rows="10"></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" class="rcd-btn rcd-btn--primary" id="recEmailSend">Open Email Client</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# WhatsApp modal #}
+<div class="modal fade" id="recWhatsAppModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0"><h5 class="modal-title">Send WhatsApp Invitation</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body"><textarea class="form-control" id="recWhatsAppMessage" rows="10"></textarea></div>
+            <div class="modal-footer border-0">
+                <button type="button" class="rcd-btn rcd-btn--soft" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" class="rcd-btn rcd-btn--primary" id="recWhatsAppSend" target="_blank" rel="noopener">Open WhatsApp</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Profile drawer + resume modal reuse #}
+<div class="offcanvas offcanvas-end rcd-candidate-drawer" tabindex="-1" id="recCandidateDrawer" aria-labelledby="recCandidateDrawerLabel">
+    <div class="offcanvas-header border-bottom"><h5 class="offcanvas-title" id="recCandidateDrawerLabel">Candidate Profile</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button></div>
+    <div class="offcanvas-body" id="recCandidateDrawerBody"></div>
+</div>
+<div class="modal fade" id="recResumeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rcd-bento border-0">
+            <div class="modal-header border-0"><h5 class="modal-title" id="recResumeModalTitle">Resume</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body p-0"><iframe id="recResumeFrame" class="rcd-resume-frame" title="Resume preview"></iframe></div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="rcd-bento rcd-empty"><p>Interviews could not be loaded.</p></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.REC_PORTAL = window.REC_PORTAL || { csrfToken: "{{ csrf_token|escapejs }}" };</script>
+<script src="{% static 'js/recruiter-interviews.js' %}"></script>
+{% endblock %}
