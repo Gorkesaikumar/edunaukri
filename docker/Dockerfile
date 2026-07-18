@@ -39,16 +39,15 @@ COPY --from=builder /wheels /wheels
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir /wheels/* && rm -rf /wheels
 
-# Create required application directories and assign ownership before copying code
-RUN mkdir -p /app/logs /app/media /app/staticfiles \
-    && chown -R appuser:appuser /app
+# Create required application directories
+RUN mkdir -p /app/logs /app/media /app/staticfiles
 
-# Copy entrypoint script and ensure execution permissions
-COPY --chown=appuser:appuser docker/entrypoint.sh /app/docker/entrypoint.sh
-RUN chmod +x /app/docker/entrypoint.sh
-
-# Copy application code as non-root user
+# Copy the complete project
 COPY --chown=appuser:appuser . /app/
+
+# Fix permissions AFTER all COPY instructions
+RUN chmod 755 /app/docker/entrypoint.sh \
+    && chown -R appuser:appuser /app
 
 USER appuser
 
