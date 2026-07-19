@@ -225,14 +225,81 @@
 
   function startOAuth(provider) {
     if (isSubmitting) return;
-    var baseUrl = provider === "linkedin" ? oauthLinkedin : oauthGoogle;
     var button = provider === "linkedin" ? linkedinBtn : googleBtn;
-    if (!baseUrl) return;
-
     isSubmitting = true;
     setLoginPending(true);
     Auth.setButtonLoading(button, true, "Connecting...");
+    Auth.showFormError("");
 
+    if (provider === "google") {
+      // Faculty domain: "seeker" → professor domain, "institution" → college domain
+      var facultyDomain = selectedRole === "institution" ? "college" : "professor";
+      var facultyRole = selectedRole === "institution" ? "institution" : "seeker";
+
+      // API-based flow: POST to backend with domain+role, get authorize_url, redirect
+      fetch("/api/social-auth/google/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": Auth.getCsrfToken(),
+        },
+        body: JSON.stringify({
+          domain: facultyDomain,
+          role: facultyRole,
+          login_url: window.location.pathname,
+        }),
+        credentials: "same-origin",
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, data: data };
+          });
+        })
+        .then(function (result) {
+          console.log("Faculty Google OAuth Response:", result);
+
+          if (
+            result.ok &&
+            result.data &&
+            result.data.success &&
+            result.data.data &&
+            result.data.data.authorize_url
+          ) {
+            window.location.href = result.data.data.authorize_url;
+            return;
+          }
+
+          var errMsg =
+            (result.data &&
+              (
+                result.data.error ||
+                result.data.detail ||
+                (result.data.data && result.data.data.error)
+              )) ||
+            "Failed to initiate Google sign-in.";
+
+          Auth.showFormError(errMsg);
+
+          isSubmitting = false;
+          setLoginPending(false);
+          Auth.setButtonLoading(button, false);
+        })
+      .catch(function () {
+        Auth.showFormError("Network error. Please check your connection and try again.");
+        isSubmitting = false;
+        setLoginPending(false);
+        Auth.setButtonLoading(button, false);
+      });
+  } else {
+    // LinkedIn: keep redirect-based flow for now
+    var baseUrl = oauthLinkedin;
+    if (!baseUrl) {
+      isSubmitting = false;
+      setLoginPending(false);
+      Auth.setButtonLoading(button, false);
+      return;
+    }
     var url =
       baseUrl +
       (baseUrl.indexOf("?") >= 0 ? "&" : "?") +
@@ -240,109 +307,110 @@
       encodeURIComponent(oauthRoleParam());
     window.location.href = url;
   }
+}
 
   function checkEmailAvailability() {
-    if (!checkEmailUrl) return;
-    var input = activeEmailInput();
-    if (!input) return;
-    var email = input.value.trim();
-    if (!email || Auth.validateEmail(email)) return;
+  if (!checkEmailUrl) return;
+  var input = activeEmailInput();
+  if (!input) return;
+  var email = input.value.trim();
+  if (!email || Auth.validateEmail(email)) return;
 
-    fetch(
-      checkEmailUrl +
-        "?email=" +
-        encodeURIComponent(email) +
-        "&role=" +
-        encodeURIComponent(selectedRole),
-      {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "same-origin",
+  fetch(
+    checkEmailUrl +
+    "?email=" +
+    encodeURIComponent(email) +
+    "&role=" +
+    encodeURIComponent(selectedRole),
+    {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin",
+    }
+  )
+    .then(function (res) {
+      return res.json();
+    })
+    .then(function (data) {
+      if (!data.available) {
+        var fieldId = selectedRole === "institution" ? "institution_email" : "email";
+        Auth.showFieldError(fieldId, data.message || "An account with this email already exists.");
       }
-    )
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        if (!data.available) {
-          var fieldId = selectedRole === "institution" ? "institution_email" : "email";
-          Auth.showFieldError(fieldId, data.message || "An account with this email already exists.");
-        }
-      })
-      .catch(function () {});
-  }
+    })
+    .catch(function () { });
+}
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-    submitRegistration();
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+  submitRegistration();
+});
+
+if (passwordInput) {
+  passwordInput.addEventListener("input", function () {
+    Auth.updatePasswordStrengthUI(passwordInput.value, strengthFill, strengthReqs);
+    Auth.showFieldError("password", "");
+    Auth.showFormError("");
   });
+}
 
-  if (passwordInput) {
-    passwordInput.addEventListener("input", function () {
-      Auth.updatePasswordStrengthUI(passwordInput.value, strengthFill, strengthReqs);
-      Auth.showFieldError("password", "");
-      Auth.showFormError("");
-    });
-  }
-
-  if (confirmInput) {
-    confirmInput.addEventListener("input", function () {
-      Auth.showFieldError("confirm_password", "");
-    });
-  }
-
-  [emailInput, institutionEmailInput].forEach(function (input) {
-    if (!input) return;
-    input.addEventListener("input", function () {
-      Auth.showFieldError(input.id, "");
-      Auth.showFormError("");
-    });
-    input.addEventListener("blur", function () {
-      window.clearTimeout(emailCheckTimer);
-      emailCheckTimer = window.setTimeout(checkEmailAvailability, 250);
-    });
+if (confirmInput) {
+  confirmInput.addEventListener("input", function () {
+    Auth.showFieldError("confirm_password", "");
   });
+}
 
-  form.querySelectorAll(".ed-auth-input").forEach(function (input) {
-    if (
-      input.id === "password" ||
-      input.id === "confirm_password" ||
-      input.id === "email" ||
-      input.id === "institution_email"
-    ) {
-      return;
-    }
-    input.addEventListener("input", function () {
-      Auth.showFieldError(input.id, "");
-      Auth.showFormError("");
-    });
+[emailInput, institutionEmailInput].forEach(function (input) {
+  if (!input) return;
+  input.addEventListener("input", function () {
+    Auth.showFieldError(input.id, "");
+    Auth.showFormError("");
   });
-
-  if (googleBtn) {
-    googleBtn.addEventListener("click", function () {
-      startOAuth("google");
-    });
-  }
-  if (linkedinBtn) {
-    linkedinBtn.addEventListener("click", function () {
-      startOAuth("linkedin");
-    });
-  }
-
-  var params = new URLSearchParams(window.location.search);
-  var oauthError = params.get("oauth_error");
-  if (oauthError) {
-    Auth.showFormError(decodeURIComponent(oauthError.replace(/\+/g, " ")));
-    if (window.history && window.history.replaceState) {
-      params.delete("oauth_error");
-      var clean = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
-      window.history.replaceState({}, "", clean);
-    }
-  }
-
-  window.addEventListener("popstate", function () {
-    var path = window.location.pathname;
-    setRole(path.indexOf("/institution") !== -1 ? "institution" : "seeker", { skipClear: true });
+  input.addEventListener("blur", function () {
+    window.clearTimeout(emailCheckTimer);
+    emailCheckTimer = window.setTimeout(checkEmailAvailability, 250);
   });
+});
 
-  initRoleSwitcher();
-})();
+form.querySelectorAll(".ed-auth-input").forEach(function (input) {
+  if (
+    input.id === "password" ||
+    input.id === "confirm_password" ||
+    input.id === "email" ||
+    input.id === "institution_email"
+  ) {
+    return;
+  }
+  input.addEventListener("input", function () {
+    Auth.showFieldError(input.id, "");
+    Auth.showFormError("");
+  });
+});
+
+if (googleBtn) {
+  googleBtn.addEventListener("click", function () {
+    startOAuth("google");
+  });
+}
+if (linkedinBtn) {
+  linkedinBtn.addEventListener("click", function () {
+    startOAuth("linkedin");
+  });
+}
+
+var params = new URLSearchParams(window.location.search);
+var oauthError = params.get("oauth_error");
+if (oauthError) {
+  Auth.showFormError(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+  if (window.history && window.history.replaceState) {
+    params.delete("oauth_error");
+    var clean = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+    window.history.replaceState({}, "", clean);
+  }
+}
+
+window.addEventListener("popstate", function () {
+  var path = window.location.pathname;
+  setRole(path.indexOf("/institution") !== -1 ? "institution" : "seeker", { skipClear: true });
+});
+
+initRoleSwitcher();
+}) ();

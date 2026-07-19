@@ -68,6 +68,7 @@ LOCAL_APPS = [
     # Identity & auth
     "apps.accounts",
     "apps.authentication",
+    "apps.social_auth",
     # Shared infrastructure
     "apps.documents",
     "apps.search",

@@ -40,5 +40,35 @@
     <script src="{% static 'js/auth/common.js' %}?v=2"></script>
     <script src="{% static 'js/auth/auth-session.js' %}"></script>
     {% block extra_scripts %}{% endblock %}
+
+    {% block modals %}
+    <div class="ed-auth-modal-overlay d-none" id="oauthLinkedModal" role="dialog" aria-modal="true"
+         aria-labelledby="oauthLinkedModalTitle">
+        <div class="ed-auth-modal">
+            <div class="ed-auth-modal__header">
+                <h2 class="ed-auth-modal__title" id="oauthLinkedModalTitle">Google Account Already Linked</h2>
+                <button type="button" class="ed-auth-modal__close" id="oauthLinkedModalClose" aria-label="Close dialog">
+                    <i class="bi bi-x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="ed-auth-modal__body">
+                <p>This Google account is already linked to another EduNaukri account.</p>
+                <div class="ed-auth-modal__linked-with">
+                    <span class="ed-auth-modal__linked-label">Already Linked With:</span>
+                    <span class="ed-auth-modal__linked-name" id="oauthLinkedAccountName"></span>
+                </div>
+                <p>Please sign in using the appropriate portal or use another Google account.</p>
+            </div>
+            <div class="ed-auth-modal__actions">
+                <button type="button" class="btn ed-auth-btn ed-auth-btn--primary" id="oauthLinkedAnotherBtn">
+                    Use Another Google Account
+                </button>
+                <button type="button" class="btn ed-auth-btn ed-auth-btn--ghost" id="oauthLinkedCancelBtn">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
 </body>
 </html>

@@ -120,20 +120,86 @@
 
   function startOAuth(provider) {
     if (isSubmitting) return;
-    var baseUrl = provider === "linkedin" ? oauthLinkedin : oauthGoogle;
     var button = provider === "linkedin" ? linkedinBtn : googleBtn;
-    if (!baseUrl) return;
-
     isSubmitting = true;
     setLoginPending(true);
     Auth.setButtonLoading(button, true, "Connecting...");
+    Auth.showFormError("");
 
-    var url =
-      baseUrl +
-      (baseUrl.indexOf("?") >= 0 ? "&" : "?") +
-      "role=" +
-      encodeURIComponent(oauthRoleParam());
-    window.location.href = url;
+    if (provider === "google") {
+      // Faculty domain: "seeker" → professor domain, "institution" → college domain
+      var facultyDomain = selectedRole === "institution" ? "college" : "professor";
+      var facultyRole = selectedRole === "institution" ? "institution" : "seeker";
+
+      // API-based flow: POST to backend with domain+role, get authorize_url, redirect
+      fetch("/api/social-auth/google/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": Auth.getCsrfToken(),
+        },
+        body: JSON.stringify({
+          domain: facultyDomain,
+          role: facultyRole,
+          login_url: window.location.pathname,
+        }),
+        credentials: "same-origin",
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, data: data };
+          });
+        })
+        .then(function (result) {
+          if (
+            result.ok &&
+            result.data &&
+            result.data.success &&
+            result.data.data &&
+            result.data.data.authorize_url
+          ) {
+            window.location.href = result.data.data.authorize_url;
+            return;
+          }
+
+          var errMsg =
+            (result.data &&
+              (
+                result.data.error ||
+                result.data.detail ||
+                (result.data.data && result.data.data.error)
+              )) ||
+            "Failed to initiate Google sign-in.";
+
+          Auth.showFormError(errMsg);
+
+          isSubmitting = false;
+          setLoginPending(false);
+          Auth.setButtonLoading(button, false);
+        })
+        .catch(function () {
+          Auth.showFormError("Network error. Please check your connection and try again.");
+          isSubmitting = false;
+          setLoginPending(false);
+          Auth.setButtonLoading(button, false);
+        });
+    } else {
+      // LinkedIn: keep redirect-based flow for now
+      var baseUrl = oauthLinkedin;
+      if (!baseUrl) {
+        isSubmitting = false;
+        setLoginPending(false);
+        Auth.setButtonLoading(button, false);
+        return;
+      }
+      var url =
+        baseUrl +
+        (baseUrl.indexOf("?") >= 0 ? "&" : "?") +
+        "role=" +
+        encodeURIComponent(oauthRoleParam());
+      window.location.href = url;
+    }
   }
 
   form.addEventListener("submit", function (event) {

@@ -591,6 +591,30 @@
   font-size: 16px;
 }
 
+/* Social button SVG icons */
+.ed-auth-btn__svg-icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.ed-auth-btn--social-compact .ed-auth-btn__svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ed-auth-btn__provider-text {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  .ed-auth-btn--social-compact .ed-auth-btn__svg-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .ed-auth-role-panel {
   animation: ed-auth-fade-in 0.2s ease;
 }
@@ -786,5 +810,228 @@
   .ed-auth-btn--primary,
   .ed-auth-btn--social {
     transition: none;
+  }
+}
+
+/* ==========================================================================
+   Cross-domain OAuth linked account modal
+   ========================================================================== */
+
+.ed-auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  animation: ed-auth-modal-fade-in 0.2s ease;
+  padding: 20px;
+}
+
+.ed-auth-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 440px;
+  width: 100%;
+  padding: 0;
+  animation: ed-auth-modal-slide-up 0.25s ease;
+  overflow: hidden;
+}
+
+.ed-auth-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.ed-auth-modal__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ed-auth-heading);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ed-auth-modal__close {
+  background: none;
+  border: none;
+  color: var(--ed-auth-text-muted);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background-color var(--ed-auth-transition), color var(--ed-auth-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.ed-auth-modal__close:hover {
+  background: var(--ed-auth-segment-bg);
+  color: var(--ed-auth-text);
+}
+
+.ed-auth-modal__close:focus-visible {
+  outline: 2px solid var(--ed-auth-primary);
+  outline-offset: 2px;
+}
+
+.ed-auth-modal__body {
+  padding: 16px 24px 0;
+}
+
+.ed-auth-modal__body p {
+  font-size: 14px;
+  color: var(--ed-auth-text);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.ed-auth-modal__linked-with {
+  background: var(--ed-auth-segment-bg);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.ed-auth-modal__linked-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ed-auth-text-muted);
+  margin-bottom: 6px;
+}
+
+.ed-auth-modal__linked-name {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ed-auth-primary);
+  letter-spacing: -0.01em;
+}
+
+.ed-auth-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 24px 24px;
+}
+
+.ed-auth-modal__actions .ed-auth-btn {
+  width: 100%;
+  height: 40px;
+  font-size: 13px;
+  border-radius: 10px;
+  margin: 0;
+}
+
+.ed-auth-btn--outline {
+  background: #ffffff;
+  border: 1px solid var(--ed-auth-border);
+  color: var(--ed-auth-label);
+  font-weight: 600;
+  transition: background-color var(--ed-auth-transition), border-color var(--ed-auth-transition);
+}
+
+.ed-auth-btn--outline:hover {
+  background: var(--ed-auth-social-hover);
+  border-color: var(--ed-auth-social-border-hover);
+  color: var(--ed-auth-label);
+}
+
+.ed-auth-btn--outline:focus-visible {
+  outline: 2px solid var(--ed-auth-primary);
+  outline-offset: 2px;
+}
+
+.ed-auth-btn--ghost {
+  background: transparent;
+  border: none;
+  color: var(--ed-auth-text-muted);
+  font-weight: 600;
+  transition: color var(--ed-auth-transition);
+}
+
+.ed-auth-btn--ghost:hover {
+  color: var(--ed-auth-text);
+}
+
+.ed-auth-btn--ghost:focus-visible {
+  outline: 2px solid var(--ed-auth-primary);
+  outline-offset: 2px;
+}
+
+.ed-auth-modal__icon-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 0;
+}
+
+.ed-auth-modal__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fef2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  font-size: 24px;
+}
+
+@keyframes ed-auth-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ed-auth-modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ed-auth-modal {
+    border-radius: 16px;
+  }
+
+  .ed-auth-modal__header {
+    padding: 16px 16px 0;
+  }
+
+  .ed-auth-modal__title {
+    font-size: 16px;
+  }
+
+  .ed-auth-modal__body {
+    padding: 12px 16px 0;
+  }
+
+  .ed-auth-modal__actions {
+    padding: 12px 16px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-auth-modal-overlay,
+  .ed-auth-modal {
+    animation: none;
   }
 }

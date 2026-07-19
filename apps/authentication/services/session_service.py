@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.db import transaction
@@ -5,6 +7,7 @@ from django.db import transaction
 from apps.authentication.services.login_service import LoginService
 from apps.core.services.base import BaseService
 
+logger = logging.getLogger(__name__)
 
 BACKEND_MAP = {
     "it": "apps.accounts.authentication.backends.ITUserAuthBackend",
@@ -24,6 +27,11 @@ class SessionService(BaseService):
             password=password,
             request_meta=self._meta(request),
         )
+        if user is None:
+            raise ValueError(
+                f"Authentication failed for domain='{domain}', email='{email}'. "
+                "LoginService.authenticate() returned None."
+            )
         backend = BACKEND_MAP.get(domain)
         if not backend:
             raise ValueError("Unsupported domain for session login.")
@@ -36,9 +44,21 @@ class SessionService(BaseService):
     @transaction.atomic
     def login_user(self, request, *, domain: str, user):
         """Establish a Django session for an already-authenticated user (e.g. OAuth)."""
+        if user is None:
+            raise ValueError(
+                f"SessionService.login_user() received user=None for domain='{domain}'. "
+                "The OAuth account linking service failed to resolve or create a user."
+            )
         backend = BACKEND_MAP.get(domain)
         if not backend:
-            raise ValueError("Unsupported domain for session login.")
+            raise ValueError(
+                f"Unsupported domain for session login: '{domain}'. "
+                f"Supported domains: {list(BACKEND_MAP.keys())}"
+            )
+        logger.info(
+            "SessionService.login_user: domain=%s, user_pk=%s, user_email=%s, backend=%s",
+            domain, user.pk, getattr(user, 'email', '?'), backend,
+        )
         user.backend = backend
         django_login(request, user)
         request.session.cycle_key()

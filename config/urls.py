@@ -18,6 +18,7 @@ urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("api/", include("apps.api.urls")),
     path("", include("config.urls_web")),
+    path("api/social-auth/", include("apps.social_auth.urls")),
 ]
 
 if settings.ENABLE_API_DOCS:

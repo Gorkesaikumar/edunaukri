@@ -376,10 +376,90 @@ window.EduNaukriAuth = window.EduNaukriAuth || {};
 
 
 
-  document.addEventListener("DOMContentLoaded", function () {
+  // -------------------------------------------------------------------
+  // Cross-domain OAuth linked modal
+  // -------------------------------------------------------------------
 
+  Auth.showOAuthLinkedModal = function (data) {
+    var modal = document.getElementById("oauthLinkedModal");
+    if (!modal) return;
+
+    var nameEl = document.getElementById("oauthLinkedAccountName");
+    if (nameEl) nameEl.textContent = data.accountName || "";
+
+    modal.classList.remove("d-none");
+    document.body.style.overflow = "hidden";
+  };
+
+  Auth.closeOAuthLinkedModal = function () {
+    var modal = document.getElementById("oauthLinkedModal");
+    if (!modal) return;
+    modal.classList.add("d-none");
+    document.body.style.overflow = "";
+  };
+
+  Auth.handleOAuthLinkedParams = function () {
+    var params = new URLSearchParams(window.location.search);
+    var linkedAccount = params.get("oauth_linked_account");
+
+    if (linkedAccount) {
+      // Clean the URL immediately to prevent re-triggering on navigation
+      if (window.history && window.history.replaceState) {
+        params.delete("oauth_linked_account");
+        var clean = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+        window.history.replaceState({}, "", clean);
+      }
+
+      Auth.showOAuthLinkedModal({
+        accountName: decodeURIComponent(linkedAccount.replace(/\+/g, " ")),
+      });
+
+      return true;
+    }
+
+    return false;
+  };
+
+  // -------------------------------------------------------------------
+  // Init
+  // -------------------------------------------------------------------
+
+  document.addEventListener("DOMContentLoaded", function () {
     Auth.initPasswordToggles();
 
+    // Close modal on overlay click
+    var modal = document.getElementById("oauthLinkedModal");
+    if (modal) {
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+          Auth.closeOAuthLinkedModal();
+        }
+      });
+
+      var closeBtn = document.getElementById("oauthLinkedModalClose");
+      var cancelBtn = document.getElementById("oauthLinkedCancelBtn");
+      var anotherBtn = document.getElementById("oauthLinkedAnotherBtn");
+
+      if (closeBtn) closeBtn.addEventListener("click", Auth.closeOAuthLinkedModal);
+      if (cancelBtn) cancelBtn.addEventListener("click", Auth.closeOAuthLinkedModal);
+      if (anotherBtn) {
+        anotherBtn.addEventListener("click", function () {
+          Auth.closeOAuthLinkedModal();
+          // Refresh the page to clear any OAuth state
+          window.location.href = window.location.pathname;
+        });
+      }
+
+      // Close on Escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.classList.contains("d-none")) {
+          Auth.closeOAuthLinkedModal();
+        }
+      });
+    }
+
+    // Check for structured OAuth linked params on page load
+    Auth.handleOAuthLinkedParams();
   });
 
 })(window.EduNaukriAuth);
