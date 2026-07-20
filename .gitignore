@@ -70,3 +70,22 @@ deployment/backups/logs/*.log
 
 # Keep folder structure
 !deployment/backups/**/.gitkeep
+# Environment
+.env
+deployment/.backup.env
+
+# Backup files
+backups/
+deployment/backups/
+
+# Logs
+logs/
+*.log
+
+# Database dumps
+*.sql
+*.sql.gz
+
+# Archives
+*.tar
+*.tar.gz

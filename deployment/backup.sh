@@ -43,9 +43,10 @@ cd "${PROJECT_ROOT}"
 # 2. Logging Setup & Configuration Loading
 # ------------------------------------------------------------------------------
 # Load optional deployment suite variables if present
-if [[ -f "${SCRIPT_DIR}/.deployment.env" ]]; then
+# Load Backup Configuration
+if [[ -f "${SCRIPT_DIR}/.backup.env" ]]; then
     # shellcheck disable=SC1091
-    source "${SCRIPT_DIR}/.deployment.env"
+    source "${SCRIPT_DIR}/.backup.env"
 fi
 
 # Ensure logging directory exists
@@ -156,7 +157,7 @@ fi
 # Filename format exactly matching requirement: YYYY-MM-DD_HH-MM-SS
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
-BACKUPS_ROOT="${PROJECT_ROOT}/backups"
+BACKUPS_ROOT="${PROJECT_ROOT}/deployment/backups"
 DIR_DATABASE="${BACKUPS_ROOT}/database"
 DIR_MEDIA="${BACKUPS_ROOT}/media"
 DIR_VOLUMES="${BACKUPS_ROOT}/volumes"
@@ -307,6 +308,37 @@ TOTAL_PRUNED=$((PRUNED_DB + PRUNED_MEDIA + PRUNED_VOL))
 log_success "Retention policy enforced: deleted ${TOTAL_PRUNED} outdated archive file(s) across categories."
 
 # Mark backup process as successful for exit trap
+# ==============================================================================
+# STEP 5: Upload Backups to Google Drive
+# ==============================================================================
+
+log_header "STEP 5: Uploading Backups to Google Drive"
+
+YEAR=$(date +%Y)
+MONTH=$(date +%m)
+
+log_info "Uploading Database Backup..."
+
+rclone copy \
+"${DIR_DATABASE}" \
+"${RCLONE_REMOTE}/database/${YEAR}/${MONTH}" \
+--create-empty-src-dirs
+
+log_info "Uploading Media Backup..."
+
+rclone copy \
+"${DIR_MEDIA}" \
+"${RCLONE_REMOTE}/media/${YEAR}/${MONTH}" \
+--create-empty-src-dirs
+
+log_info "Uploading Docker Volumes Backup..."
+
+rclone copy \
+"${DIR_VOLUMES}" \
+"${RCLONE_REMOTE}/volumes/${YEAR}/${MONTH}" \
+--create-empty-src-dirs
+
+log_success "Google Drive Upload Completed Successfully."
 BACKUP_SUCCESS=true
 log_success "All backup procedures executed successfully."
 exit 0
