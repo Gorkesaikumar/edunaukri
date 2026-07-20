@@ -58,3 +58,15 @@ Thumbs.db
 
 .cursor/
 .cursor/mcp.json
+# ===========================
+# Backup files
+# ===========================
+deployment/backups/database/local/*.sql
+deployment/backups/database/local/*.sql.gz
+
+deployment/backups/database/logs/*.log
+deployment/backups/media/logs/*.log
+deployment/backups/logs/*.log
+
+# Keep folder structure
+!deployment/backups/**/.gitkeep
