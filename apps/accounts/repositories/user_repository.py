@@ -25,7 +25,7 @@ class DomainUserRepository(FilteringRepository):
         self.model = model
 
     def get_by_email(self, email: str):
-        return self.filter_by(email=normalize_email(email)).first()
+        return self.filter_by(email__iexact=normalize_email(email)).first()
 
     def get_by_id(self, user_id):
         try:

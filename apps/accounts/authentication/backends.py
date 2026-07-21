@@ -45,7 +45,9 @@ class DomainAuthBackend:
                 password=password,
                 request_meta=meta,
             )
-        except ValidationError:
+        except ValidationError as exc:
+            if request is not None:
+                request.auth_validation_error = exc
             return None
 
     def get_user(self, user_id):

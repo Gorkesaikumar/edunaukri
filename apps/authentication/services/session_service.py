@@ -21,21 +21,16 @@ BACKEND_MAP = {
 class SessionService(BaseService):
     @transaction.atomic
     def login(self, request, *, domain: str, email: str, password: str):
-        user = LoginService().authenticate(
-            domain=domain,
-            email=email,
-            password=password,
-            request_meta=self._meta(request),
-        )
+        from django.contrib.auth import authenticate
+        from django.core.exceptions import ValidationError
+        
+        user = authenticate(request, username=email, password=password, domain=domain)
+        
         if user is None:
-            raise ValueError(
-                f"Authentication failed for domain='{domain}', email='{email}'. "
-                "LoginService.authenticate() returned None."
-            )
-        backend = BACKEND_MAP.get(domain)
-        if not backend:
-            raise ValueError("Unsupported domain for session login.")
-        user.backend = backend
+            if hasattr(request, "auth_validation_error"):
+                raise request.auth_validation_error
+            raise ValidationError("Invalid credentials.")
+            
         django_login(request, user)
         request.session.cycle_key()
         request.session["_auth_domain"] = domain
