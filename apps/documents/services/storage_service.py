@@ -51,10 +51,20 @@ class StorageService(BaseService):
         stored_filename = StoredFile.generate_stored_filename(safe_original_name)
         relative_dir = self._build_relative_dir(domain, file_type, owner_id)
         relative_path = f"{relative_dir}/{stored_filename}"
-        absolute_path = Path(settings.MEDIA_ROOT) / relative_path
-
-        absolute_path.parent.mkdir(parents=True, exist_ok=True)
-        checksum = self._write_file_and_checksum(uploaded_file, absolute_path)
+        
+        import hashlib
+        from django.core.files.storage import default_storage
+        
+        sha256 = hashlib.sha256()
+        original_pos = uploaded_file.tell() if hasattr(uploaded_file, "tell") else 0
+        uploaded_file.seek(0)
+        for chunk in uploaded_file.chunks():
+            sha256.update(chunk)
+        checksum = sha256.hexdigest()
+        uploaded_file.seek(original_pos)
+        
+        saved_path = default_storage.save(relative_path, uploaded_file)
+        relative_path = saved_path
 
         stored_file = self.repository.create(
             domain=domain,

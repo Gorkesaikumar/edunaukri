@@ -172,9 +172,9 @@ class UploadValidator:
                     detected_mime = magic.from_buffer(chunk, mime=True)
                 finally:
                     uploaded_file.seek(original_pos)
-            except ImportError:
+            except Exception as exc:
                 import logging
-                logging.getLogger(__name__).warning("python-magic not installed, skipping deep MIME validation")
+                logging.getLogger(__name__).warning("python-magic validation failed or not installed: %s", exc)
                 detected_mime = getattr(uploaded_file, "content_type", None)
             
             if detected_mime and detected_mime not in allowed_mimes:
