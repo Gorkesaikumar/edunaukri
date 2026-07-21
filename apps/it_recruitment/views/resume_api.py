@@ -30,7 +30,7 @@ def _get_profile(user) -> JobSeekerProfile | None:
 class JobSeekerResumePortalAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
@@ -62,7 +62,7 @@ class JobSeekerResumeAutofillAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):

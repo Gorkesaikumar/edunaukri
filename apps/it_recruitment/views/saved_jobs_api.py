@@ -25,7 +25,7 @@ def _forbidden():
 class JobSeekerSavedJobsAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
@@ -52,7 +52,7 @@ class JobSeekerSavedJobToggleAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
@@ -81,7 +81,7 @@ class JobSeekerSavedJobToggleAPIView(LoginRequiredMixin, View):
 class JobSeekerSavedJobStatusAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):

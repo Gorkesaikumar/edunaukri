@@ -23,7 +23,6 @@
 <section class="rcd-stats rcd-stats--jobs mb-4" aria-label="Job summary">
     <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Total</p><p class="rcd-stat__value" data-stat="total">{{ jobs_page.stats.total }}</p></article>
     <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Published</p><p class="rcd-stat__value" data-stat="published">{{ jobs_page.stats.published }}</p></article>
-    <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Drafts</p><p class="rcd-stat__value" data-stat="draft">{{ jobs_page.stats.draft }}</p></article>
     <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Paused</p><p class="rcd-stat__value" data-stat="paused">{{ jobs_page.stats.paused }}</p></article>
     <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Closed</p><p class="rcd-stat__value" data-stat="closed">{{ jobs_page.stats.closed }}</p></article>
     <article class="rcd-bento rcd-stat"><p class="rcd-stat__label">Archived</p><p class="rcd-stat__value" data-stat="archived">{{ jobs_page.stats.archived }}</p></article>
@@ -100,7 +99,7 @@
                     {% empty %}
                     <tr><td colspan="10" class="text-center text-muted py-5">
                         <span class="material-symbols-outlined d-block mb-2" style="font-size:2rem">work_off</span>
-                        No jobs in this view. Create your first draft to get started.
+                        No jobs in this view. Create your first job posting to get started.
                     </td></tr>
                     {% endfor %}
                 </tbody>

@@ -122,22 +122,22 @@
   }
 
   function initListJoinButtons() {
-    document.querySelectorAll(".jsd-int-card[data-scheduled-at]").forEach(function (card) {
+    document.querySelectorAll(".fjd-list-card[data-scheduled-at]").forEach(function (card) {
       var scheduledAt = card.getAttribute("data-scheduled-at");
-      var joinBtn = card.querySelector(".jsd-btn--outline[disabled]");
+      var joinBtn = card.querySelector(".fjd-btn--outline[disabled]");
       if (!joinBtn || !scheduledAt) return;
       function refresh() {
         var start = new Date(scheduledAt).getTime();
         var now = Date.now();
         if (now >= start - joinWindowMs && now <= start + 2 * 60 * 60 * 1000) {
-          var active = card.querySelector('a.jsd-btn--primary[href]');
+          var active = card.querySelector('a.fjd-btn--primary[href]');
           if (!active) {
             var url = card.querySelector("[data-join-url]");
             if (url) {
               joinBtn.outerHTML =
                 '<a href="' +
                 url.getAttribute("data-join-url") +
-                '" class="jsd-btn jsd-btn--primary" target="_blank" rel="noopener">Join Interview</a>';
+                '" class="fjd-btn fjd-btn--primary" target="_blank" rel="noopener">Join Interview</a>';
             }
           }
         }
@@ -227,10 +227,10 @@
         .then(function (payload) {
           if (!payload.success || !payload.data) return;
           payload.data.summary.forEach(function (stat) {
-            document.querySelectorAll('.jsd-int-stat').forEach(function (el) {
-              var label = el.querySelector(".jsd-int-stat__label");
+            document.querySelectorAll('.fjd-tracker__item').forEach(function (el) {
+              var label = el.querySelector(".fjd-tracker__label");
               if (label && label.textContent === stat.label) {
-                var value = el.querySelector(".jsd-int-stat__value");
+                var value = el.querySelector(".fjd-tracker__value");
                 if (value) value.textContent = stat.value;
               }
             });

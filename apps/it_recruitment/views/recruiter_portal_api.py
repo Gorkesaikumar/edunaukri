@@ -128,7 +128,7 @@ def _get_interview_for_recruiter(profile: RecruiterProfile, interview_id):
 class RecruiterProfileAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -163,7 +163,7 @@ class RecruiterCompanyCreateAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -206,7 +206,7 @@ class RecruiterCompanyCreateAPIView(RecruiterScopedAPIView):
 class RecruiterCompanyAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -244,7 +244,7 @@ class RecruiterJobCreateAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -752,7 +752,7 @@ class RecruiterJobsListAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -967,7 +967,7 @@ class RecruiterSkillSuggestAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -996,7 +996,7 @@ class RecruiterApplicantsListAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -1030,7 +1030,7 @@ class RecruiterInterviewsListAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -1061,7 +1061,7 @@ class RecruiterInterviewScheduleCandidatesAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()

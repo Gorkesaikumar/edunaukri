@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from apps.authentication.services.portal_url_service import PortalURLService
+from django.utils.dateparse import parse_date
 from apps.companies.selectors.company_selector import CompanyMemberSelector
 from apps.core.services.base import BaseService
 from apps.it_recruitment.models import RecruiterProfile
@@ -134,7 +135,7 @@ class RecruiterJobCreatePortalService(BaseService):
                     post.get("education_requirement") or ""
                 ).strip(),
                 "joining_timeline": (post.get("joining_timeline") or "").strip(),
-                "application_deadline": post.get("application_deadline") or None,
+                "application_deadline": parse_date(post.get("application_deadline")) if post.get("application_deadline") else None,
                 "country": (post.get("country") or "").strip(),
                 "state": (post.get("state") or "").strip(),
                 "city": (post.get("city") or "").strip() or location,

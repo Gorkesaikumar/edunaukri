@@ -229,14 +229,13 @@ class _FacultyRoleSignupView(View):
                 result = service.register_professor(request, data=data)
                 domain = "professor"
 
-            if result.get("requires_verification") or not result.get("redirect_url"):
+            if not result.get("redirect_url"):
                 return JsonResponse(
                     {
-                        "success": True,
-                        "requires_verification": True,
-                        "redirect_url": reverse(self.login_url_name),
-                        "message": "Registration successful. Please verify your email before signing in.",
-                    }
+                        "success": False,
+                        "errors": {"form": "Unable to complete registration. Please try again."},
+                    },
+                    status=500
                 )
             response = JsonResponse(
                 {

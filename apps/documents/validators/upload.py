@@ -162,15 +162,20 @@ class UploadValidator:
             allowed_mimes = mime_map[extension]
             
             # Use python-magic for deep MIME type inspection
-            import magic
-            
-            original_pos = uploaded_file.tell() if hasattr(uploaded_file, "tell") else 0
             try:
-                uploaded_file.seek(0)
-                chunk = uploaded_file.read(2048)
-                detected_mime = magic.from_buffer(chunk, mime=True)
-            finally:
-                uploaded_file.seek(original_pos)
+                import magic
+                
+                original_pos = uploaded_file.tell() if hasattr(uploaded_file, "tell") else 0
+                try:
+                    uploaded_file.seek(0)
+                    chunk = uploaded_file.read(2048)
+                    detected_mime = magic.from_buffer(chunk, mime=True)
+                finally:
+                    uploaded_file.seek(original_pos)
+            except ImportError:
+                import logging
+                logging.getLogger(__name__).warning("python-magic not installed, skipping deep MIME validation")
+                detected_mime = getattr(uploaded_file, "content_type", None)
             
             if detected_mime and detected_mime not in allowed_mimes:
                 if file_type == StorageFileType.RESUME:

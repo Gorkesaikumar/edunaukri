@@ -81,7 +81,7 @@ def _parse_json(request) -> dict:
 class RecruiterSettingsAccountAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -110,7 +110,7 @@ class RecruiterSettingsPasswordAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -140,7 +140,7 @@ class RecruiterSettingsPasswordAPIView(RecruiterScopedAPIView):
 class RecruiterSettingsNotificationsAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -168,7 +168,7 @@ class RecruiterSettingsNotificationsAPIView(RecruiterScopedAPIView):
 class RecruiterSettingsSessionsAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -208,7 +208,7 @@ class RecruiterSettingsRevokeSessionsAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -229,7 +229,7 @@ class RecruiterSettingsRevokeSessionsAPIView(RecruiterScopedAPIView):
 class RecruiterSettingsConnectedAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -267,7 +267,7 @@ class RecruiterSettingsDeleteAccountAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -304,7 +304,7 @@ class RecruiterSettingsDeleteAccountAPIView(RecruiterScopedAPIView):
 class RecruiterSettingsAuditAPIView(RecruiterScopedAPIView):
     login_url = "/it/login/recruiter/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()

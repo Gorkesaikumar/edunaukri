@@ -222,9 +222,7 @@ class HiringMetricsService(BaseService):
         if hired.filter(hired_at__isnull=False).exists():
             total_days = 0
             n = 0
-            for app in hired.filter(hired_at__isnull=False).only(
-                "applied_at", "hired_at"
-            )[:100]:
+            for app in hired.filter(hired_at__isnull=False)[:100]:
                 if app.hired_at and app.applied_at:
                     total_days += max(0, (app.hired_at - app.applied_at).days)
                     n += 1

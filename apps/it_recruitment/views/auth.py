@@ -66,14 +66,14 @@ class _ITRoleLoginView(View):
     role_label: str = ""
     dashboard_url_name: str = ""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         return render(
             request,
             "auth/it_login.html",
             _login_page_context(self.active_role, request),
         )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         email = (request.POST.get("email") or "").strip()
         password = request.POST.get("password") or ""
         next_url = safe_next_url(request)
@@ -167,7 +167,7 @@ class ITSignupCheckEmailView(View):
 
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         email = (request.GET.get("email") or "").strip()
         if not email:
             return JsonResponse(
@@ -194,12 +194,12 @@ class _ITRoleSignupView(View):
     login_url_name: str = "it_login_job_seeker"
     dashboard_url_name: str = "jobseeker_dashboard"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         return render(
             request, "auth/it_signup.html", _signup_page_context(self.active_role)
         )
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         data = {key: request.POST.get(key, "") for key in request.POST}
 
         try:
@@ -210,14 +210,13 @@ class _ITRoleSignupView(View):
             else:
                 result = service.register_job_seeker(request, data=data)
 
-            if result.get("requires_verification") or not result.get("redirect_url"):
+            if not result.get("redirect_url"):
                 return JsonResponse(
                     {
-                        "success": True,
-                        "requires_verification": True,
-                        "redirect_url": reverse(self.login_url_name),
-                        "message": "Registration successful. Please verify your email before signing in.",
-                    }
+                        "success": False,
+                        "errors": {"form": "Unable to complete registration. Please try again."},
+                    },
+                    status=500
                 )
             response = JsonResponse(
                 {

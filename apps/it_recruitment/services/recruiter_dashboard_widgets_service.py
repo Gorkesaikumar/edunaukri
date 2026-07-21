@@ -689,8 +689,7 @@ class RecruiterDashboardWidgetsService(BaseService):
         jobs = [
             {"id": str(j.pk), "title": j.title}
             for j in JobPostingSelector()
-            .for_recruiter(profile)
-            .only("pk", "title")[:30]
+            .for_recruiter(profile)[:30]
         ]
         departments = list(
             apps_qs.exclude(job_posting__department="")

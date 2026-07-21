@@ -228,6 +228,104 @@
       .replace(/</g, "&lt;");
   }
 
+  function initApplicationModal() {
+    var applyModalEl = document.getElementById("jsdApplyModal");
+    if (!applyModalEl) return;
+    
+    var modalTitleJob = document.getElementById("jsdApplyModalJobTitle");
+    var modalInstitution = document.getElementById("jsdApplyModalInstitution");
+    var coverLetter = document.getElementById("jsdApplyCoverLetter");
+    var coverLetterCount = document.getElementById("jsdApplyCoverLetterCount");
+    var submitBtn = document.getElementById("jsdApplySubmitBtn");
+    
+    var currentJobId = null;
+    var currentApplyUrl = null;
+    var currentSourceBtn = null;
+    
+    if (coverLetter && coverLetterCount) {
+      coverLetter.addEventListener("input", function() {
+        coverLetterCount.textContent = this.value.length;
+      });
+    }
+    
+    applyModalEl.addEventListener("show.bs.modal", function (event) {
+      var button = event.relatedTarget;
+      if (!button) return;
+      
+      currentSourceBtn = button;
+      currentJobId = button.getAttribute("data-job-id");
+      currentApplyUrl = button.getAttribute("data-apply-url");
+      
+      if (modalTitleJob) modalTitleJob.textContent = button.getAttribute("data-job-title") || "Job Title";
+      if (modalInstitution) modalInstitution.textContent = button.getAttribute("data-job-institution") || "Company Name";
+      
+      if (coverLetter) {
+        coverLetter.value = "";
+        if (coverLetterCount) coverLetterCount.textContent = "0";
+      }
+      
+      if (submitBtn) {
+        submitBtn.disabled = submitBtn.hasAttribute("data-disabled-initially") || (!document.querySelector(".bi-check-circle-fill.text-success"));
+      }
+    });
+    
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function () {
+        if (!currentApplyUrl) return;
+        
+        var originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+        submitBtn.disabled = true;
+        
+        var formData = new FormData();
+        if (coverLetter) formData.append("cover_letter", coverLetter.value);
+        
+        fetch(currentApplyUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: formData,
+          credentials: "same-origin"
+        })
+        .then(function(response) {
+          return response.json().then(function(data) {
+            if (!response.ok) {
+              throw new Error(data.error || "Application submission failed.");
+            }
+            return data;
+          });
+        })
+        .then(function(data) {
+          notify("success", data.message || "Application submitted successfully.");
+          
+          if (window.bootstrap && bootstrap.Modal) {
+            var modalInstance = bootstrap.Modal.getInstance(applyModalEl);
+            if (modalInstance) modalInstance.hide();
+          }
+          
+          if (currentSourceBtn) {
+            var detailUrl = data.redirect_url || "#";
+            var newBtn = document.createElement("a");
+            newBtn.href = detailUrl;
+            newBtn.className = currentSourceBtn.className.replace("jsd-apply-action-btn", "");
+            if (currentSourceBtn.innerHTML.includes("w-100")) newBtn.classList.add("w-100");
+            newBtn.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Applied';
+            currentSourceBtn.parentNode.replaceChild(newBtn, currentSourceBtn);
+          }
+        })
+        .catch(function(error) {
+          notify("error", error.message);
+        })
+        .finally(function() {
+          submitBtn.innerHTML = originalBtnText;
+          submitBtn.disabled = false;
+        });
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initFilterToggle();
     initSuggest();
@@ -235,5 +333,6 @@
     initApplyForms();
     initShareButtons();
     initRecentSearches();
+    initApplicationModal();
   });
 })();

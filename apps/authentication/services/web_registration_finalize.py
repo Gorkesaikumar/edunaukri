@@ -8,9 +8,6 @@ from typing import Callable
 from django.conf import settings
 
 from apps.accounts.constants.enums import AccountStatus
-from apps.authentication.services.email_verification_service import (
-    EmailVerificationService,
-)
 from apps.authentication.services.session_service import SessionService
 from apps.core.services.base import BaseService
 
@@ -29,21 +26,10 @@ class WebRegistrationFinalizeService(BaseService):
         password: str,
         dashboard_url_resolver: Callable,
     ) -> dict:
-        try:
-            EmailVerificationService().create_verification_token(
-                domain=domain, user_id=user.pk
-            )
-        except Exception:
-            logger.exception(
-                "Verification email queue failed for user=%s domain=%s", user.pk, domain
-            )
-
         redirect_url = None
-        requires_verification = getattr(
-            settings, "AUTH_REQUIRE_EMAIL_VERIFICATION", False
-        )
+        requires_verification = False
 
-        if not requires_verification and user.account_status != AccountStatus.SUSPENDED:
+        if user.account_status != AccountStatus.SUSPENDED:
             SessionService().login(
                 request,
                 domain=domain,

@@ -93,10 +93,16 @@
             <span class="jm-applied-label"><i class="bi bi-check-circle-fill"></i> Applied</span>
             {% elif job.can_apply %}
             {% if is_job_seeker %}
-            <form method="post" action="{{ job.apply_url }}" class="jm-apply-form" data-apply-job-form>
-                {% csrf_token %}
-                <button type="submit" class="ed-btn ed-btn--gradient">Apply Now</button>
-            </form>
+            <button type="button" 
+                    class="ed-btn ed-btn--gradient jsd-apply-action-btn"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#jsdApplyModal"
+                    data-job-id="{{ job.id }}"
+                    data-job-title="{{ job.title }}"
+                    data-job-institution="{{ job.company_name }}"
+                    data-apply-url="{{ job.apply_url }}">
+                Apply Now
+            </button>
             {% else %}
             <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply Now</a>
             {% endif %}

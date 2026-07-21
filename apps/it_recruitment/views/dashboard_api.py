@@ -43,7 +43,7 @@ class JobSeekerDashboardInsightsAPIView(LoginRequiredMixin, View):
 
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
@@ -124,7 +124,7 @@ class JobSeekerProfileCompletionAnimationAPIView(LoginRequiredMixin, View):
 
     login_url = "/it/login/job-seeker/"
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
@@ -149,7 +149,7 @@ def _get_recruiter_profile(user) -> RecruiterProfile | None:
 class RecruiterDashboardInsightsAPIView(RecruiterScopedAPIView):
     """Return live KPIs and dashboard widgets for the authenticated recruiter."""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.RECRUITER
         ):
@@ -205,7 +205,7 @@ class RecruiterDashboardInsightsAPIView(RecruiterScopedAPIView):
 class RecruiterAnalyticsExportAPIView(RecruiterScopedAPIView):
     """Export recruitment analytics as CSV, Excel-compatible CSV, or printable HTML (PDF)."""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.RECRUITER
         ):

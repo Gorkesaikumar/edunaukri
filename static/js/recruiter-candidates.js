@@ -281,6 +281,7 @@
       (skills ? '<div class="rcd-drawer-skills">' + skills + "</div>" : "") +
       (links.length ? '<p class="small mt-2">' + links.join(" · ") + "</p>" : "") +
       "</section>" +
+      (app.cover_letter ? '<section class="rcd-drawer-section"><h6>Cover Letter</h6><div class="small text-muted" style="white-space: pre-wrap;">' + escapeHtml(app.cover_letter) + '</div></section>' : '') +
       '<section class="rcd-drawer-section"><h6>Application</h6><dl class="rcd-drawer-meta">' +
       "<dt>Job</dt><dd>" +
       escapeHtml(app.applied_job || app.job_title) +

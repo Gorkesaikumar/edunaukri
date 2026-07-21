@@ -73,7 +73,7 @@ class _JobSeekerProfileAPIMixin(LoginRequiredMixin, View):
 class JobSeekerProfileAPIView(_JobSeekerProfileAPIMixin):
     """Full profile read for the authenticated job seeker."""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -129,7 +129,7 @@ class JobSeekerProfileSectionAPIView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfileExperiencesAPIView(_JobSeekerProfileAPIMixin):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -139,7 +139,7 @@ class JobSeekerProfileExperiencesAPIView(_JobSeekerProfileAPIMixin):
         ]
         return JsonResponse({"success": True, "data": items})
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -193,7 +193,7 @@ class JobSeekerProfileExperienceDetailAPIView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfileEducationAPIView(_JobSeekerProfileAPIMixin):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -247,7 +247,7 @@ class JobSeekerProfileEducationDetailAPIView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfileProjectsAPIView(_JobSeekerProfileAPIMixin):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -301,7 +301,7 @@ class JobSeekerProfileProjectDetailAPIView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfileCertificationsAPIView(_JobSeekerProfileAPIMixin):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -355,7 +355,7 @@ class JobSeekerProfileCertificationDetailAPIView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfileResumeAPIView(_JobSeekerProfileAPIMixin):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -383,7 +383,7 @@ class JobSeekerProfileResumeAPIView(_JobSeekerProfileAPIMixin):
                 status=500,
             )
 
-    def delete(self, request):
+    def delete(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -396,7 +396,7 @@ class JobSeekerProfileResumeDownloadView(_JobSeekerProfileAPIMixin):
 
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -415,7 +415,7 @@ class JobSeekerProfileResumePreviewView(_JobSeekerProfileAPIMixin):
 
     http_method_names = ["get"]
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -446,7 +446,7 @@ class JobSeekerProfileResumePreviewView(_JobSeekerProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class JobSeekerProfilePhotoAPIView(_JobSeekerProfileAPIMixin):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()
@@ -465,9 +465,11 @@ class JobSeekerProfilePhotoAPIView(_JobSeekerProfileAPIMixin):
             return JsonResponse({"success": False, "error": message}, status=400)
         except (ValidationException, DomainException) as exc:
             return _error_response(exc)
-        except Exception:
+        except Exception as exc:
             import logging
-
+            import traceback
+            with open("d:\\edunaukri\\error.log", "w") as f:
+                f.write(traceback.format_exc())
             logging.getLogger(__name__).exception("Profile photo upload failed")
             return JsonResponse(
                 {
@@ -477,7 +479,7 @@ class JobSeekerProfilePhotoAPIView(_JobSeekerProfileAPIMixin):
                 status=500,
             )
 
-    def delete(self, request):
+    def delete(self, request, *args, **kwargs):
         profile = self._authorize(request)
         if profile is None:
             return _forbidden()

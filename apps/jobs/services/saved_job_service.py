@@ -123,7 +123,7 @@ class SavedJobService(BaseService):
         if not job:
             raise ValueError("Job not found.")
 
-        existing = SavedJob.objects.filter(job_seeker=profile, job_posting=job).first()
+        existing = SavedJob.all_objects.filter(job_seeker=profile, job_posting=job).first()
         if existing and not existing.is_deleted:
             existing.delete()
             return SavedJobToggleResult(
@@ -136,7 +136,12 @@ class SavedJobService(BaseService):
         if existing and existing.is_deleted:
             existing.restore()
         else:
-            SavedJob.objects.create(job_seeker=profile, job_posting=job)
+            from django.db import IntegrityError, transaction
+            try:
+                with transaction.atomic():
+                    SavedJob.objects.create(job_seeker=profile, job_posting=job)
+            except IntegrityError:
+                pass
 
         return SavedJobToggleResult(
             job_id=str(job.pk),
@@ -151,7 +156,7 @@ class SavedJobService(BaseService):
         if not job:
             raise ValueError("Job not found.")
 
-        existing = SavedJob.objects.filter(job_seeker=profile, job_posting=job).first()
+        existing = SavedJob.all_objects.filter(job_seeker=profile, job_posting=job).first()
         if existing and not existing.is_deleted:
             return SavedJobToggleResult(
                 job_id=str(job.pk),
@@ -162,7 +167,12 @@ class SavedJobService(BaseService):
         if existing and existing.is_deleted:
             existing.restore()
         else:
-            SavedJob.objects.create(job_seeker=profile, job_posting=job)
+            from django.db import IntegrityError
+            try:
+                with transaction.atomic():
+                    SavedJob.objects.create(job_seeker=profile, job_posting=job)
+            except IntegrityError:
+                pass
 
         return SavedJobToggleResult(
             job_id=str(job.pk),

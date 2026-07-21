@@ -129,8 +129,7 @@ class RecruiterInterviewPortalService(BaseService):
         job_filters = [
             {"id": str(j.pk), "title": j.title}
             for j in JobPostingSelector()
-            .for_recruiter(profile)
-            .only("pk", "title")[:50]
+            .for_recruiter(profile)[:50]
         ]
 
         return RecruiterInterviewsPortalContext(

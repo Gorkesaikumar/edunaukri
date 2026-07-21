@@ -101,22 +101,6 @@ class LoginService(BaseService):
 
         from django.conf import settings
 
-        if (
-            getattr(settings, "AUTH_REQUIRE_EMAIL_VERIFICATION", False)
-            and hasattr(user, "email_verified")
-            and not user.email_verified
-        ):
-            self._record_attempt(
-                domain,
-                email,
-                user.pk,
-                LoginAttemptResult.FAILURE,
-                meta,
-                "email_unverified",
-            )
-
-            raise ValidationError("Email verification required.")
-
         if not user.check_password(password):
             user.record_failed_login(
                 lock_after=getattr(settings, "AUTH_MAX_FAILED_LOGIN_ATTEMPTS", 5),

@@ -82,7 +82,7 @@ def _parse_json(request) -> dict:
 class JobSeekerSettingsAccountAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -111,7 +111,7 @@ class JobSeekerSettingsPasswordAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -141,7 +141,7 @@ class JobSeekerSettingsPasswordAPIView(LoginRequiredMixin, View):
 class JobSeekerSettingsNotificationsAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -167,7 +167,7 @@ class JobSeekerSettingsNotificationsAPIView(LoginRequiredMixin, View):
 class JobSeekerSettingsPrivacyAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def patch(self, request):
+    def patch(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -200,7 +200,7 @@ class JobSeekerSettingsPrivacyAPIView(LoginRequiredMixin, View):
 class JobSeekerSettingsSessionsAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -240,7 +240,7 @@ class JobSeekerSettingsRevokeSessionsAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -261,7 +261,7 @@ class JobSeekerSettingsRevokeSessionsAPIView(LoginRequiredMixin, View):
 class JobSeekerSettingsConnectedAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -293,7 +293,7 @@ class JobSeekerSettingsDeleteAccountAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()
@@ -330,7 +330,7 @@ class JobSeekerSettingsDeleteAccountAPIView(LoginRequiredMixin, View):
 class JobSeekerSettingsAuditAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         profile = _authorized(request)
         if not profile:
             return _forbidden()

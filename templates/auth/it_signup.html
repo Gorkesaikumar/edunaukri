@@ -48,13 +48,6 @@
                            placeholder="John Doe" autocomplete="name" aria-describedby="full_nameError">
                     <div class="ed-auth-field-error" id="full_nameError" role="alert"></div>
                 </div>
-                <div class="ed-auth-field">
-                    <label class="ed-auth-label" for="email">Email Address</label>
-                    <input class="form-control ed-auth-input" type="email" id="email" name="email"
-                           placeholder="name@company.com" autocomplete="email"
-                           aria-describedby="emailError" inputmode="email">
-                    <div class="ed-auth-field-error" id="emailError" role="alert"></div>
-                </div>
             </div>
 
             <div class="ed-auth-role-panel{% if active_role != 'recruiter' %} d-none{% endif %}" data-role-panel="recruiter">
@@ -70,6 +63,14 @@
                            placeholder="Acme Technologies" aria-describedby="company_nameError">
                     <div class="ed-auth-field-error" id="company_nameError" role="alert"></div>
                 </div>
+            </div>
+
+            <div class="ed-auth-field">
+                <label class="ed-auth-label" for="email">Email Address</label>
+                <input class="form-control ed-auth-input" type="email" id="email" name="email"
+                       placeholder="name@company.com" autocomplete="email"
+                       aria-describedby="emailError" inputmode="email">
+                <div class="ed-auth-field-error" id="emailError" role="alert"></div>
             </div>
 
             <div class="ed-auth-field">

@@ -31,7 +31,7 @@ class _LegacyPortalRedirectView(View):
 class JobSeekerPortalEntryRedirectView(View):
     """Redirect /jobseeker/ to the authenticated user's UUID dashboard."""
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         user = WebJWTService.get_valid_it_user(request)
         if user is None:
             return redirect(
@@ -47,7 +47,7 @@ class JobSeekerLegacyRedirectView(_LegacyPortalRedirectView):
 
 
 class RecruiterPortalEntryRedirectView(View):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         user = WebJWTService.get_valid_it_user(request)
         if user is None:
             return redirect(

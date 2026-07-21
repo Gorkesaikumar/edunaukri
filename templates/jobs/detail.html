@@ -52,10 +52,16 @@
                         {% if card.has_applied %}
                         <span class="jm-applied-label jm-applied-label--lg"><i class="bi bi-check-circle-fill"></i> Applied</span>
                         {% elif is_job_seeker %}
-                        <form method="post" action="{% url 'marketplace_job_apply' job_id=job.pk %}" id="jmDetailApplyForm">
-                            {% csrf_token %}
-                            <button type="submit" class="ed-btn ed-btn--gradient ed-btn--lg">Apply Now</button>
-                        </form>
+                        <button type="button" 
+                                class="ed-btn ed-btn--gradient ed-btn--lg jsd-apply-action-btn"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#jsdApplyModal"
+                                data-job-id="{{ job.pk }}"
+                                data-job-title="{{ job.title }}"
+                                data-job-institution="{{ card.company_name }}"
+                                data-apply-url="{% url 'marketplace_job_apply' job_id=job.pk %}">
+                            Apply Now
+                        </button>
                         {% else %}
                         <a href="{{ login_url }}" class="ed-btn ed-btn--gradient ed-btn--lg">Sign in to Apply</a>
                         {% endif %}
@@ -193,6 +199,7 @@
 </div>
 
 {% include "jobs/partials/share_modal.html" %}
+{% include "it/jobseeker/partials/apply_modal.html" %}
 {% endblock %}
 
 {% block extra_scripts %}

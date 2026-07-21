@@ -53,19 +53,27 @@
     </div>
 
     <div class="jsd-saved-card__actions">
-        <button type="button"
-                class="jsd-save-btn is-saved"
-                data-save-job-toggle
-                data-job-id="{{ job.id }}"
-                aria-label="Remove saved job"
-                aria-pressed="true">
-            <i class="bi bi-bookmark-fill"></i>
-            <span>Saved</span>
-        </button>
         {% if job.is_open %}
-        <a href="{{ job.detail_url }}" class="jsd-btn jsd-btn--soft">Apply Now</a>
+        <button type="button" 
+                class="jsd-btn jsd-btn--primary w-100 jsd-apply-action-btn"
+                data-bs-toggle="modal" 
+                data-bs-target="#jsdApplyModal"
+                data-job-id="{{ job.id }}"
+                data-job-title="{{ job.title }}"
+                data-job-institution="{{ job.company_name }}"
+                data-apply-url="{{ job.apply_url }}">
+            Apply Now
+        </button>
         {% else %}
-        <a href="{{ job.detail_url }}" class="jsd-btn jsd-btn--outline">View Job</a>
+        <a href="{{ job.detail_url }}" class="jsd-btn jsd-btn--outline w-100 text-center">View Job</a>
         {% endif %}
+        <button type="button"
+                class="jsd-btn jsd-btn--danger-outline w-100"
+                data-save-job-toggle
+                data-unsave-only="true"
+                data-job-id="{{ job.id }}"
+                aria-label="Remove saved job">
+            Unsave
+        </button>
     </div>
 </article>

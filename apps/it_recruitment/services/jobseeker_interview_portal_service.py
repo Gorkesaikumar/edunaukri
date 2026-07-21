@@ -448,7 +448,7 @@ class JobSeekerInterviewPortalService(BaseService):
         when = timezone.localtime(scheduled_at)
         inv = self._portal._extract_interview(app, list(app.timeline.all()))
         location = (
-            self._mapper._location(job.city, job.state, job.is_remote, job.location)
+            self._mapper._location(city=job.city, state=job.state, remote=job.is_remote, fallback=job.location)
             if job
             else ""
         )

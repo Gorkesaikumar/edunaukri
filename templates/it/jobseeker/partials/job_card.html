@@ -29,10 +29,16 @@
                     aria-pressed="{{ job.is_saved|yesno:'true,false' }}">
                 <i class="bi {% if job.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
             </button>
-            <form method="post" action="{{ job.apply_url }}">
-                {% csrf_token %}
-                <button type="submit" class="jsd-btn jsd-btn--soft">Apply Now</button>
-            </form>
+            <button type="button" 
+                    class="jsd-btn jsd-btn--soft jsd-apply-action-btn"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#jsdApplyModal"
+                    data-job-id="{{ job.id }}"
+                    data-job-title="{{ job.title }}"
+                    data-job-institution="{{ job.company_name }}"
+                    data-apply-url="{{ job.apply_url }}">
+                Apply Now
+            </button>
         </div>
     </div>
 </article>

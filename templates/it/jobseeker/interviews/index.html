@@ -5,37 +5,32 @@
 
 {% block extra_head %}
 <link href="{% static 'css/jobseeker-interviews.css' %}" rel="stylesheet">
+<link href="{% static 'css/professor-dashboard.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block dashboard_content %}
-<header class="jsd-page-head">
-    <div class="jsd-page-head__row">
-        <div>
-            <h1 class="jsd-page-head__title">Interview Command Center</h1>
-            <p class="jsd-page-head__desc">Manage invitations, join online interviews, and track outcomes.</p>
-        </div>
-    </div>
+<header class="fjd-page-head">
+    <h1 class="fjd-page-head__title">Interviews</h1>
+    <p class="fjd-page-head__desc">Manage interview invitations, join online sessions, and track outcomes.</p>
 </header>
 
 {% if interviews_page %}
-<section class="jsd-int-summary">
+<section class="fjd-tracker fjd-tracker--page">
     {% for stat in interviews_page.summary %}
-    <article class="jsd-int-stat jsd-int-stat--{{ stat.tone }}">
-        <i class="bi {{ stat.icon }}"></i>
-        <div>
-            <p class="jsd-int-stat__value">{{ stat.value }}</p>
-            <p class="jsd-int-stat__label">{{ stat.label }}</p>
-        </div>
+    <article class="fjd-card fjd-tracker__item fjd-tracker__item--{{ stat.tone }}">
+        <i class="bi {{ stat.icon }} fjd-tracker__icon" aria-hidden="true"></i>
+        <p class="fjd-tracker__value">{{ stat.value }}</p>
+        <p class="fjd-tracker__label">{{ stat.label }}</p>
     </article>
     {% endfor %}
 </section>
 
-<form class="jsd-int-filters" method="get">
-    <label class="jsd-int-filters__search">
-        <i class="bi bi-search"></i>
+<form class="fjd-filters" method="get">
+    <label class="fjd-filters__search">
+        <i class="bi bi-search" aria-hidden="true"></i>
         <input type="search" name="q" value="{{ interviews_page.filters.q }}" placeholder="Search company, job, recruiter...">
     </label>
-    <select name="status" class="jsd-int-filters__select">
+    <select name="status" class="fjd-filters__select">
         <option value="">All interviews</option>
         <option value="upcoming"{% if interviews_page.filters.status == 'upcoming' %} selected{% endif %}>Upcoming</option>
         <option value="today"{% if interviews_page.filters.status == 'today' %} selected{% endif %}>Today</option>
@@ -43,48 +38,88 @@
         <option value="completed"{% if interviews_page.filters.status == 'completed' %} selected{% endif %}>Completed</option>
         <option value="cancelled"{% if interviews_page.filters.status == 'cancelled' %} selected{% endif %}>Cancelled</option>
     </select>
-    <input type="text" name="company" value="{{ interviews_page.filters.company }}" placeholder="Company" class="jsd-int-filters__input">
-    <button type="submit" class="jsd-btn jsd-btn--primary">Filter</button>
+    <input type="text" name="company" value="{{ interviews_page.filters.company }}" placeholder="Company" class="fjd-filters__input">
+    <button type="submit" class="fjd-btn fjd-btn--primary">Filter</button>
 </form>
-
-<section class="jsd-int-analytics">
-    <article><span>Total</span><strong>{{ interviews_page.analytics.total }}</strong></article>
-    <article><span>Upcoming</span><strong>{{ interviews_page.analytics.upcoming }}</strong></article>
-    <article><span>Completed</span><strong>{{ interviews_page.analytics.completed }}</strong></article>
-    <article><span>Success Rate</span><strong>{{ interviews_page.analytics.interview_success_rate }}%</strong></article>
-</section>
 
 <div id="jsdInterviewsPage" data-api-url="{% url 'jobseeker_interviews_api' user_uuid=portal_user_uuid %}">
     {% if interviews_page.interviews %}
-    <div class="jsd-int-list">
+    <div class="fjd-list">
         {% for item in interviews_page.interviews %}
-        {% include "it/jobseeker/interviews/partials/interview_card.html" with item=item %}
+        <article class="fjd-card fjd-card--hover fjd-list-card" data-scheduled-at="{{ item.scheduled_at_iso }}">
+            <div class="fjd-interview">
+                <div class="fjd-interview__date">
+                    <span class="fjd-interview__month">{{ item.month_label }}</span>
+                    <span class="fjd-interview__day">{{ item.day_label }}</span>
+                </div>
+                <div class="fjd-list-card__main flex-grow-1">
+                    <div class="fjd-list-card__logo">
+                        {% if item.logo_url %}<img src="{{ item.logo_url }}" alt="">{% else %}<i class="bi bi-building"></i>{% endif %}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-1 flex-wrap mb-1">
+                            <p class="mb-0 small text-muted">{{ item.company_name }}</p>
+                            {% if item.company_verified %}<i class="bi bi-patch-check-fill jsd-verified"></i>{% endif %}
+                            <span class="jsd-int-domain" style="font-size: 0.75rem; padding: 2px 6px; background: #e2e8f0; border-radius: 4px;">{{ item.domain_label }}</span>
+                        </div>
+                        <h2 class="fjd-list-card__title">{{ item.job_title }}</h2>
+                        <p class="fjd-list-card__meta">{{ item.round_label }} • {{ item.interview_type }}</p>
+                        <p class="fjd-list-card__dates">
+                            {{ item.date_label }}{% if item.time_label %} at {{ item.time_label }} ({{ item.timezone_label }}){% endif %}
+                            {% if item.is_upcoming %}
+                            &bull; <span class="jsd-int-countdown text-primary fw-bold" data-countdown-target="{{ item.scheduled_at_iso }}"></span>
+                            {% endif %}
+                        </p>
+                        <p class="fjd-interview__location">
+                            <i class="bi bi-person-badge"></i> {{ item.recruiter_name }}
+                            {% if item.mode %}
+                            &bull; <i class="bi bi-camera-video"></i> {{ item.mode }}
+                            {% endif %}
+                            {% if item.duration_label %}
+                            &bull; <i class="bi bi-hourglass"></i> {{ item.duration_label }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="fjd-list-card__side">
+                <span class="fjd-badge {{ item.status_class|default:item.status_badge }}"><i class="bi {{ item.status_icon }}"></i> {{ item.status_label }}</span>
+                <div class="fjd-list-card__actions mt-3">
+                    {% if item.can_join and item.meet_url %}
+                    <a href="{{ item.meet_url }}" class="fjd-btn fjd-btn--primary" target="_blank" rel="noopener noreferrer">Join Interview</a>
+                    {% elif item.meet_url %}
+                    <button type="button" class="fjd-btn fjd-btn--outline" disabled title="Join opens 15 minutes before start">Join Interview</button>
+                    {% endif %}
+                    <a href="{{ item.detail_url }}" class="fjd-btn fjd-btn--outline">View Details</a>
+                </div>
+            </div>
+        </article>
         {% endfor %}
     </div>
+    
     {% if interviews_page.total_pages > 1 %}
-    <nav class="jsd-pagination" aria-label="Interview pages">
+    <nav class="fjd-pagination" aria-label="Interview pages">
         {% if interviews_page.page > 1 %}
-        <a class="jsd-page-btn" href="?page={{ interviews_page.page|add:'-1' }}">Previous</a>
+        <a class="fjd-page-btn" href="?page={{ interviews_page.page|add:'-1' }}">Previous</a>
         {% endif %}
         <span>Page {{ interviews_page.page }} of {{ interviews_page.total_pages }}</span>
         {% if interviews_page.page < interviews_page.total_pages %}
-        <a class="jsd-page-btn" href="?page={{ interviews_page.page|add:'1' }}">Next</a>
+        <a class="fjd-page-btn" href="?page={{ interviews_page.page|add:'1' }}">Next</a>
         {% endif %}
     </nav>
     {% endif %}
+    
     {% else %}
-    <div class="jsd-card">
-        <div class="jsd-card__body jsd-empty">
-            <i class="bi bi-calendar-event"></i>
-            <h2>No interviews yet</h2>
-            <p>When recruiters schedule interviews for your applications, they will appear here.</p>
-            <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}" class="jsd-btn jsd-btn--primary mt-2">View Applications</a>
-        </div>
+    <div class="fjd-card fjd-empty">
+        <i class="bi bi-calendar-event"></i>
+        <h2>No interviews yet</h2>
+        <p>When recruiters schedule interviews for your applications, they will appear here.</p>
+        <a href="{% url 'jobseeker_applications' user_uuid=portal_user_uuid %}" class="fjd-btn fjd-btn--primary mt-2">View Applications</a>
     </div>
     {% endif %}
 </div>
 {% else %}
-<div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to manage interviews.</p></div></div>
+<div class="fjd-card fjd-empty"><p>Complete your profile to manage interviews.</p></div>
 {% endif %}
 {% endblock %}
 

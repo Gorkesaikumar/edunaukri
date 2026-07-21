@@ -231,10 +231,11 @@ class JobPostingService(BaseService):
         self.job_selector = JobPostingSelector()
 
     @BaseService.atomic
-    def create_draft(
+    def create_published_job(
         self, *, company: Company, recruiter: RecruiterProfile, data: dict
     ) -> JobPosting:
         from apps.jobs.services.job_service import JobService
+        from apps.jobs.services.job_publication_service import JobPublicationService
 
         payload = dict(data)
         payload["company_id"] = company.pk
@@ -244,7 +245,9 @@ class JobPostingService(BaseService):
             and payload.get("location")
         ):
             payload["city"] = payload["location"]
-        return JobService().create_job(recruiter=recruiter, data=payload)
+        
+        job = JobService().create_job(recruiter=recruiter, data=payload)
+        return JobPublicationService().publish(job_posting=job, recruiter=recruiter)
 
     @BaseService.atomic
     def publish(

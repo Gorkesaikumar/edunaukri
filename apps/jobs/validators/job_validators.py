@@ -71,12 +71,29 @@ def validate_skills(value) -> None:
 
 def validate_application_deadline(deadline, expires_at=None) -> None:
     now = timezone.now()
-    if deadline is not None and deadline <= now:
-        raise ValidationError("Application deadline must be in the future.")
-    if expires_at is not None and expires_at <= now:
-        raise ValidationError("Expiry date must be in the future.")
-    if deadline is not None and expires_at is not None and deadline > expires_at:
-        raise ValidationError("Application deadline cannot be after the expiry date.")
+    import datetime
+    
+    if deadline is not None:
+        if isinstance(deadline, datetime.datetime):
+            if deadline <= now:
+                raise ValidationError("Application deadline must be in the future.")
+        elif isinstance(deadline, datetime.date):
+            if deadline <= now.date():
+                raise ValidationError("Application deadline must be in the future.")
+                
+    if expires_at is not None:
+        if isinstance(expires_at, datetime.datetime):
+            if expires_at <= now:
+                raise ValidationError("Expiry date must be in the future.")
+        elif isinstance(expires_at, datetime.date):
+            if expires_at <= now.date():
+                raise ValidationError("Expiry date must be in the future.")
+                
+    if deadline is not None and expires_at is not None:
+        d_val = deadline.date() if isinstance(deadline, datetime.datetime) else deadline
+        e_val = expires_at.date() if isinstance(expires_at, datetime.datetime) else expires_at
+        if d_val > e_val:
+            raise ValidationError("Application deadline cannot be after the expiry date.")
 
 
 def validate_location(*, work_mode, city="", country="") -> None:

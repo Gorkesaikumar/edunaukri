@@ -38,12 +38,6 @@ def normalize_mobile(mobile: str) -> str:
     return re.sub(r"\D", "", mobile or "")
 
 
-def recruiter_account_email(mobile: str) -> str:
-    """Provisional login email derived from mobile — completed in dashboard later."""
-    digits = normalize_mobile(mobile)
-    return f"{digits}@{IT_MOBILE_EMAIL_DOMAIN}"
-
-
 class ITWebRegistrationService:
     """Orchestrates streamlined IT signup for the web UI."""
 
@@ -80,9 +74,7 @@ class ITWebRegistrationService:
             raise ValidationError(errors)
 
         mobile = normalize_mobile(data["mobile"])
-        email = recruiter_account_email(mobile)
-        if self.email_exists(email):
-            email = f"{mobile}.{uuid.uuid4().hex[:8]}@{IT_MOBILE_EMAIL_DOMAIN}"
+        email = data["email"].lower().strip()
 
         user = RegistrationService().register_recruiter(
             email=email, password=data["password"]
@@ -96,6 +88,7 @@ class ITWebRegistrationService:
                 "first_name": first_name,
                 "last_name": last_name,
                 "phone": mobile,
+                "official_email": email,
                 "company_association": data["company_name"].strip(),
             },
         )
@@ -178,6 +171,16 @@ class ITWebRegistrationService:
             errors["recruiter_name"] = "Recruiter name is required."
         if not (data.get("company_name") or "").strip():
             errors["company_name"] = "Company name is required."
+
+        if not (data.get("email") or "").strip():
+            errors["email"] = "Email address is required."
+        else:
+            try:
+                validate_email(data["email"].strip())
+                if self.email_exists(data["email"]):
+                    errors["email"] = "An account with this email already exists."
+            except ValidationError:
+                errors["email"] = "Enter a valid email address."
 
         if not (data.get("mobile") or "").strip():
             errors["mobile"] = "Mobile number is required."

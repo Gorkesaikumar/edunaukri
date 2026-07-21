@@ -295,12 +295,13 @@ class RecruiterJobCreateView(RecruiterPortalMixin, TemplateView):
             return self.render_to_response(context)
 
         try:
-            JobPostingService().create_draft(
+            JobPostingService().create_published_job(
                 company=membership.company,
                 recruiter=profile,
                 data=parsed["data"],
             )
-            return redirect(f"{self.portal_url('recruiter_jobs')}?created=1")
+            messages.success(request, "✅ Your job has been published successfully and is now live on the marketplace.")
+            return redirect(f"{self.portal_url('recruiter_jobs')}?published=1")
         except (ValidationException, BusinessLogicException) as exc:
             context = self.get_context_data()
             context["form_errors"] = [str(exc)]
@@ -525,7 +526,7 @@ class RecruiterNotificationReadView(RecruiterPortalMixin, View):
 class RecruiterNotificationsMarkAllReadView(RecruiterPortalMixin, View):
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         Notification.objects.filter(
             recipient_domain="it", recipient_id=request.user.pk, is_read=False
         ).update(is_read=True)

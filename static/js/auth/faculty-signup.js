@@ -198,7 +198,7 @@
           if (result.data.redirect_url) {
             window.setTimeout(function () {
               window.location.replace(result.data.redirect_url);
-            }, result.data.requires_verification ? 1200 : 400);
+            }, 400);
           }
           return;
         }

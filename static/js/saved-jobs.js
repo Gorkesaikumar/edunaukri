@@ -44,18 +44,21 @@
 
   function updateButton(btn, isSaved) {
     if (!btn) return;
-    btn.classList.toggle("is-saved", isSaved);
+    var isUnsaveOnly = btn.getAttribute("data-unsave-only") === "true";
+    if (!isUnsaveOnly) {
+      btn.classList.toggle("is-saved", isSaved);
+      btn.setAttribute("aria-pressed", isSaved ? "true" : "false");
+      var icon = btn.querySelector("i");
+      if (icon) {
+        icon.className = isSaved ? "bi bi-bookmark-fill" : "bi bi-bookmark";
+      }
+      var label = btn.querySelector("span");
+      if (label) {
+        label.textContent = isSaved ? "Saved" : "Save";
+      }
+    }
     btn.classList.remove("is-saving");
     btn.disabled = false;
-    btn.setAttribute("aria-pressed", isSaved ? "true" : "false");
-    var icon = btn.querySelector("i");
-    if (icon) {
-      icon.className = isSaved ? "bi bi-bookmark-fill" : "bi bi-bookmark";
-    }
-    var label = btn.querySelector("span");
-    if (label) {
-      label.textContent = isSaved ? "Saved" : "Save";
-    }
     btn.classList.add("jsd-save-btn--pulse");
     window.setTimeout(function () {
       btn.classList.remove("jsd-save-btn--pulse");

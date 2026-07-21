@@ -640,7 +640,7 @@ class RecruiterDashboardAnalyticsService(BaseService):
         if hired_qs.exists():
             total_days = 0
             n = 0
-            for app in hired_qs.only("applied_at", "hired_at")[:100]:
+            for app in hired_qs[:100]:
                 if app.hired_at and app.applied_at:
                     total_days += (app.hired_at - app.applied_at).days
                     n += 1

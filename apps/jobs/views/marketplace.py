@@ -78,6 +78,7 @@ class MarketplaceBrowseView(TemplateView):
         context["filters"] = filters
         context["is_job_seeker"] = _is_job_seeker(self.request.user)
         context["is_authenticated"] = self.request.user.is_authenticated
+        context["profile"] = profile
         context["login_url"] = reverse("it_login_job_seeker")
         context["signup_url"] = reverse("it_signup_job_seeker")
         context["search_api_url"] = reverse("marketplace_search_api")
@@ -202,6 +203,8 @@ class MarketplaceApplyJobView(LoginRequiredMixin, View):
             messages.error(request, "Complete your profile before applying.")
             return redirect(pu("jobseeker_profile"))
 
+        cover_letter = request.POST.get("cover_letter", "").strip()
+
         try:
             job = get_object_or_404(
                 JobPosting.objects.select_related("company"),
@@ -211,7 +214,8 @@ class MarketplaceApplyJobView(LoginRequiredMixin, View):
             JobApplicationService().apply(
                 job_posting=job,
                 job_seeker=profile,
-                source="marketplace",
+                source="internal",
+                cover_letter=cover_letter,
             )
             if is_ajax:
                 return JsonResponse(

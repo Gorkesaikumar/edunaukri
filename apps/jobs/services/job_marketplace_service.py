@@ -463,6 +463,7 @@ class JobMarketplaceService(BaseService):
             "related_jobs": related,
             "is_authenticated": bool(user and user.is_authenticated),
             "is_job_seeker": is_seeker,
+            "profile": profile,
             "login_url": self._login_url(job, domain),
             "domain": domain,
         }

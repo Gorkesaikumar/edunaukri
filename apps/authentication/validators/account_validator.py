@@ -11,10 +11,4 @@ def get_account_access_block_reason(user) -> str | None:
         return "inactive_account"
     if user.account_status in (AccountStatus.SUSPENDED, AccountStatus.DEACTIVATED):
         return "account_suspended"
-    if (
-        getattr(settings, "AUTH_REQUIRE_EMAIL_VERIFICATION", False)
-        and hasattr(user, "email_verified")
-        and not user.email_verified
-    ):
-        return "email_unverified"
     return None

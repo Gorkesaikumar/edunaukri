@@ -11,10 +11,16 @@
     <div class="jsd-card__body">
         <p>{{ job.description|truncatewords:80 }}</p>
         <div class="d-flex gap-2 mt-3">
-            <form method="post" action="{% url 'jobseeker_job_apply' user_uuid=portal_user_uuid job_id=job.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="jsd-btn jsd-btn--primary">Apply Now</button>
-            </form>
+            <button type="button" 
+                    class="jsd-btn jsd-btn--primary jsd-apply-action-btn"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#jsdApplyModal"
+                    data-job-id="{{ job.pk }}"
+                    data-job-title="{{ job.title }}"
+                    data-job-institution="{{ job.company.name|default:job.company_name }}"
+                    data-apply-url="{% url 'jobseeker_job_apply' user_uuid=portal_user_uuid job_id=job.pk %}">
+                Apply Now
+            </button>
             <button type="button"
                     class="jsd-btn jsd-btn--outline jsd-save-btn"
                     data-save-job-toggle

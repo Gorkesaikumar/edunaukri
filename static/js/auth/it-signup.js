@@ -123,6 +123,7 @@
     var checks = [
       ["recruiter_name", Auth.validateRequired(field("recruiter_name"), "Recruiter name")],
       ["company_name", Auth.validateRequired(field("company_name"), "Company name")],
+      ["email", Auth.validateEmail(field("email"))],
       ["mobile", Auth.validateMobile(field("mobile"))],
       ["password", Auth.validatePasswordStrength(field("password"))],
       ["confirm_password", Auth.validateConfirmPassword(field("password"), field("confirm_password"))],
@@ -181,7 +182,7 @@
           if (result.data.redirect_url) {
             window.setTimeout(function () {
               window.location.replace(result.data.redirect_url);
-            }, result.data.requires_verification ? 1200 : 400);
+            }, 400);
           }
           return;
         }
@@ -197,7 +198,7 @@
   }
 
   function checkEmailAvailability() {
-    if (!checkEmailUrl || !emailInput || selectedRole !== "seeker") return;
+    if (!checkEmailUrl || !emailInput) return;
     var email = emailInput.value.trim();
     if (!email || Auth.validateEmail(email)) return;
 

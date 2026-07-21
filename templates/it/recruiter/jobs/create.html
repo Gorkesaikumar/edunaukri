@@ -28,7 +28,7 @@
 {% if not create_page.can_publish %}
 <div class="alert alert-warning mb-4 d-flex align-items-center gap-2 shadow-sm border-0 rounded-3">
     <span class="material-symbols-outlined text-warning">warning</span>
-    <div>Your company profile is currently pending verification. You can save draft jobs, but <a href="{% url 'recruiter_profile' user_uuid=portal_user_uuid %}" class="alert-link fw-bold">company verification</a> is required before publishing to candidates.</div>
+    <div>Your company profile is currently pending verification. You can create jobs, but <a href="{% url 'recruiter_profile' user_uuid=portal_user_uuid %}" class="alert-link fw-bold">company verification</a> is required before they become visible to candidates.</div>
 </div>
 {% endif %}
 
@@ -274,15 +274,38 @@
 
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-5 pt-4 border-top">
             <div class="d-flex gap-2">
-                <button type="submit" class="rcd-btn rcd-btn--primary px-4 py-2" id="recJobCreateSubmit">
-                    <span class="material-symbols-outlined me-1" aria-hidden="true">save</span>
-                    Create Job Draft
+                <button type="button" class="rcd-btn rcd-btn--primary px-4 py-2" id="recJobReviewBtn" onclick="openReviewModal()">
+                    <span class="material-symbols-outlined me-1 align-middle" aria-hidden="true" style="font-size: 18px;">visibility</span>
+                    Review Job Details
                 </button>
                 <a href="{{ create_page.urls.manage_jobs }}" class="rcd-btn rcd-btn--soft px-4 py-2">Cancel</a>
             </div>
-            <span class="text-muted small">Your draft can be reviewed and published from the Manage Jobs dashboard.</span>
         </div>
     </form>
+</div>
+
+<!-- Review Job Details Modal -->
+<div class="modal fade" id="reviewJobModal" tabindex="-1" aria-labelledby="reviewJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-bottom bg-light">
+        <h5 class="modal-title fw-bold" id="reviewJobModalLabel">Review Job Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Summary content will be injected here via JS -->
+        <div id="reviewSummaryContent" class="d-flex flex-column gap-4"></div>
+      </div>
+      <div class="modal-footer border-top bg-light d-flex justify-content-between">
+        <button type="button" class="rcd-btn rcd-btn--soft px-4 py-2" data-bs-dismiss="modal">
+            <span class="material-symbols-outlined me-1 align-middle" style="font-size: 18px;">edit</span> Edit Job
+        </button>
+        <button type="button" class="rcd-btn rcd-btn--primary px-4 py-2" id="recJobPublishSubmit" onclick="document.getElementById('recJobCreateForm').submit();">
+            <span class="material-symbols-outlined me-1 align-middle" style="font-size: 18px;">campaign</span> Publish Job
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endif %}
 {% endblock %}
@@ -292,6 +315,69 @@
 window.REC_PORTAL = window.REC_PORTAL || {};
 window.REC_PORTAL.csrfToken = "{{ csrf_token|escapejs }}";
 window.REC_PORTAL.skillSuggestUrl = "{% url 'recruiter_skill_suggest_api' user_uuid=portal_user_uuid %}";
+
+function openReviewModal() {
+    const form = document.getElementById('recJobCreateForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const val = (id) => document.getElementById(id) ? document.getElementById(id).value || 'N/A' : 'N/A';
+    const text = (id) => {
+        const el = document.getElementById(id);
+        return el ? (el.options ? el.options[el.selectedIndex].text : el.value) : 'N/A';
+    };
+
+    const isRemote = document.getElementById('jobRemote') && document.getElementById('jobRemote').checked ? 'Yes' : 'No';
+    const reqSkills = document.getElementById('jobReqSkillsHidden') ? document.getElementById('jobReqSkillsHidden').value : 'None';
+    const prefSkills = document.getElementById('jobPrefSkillsHidden') ? document.getElementById('jobPrefSkillsHidden').value : 'None';
+
+    const html = `
+        <div>
+            <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">Role Overview</h6>
+            <div class="row g-2 text-dark small">
+                <div class="col-sm-6"><strong>Job Title:</strong> ${val('jobTitle')}</div>
+                <div class="col-sm-6"><strong>Job Code:</strong> ${val('jobCode')}</div>
+                <div class="col-sm-6"><strong>Category:</strong> ${val('jobCategory')}</div>
+                <div class="col-sm-6"><strong>Department:</strong> ${val('jobDepartment')}</div>
+                <div class="col-sm-6"><strong>Employment Type:</strong> ${text('jobEmployment')}</div>
+                <div class="col-sm-6"><strong>Work Mode:</strong> ${text('jobWorkMode')}</div>
+                <div class="col-sm-6"><strong>Vacancies:</strong> ${val('jobVacancies')}</div>
+            </div>
+        </div>
+        <div>
+            <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">Location & Timeline</h6>
+            <div class="row g-2 text-dark small">
+                <div class="col-sm-6"><strong>Location:</strong> ${val('jobLocation')}</div>
+                <div class="col-sm-6"><strong>100% Remote:</strong> ${isRemote}</div>
+                <div class="col-sm-6"><strong>City:</strong> ${val('jobCity')}</div>
+                <div class="col-sm-6"><strong>Country:</strong> ${val('jobCountry')}</div>
+                <div class="col-sm-6"><strong>Timeline:</strong> ${text('jobJoiningTimeline')}</div>
+                <div class="col-sm-6"><strong>Deadline:</strong> ${val('jobDeadline')}</div>
+            </div>
+        </div>
+        <div>
+            <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">Compensation & Experience</h6>
+            <div class="row g-2 text-dark small">
+                <div class="col-sm-6"><strong>Experience:</strong> ${val('jobExpMin')} - ${val('jobExpMax')} years</div>
+                <div class="col-sm-6"><strong>Salary:</strong> ${val('jobSalMin')} - ${val('jobSalMax')} (${val('jobSalCurrency')})</div>
+            </div>
+        </div>
+        <div>
+            <h6 class="fw-bold text-primary border-bottom pb-1 mb-2">Skills</h6>
+            <div class="row g-2 text-dark small">
+                <div class="col-12"><strong>Required:</strong> ${reqSkills}</div>
+                <div class="col-12"><strong>Preferred:</strong> ${prefSkills}</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('reviewSummaryContent').innerHTML = html;
+    
+    const reviewModal = new bootstrap.Modal(document.getElementById('reviewJobModal'));
+    reviewModal.show();
+}
 </script>
 <script src="{% static 'js/recruiter-portal.js' %}"></script>
 {% endblock %}

@@ -474,19 +474,36 @@ class JobSeekerApplyJobView(JobSeekerPortalMixin, View):
 
     def post(self, request, job_id):
         profile = self.get_profile()
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
         if profile is None:
-            messages.error(request, "Complete your profile before applying.")
+            msg = "Complete your profile before applying."
+            if is_ajax:
+                return JsonResponse({"success": False, "error": msg}, status=400)
+            messages.error(request, msg)
             return redirect(self.portal_url("jobseeker_profile"))
+
+        cover_letter = request.POST.get("cover_letter", "").strip()
 
         try:
             job = get_object_or_404(JobPosting, pk=job_id, is_deleted=False)
             JobApplicationService().apply(
                 job_posting=job,
                 job_seeker=profile,
+                source="internal",
+                cover_letter=cover_letter,
             )
+            if is_ajax:
+                return JsonResponse({
+                    "success": True, 
+                    "message": "Application submitted successfully.",
+                    "redirect_url": self.portal_url("jobseeker_applications")
+                })
             messages.success(request, "Application submitted successfully.")
             return redirect(self.portal_url("jobseeker_applications"))
         except Exception as exc:
+            if is_ajax:
+                return JsonResponse({"success": False, "error": str(exc)}, status=400)
             messages.error(request, str(exc))
             return redirect(self.portal_url("jobseeker_job_detail", job_id=job_id))
 
@@ -544,7 +561,7 @@ class JobSeekerNotificationReadView(JobSeekerPortalMixin, View):
 class JobSeekerNotificationsMarkAllReadView(JobSeekerPortalMixin, View):
     http_method_names = ["post"]
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         Notification.objects.filter(
             recipient_domain="it", recipient_id=request.user.pk, is_read=False
         ).update(is_read=True)

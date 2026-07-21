@@ -94,8 +94,7 @@ class RecruiterCandidatesPortalService(BaseService):
         job_filters = [
             {"id": str(job.pk), "title": job.title}
             for job in JobPostingSelector()
-            .for_recruiter(profile)
-            .only("pk", "title")[:50]
+            .for_recruiter(profile)[:50]
         ]
 
         return RecruiterCandidatesPortalContext(
@@ -593,6 +592,7 @@ class RecruiterCandidatesPortalService(BaseService):
             "current_stage": app.get_status_display()
             if hasattr(app, "get_status_display")
             else app.status,
+            "cover_letter": app.cover_letter,
         }
 
     @staticmethod

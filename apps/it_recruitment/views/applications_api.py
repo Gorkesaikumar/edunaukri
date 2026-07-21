@@ -30,7 +30,7 @@ def _forbidden():
 class JobSeekerApplicationsAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         if not RoleAssignmentService().user_has_it_role(
             request.user, ITUserRoleType.JOB_SEEKER
         ):
