@@ -45,16 +45,16 @@
                 <div class="col-lg-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icd-list-card__avatar-wrap">
-                            {% if candidate.app.candidate_photo_url %}
-                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.app.candidate_photo_url }}" alt="{{ candidate.app.candidate_name }}" style="width: 52px; height: 52px; object-fit: cover;">
+                            {% if candidate.app.photo_url %}
+                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.app.photo_url }}" alt="{{ candidate.app.applicant_name }}" style="width: 52px; height: 52px; object-fit: cover;">
                             {% else %}
                             <div class="icd-list-card__avatar rounded-circle bg-light d-flex align-items-center justify-content-center fw-semibold text-primary" style="width: 52px; height: 52px; font-size: 1.2rem;">
-                                {{ candidate.app.candidate_initials }}
+                                {{ candidate.app.initials }}
                             </div>
                             {% endif %}
                         </div>
                         <div>
-                            <h3 class="h6 fw-bold mb-0">{{ candidate.app.candidate_name }}</h3>
+                            <h3 class="h6 fw-bold mb-0">{{ candidate.app.applicant_name }}</h3>
                             <p class="small text-muted mb-1">{{ candidate.placement.offered_designation|default:"IT Specialist" }}</p>
                             <span class="badge bg-success text-white">Joined</span>
                         </div>
@@ -104,13 +104,24 @@
                 </div>
 
                 <!-- Actions / Claim Submission -->
-                <div class="col-lg-2 text-end">
+                <div class="col-lg-2 text-end d-flex flex-column gap-2">
+                    {% if candidate.app.has_resume and candidate.app.resume_url %}
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs w-100 btn-view-resume"
+                            data-app-id="{{ candidate.app.id }}"
+                            data-name="{{ candidate.app.applicant_name }}"
+                            data-job="{{ candidate.app.job_title }}"
+                            data-resume-url="{{ candidate.app.resume_url }}"
+                            data-resume-preview-url="{{ candidate.app.resume_preview_url }}"
+                            data-has-resume="1">
+                        Resume
+                    </button>
+                    {% endif %}
                     {% if candidate.active_claim %}
                         <span class="badge bg-warning text-dark p-2 w-100"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">hourglass_empty</span> Reviewing Claim</span>
                     {% elif candidate.claim_eligible %}
                         <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs w-100 text-danger btn-raise-claim"
                                 data-app-id="{{ candidate.app.id }}"
-                                data-name="{{ candidate.app.candidate_name }}">
+                                data-name="{{ candidate.app.applicant_name }}">
                             <span class="material-symbols-outlined align-middle me-1" style="font-size: 1rem;">warning</span> Raise Claim
                         </button>
                     {% else %}

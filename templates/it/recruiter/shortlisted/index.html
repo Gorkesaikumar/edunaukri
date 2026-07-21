@@ -74,49 +74,56 @@
                 <div class="d-flex align-items-start justify-content-between mb-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icd-list-card__avatar-wrap">
-                            {% if candidate.candidate_photo_url %}
-                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.candidate_photo_url }}" alt="{{ candidate.applicant_name }}" style="width: 48px; height: 48px; object-fit: cover;">
+                            {% if candidate.photo_url %}
+                            <img class="icd-list-card__avatar rounded-circle" src="{{ candidate.photo_url }}" alt="{{ candidate.applicant_name }}" style="width: 48px; height: 48px; object-fit: cover;">
                             {% else %}
                             <div class="icd-list-card__avatar rounded-circle bg-light d-flex align-items-center justify-content-center fw-semibold text-primary" style="width: 48px; height: 48px;">
-                                {{ candidate.candidate_initials }}
+                                {{ candidate.initials }}
                             </div>
                             {% endif %}
                         </div>
                         <div>
                             <h3 class="h6 fw-bold mb-0">{{ candidate.applicant_name }}</h3>
-                            <span class="badge bg-light text-primary border mt-1" style="font-size: 0.75rem;">Shortlisted</span>
+                            <p class="text-muted small mb-1">{{ candidate.job_title }}{% if candidate.company_name %} · {{ candidate.company_name }}{% endif %}</p>
+                            <span class="badge bg-light text-primary border" style="font-size: 0.75rem;">Shortlisted</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">briefcase</span> Applied for: <strong>{{ candidate.vacancy_title }}</strong></p>
-                    {% if candidate.department %}
-                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">corporate_fare</span> Dept: {{ candidate.department }}</p>
+                    <p class="small mb-1"><span class="text-muted">Applied for:</span> <strong class="text-primary">{{ candidate.job_title }}</strong></p>
+                    {% if candidate.experience_years and candidate.experience_years != "—" %}
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">history</span> Experience: {{ candidate.experience_years }} yrs</p>
                     {% endif %}
-                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">school</span> Degree: {{ candidate.qualification_label }}</p>
+                    <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">school</span> Degree: {{ candidate.education }}</p>
                     <p class="small text-muted mb-1"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">calendar_today</span> Applied: {{ candidate.applied_label }}</p>
                 </div>
             </div>
 
             <div class="d-flex gap-2 mt-3 pt-3 border-top">
-                {% if candidate.cv_file_url %}
-                <a href="{{ candidate.cv_file_url }}" target="_blank" class="rcd-btn rcd-btn--soft rcd-btn--xs flex-grow-1 text-center">
+                {% if candidate.has_resume and candidate.resume_url %}
+                <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs flex-grow-1 text-center btn-view-resume"
+                        data-app-id="{{ candidate.id }}"
+                        data-name="{{ candidate.applicant_name }}"
+                        data-job="{{ candidate.job_title }}"
+                        data-resume-url="{{ candidate.resume_url }}"
+                        data-resume-preview-url="{{ candidate.resume_preview_url }}"
+                        data-has-resume="1">
                     Resume
-                </a>
+                </button>
                 {% endif %}
                 <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs flex-grow-1 btn-schedule-interview" 
                         data-app-id="{{ candidate.id }}" 
                         data-name="{{ candidate.applicant_name }}"
-                        data-initials="{{ candidate.candidate_initials }}"
-                        data-photo="{{ candidate.candidate_photo_url }}">
+                        data-initials="{{ candidate.initials }}"
+                        data-photo="{{ candidate.photo_url }}">
                     Schedule
                 </button>
                 <button type="button" class="rcd-btn rcd-btn--primary rcd-btn--xs flex-grow-1 btn-evaluate-interview" 
                         data-app-id="{{ candidate.id }}"
                         data-name="{{ candidate.applicant_name }}"
-                        data-initials="{{ candidate.candidate_initials }}"
-                        data-photo="{{ candidate.candidate_photo_url }}">
+                        data-initials="{{ candidate.initials }}"
+                        data-photo="{{ candidate.photo_url }}">
                     Evaluate
                 </button>
             </div>

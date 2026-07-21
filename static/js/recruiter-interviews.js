@@ -103,8 +103,81 @@
     }
   }
 
+  function closeAllPortalMenus() {
+    document.querySelectorAll(".rcd-applicant-actions__menu.show, .rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (ul) {
+      ul.classList.remove("show", "rcd-portal-menu--open");
+      ul.style.display = "none";
+      if (ul._originalParent) {
+        ul._originalParent.appendChild(ul);
+      }
+      ul._triggerBtn = null;
+    });
+  }
+
+  function togglePortalMenu(btn) {
+    var wrapper = btn.closest(".rcd-interview-actions, .rcd-applicant-actions");
+    if (!wrapper) return;
+    var ul = wrapper.querySelector(".rcd-applicant-actions__menu");
+    if (!ul) {
+      var existing = document.querySelector(".rcd-applicant-actions__menu.show");
+      if (existing && existing._triggerBtn === btn) {
+        closeAllPortalMenus();
+      }
+      return;
+    }
+
+    var isOpen = ul.classList.contains("show");
+    closeAllPortalMenus();
+    if (isOpen) return;
+
+    ul._originalParent = wrapper;
+    ul._triggerBtn = btn;
+    document.body.appendChild(ul);
+
+    ul.style.position = "fixed";
+    ul.style.zIndex = "10600";
+    ul.style.display = "block";
+    ul.classList.add("show", "rcd-portal-menu--open");
+
+    var rect = btn.getBoundingClientRect();
+    var menuWidth = ul.offsetWidth || 230;
+    var menuHeight = ul.offsetHeight || 360;
+
+    var leftPos = rect.right - menuWidth;
+    if (leftPos < 10) leftPos = 10;
+    if (leftPos + menuWidth > window.innerWidth - 10) leftPos = window.innerWidth - menuWidth - 10;
+
+    var topPos = rect.bottom + 4;
+    if (topPos + menuHeight > window.innerHeight - 10 && rect.top - menuHeight - 4 > 10) {
+      topPos = rect.top - menuHeight - 4;
+    }
+
+    ul.style.left = leftPos + "px";
+    ul.style.top = topPos + "px";
+  }
+
+  function bindPortalMenus(container) {
+    var scope = container || document;
+    scope.querySelectorAll(".rec-interview-actions-btn").forEach(function (btn) {
+      if (btn._portalBound) return;
+      btn._portalBound = true;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePortalMenu(btn);
+      });
+    });
+  }
+
   function btnData(btn) {
-    var menuBtn = btn.closest(".rcd-interview-actions").querySelector(".rec-interview-actions-btn");
+    var menu = btn.closest(".rcd-applicant-actions__menu");
+    var menuBtn = null;
+    if (menu && menu._triggerBtn) {
+      menuBtn = menu._triggerBtn;
+    } else {
+      var actionsWrap = btn.closest(".rcd-interview-actions");
+      if (actionsWrap) menuBtn = actionsWrap.querySelector(".rec-interview-actions-btn");
+    }
     if (!menuBtn) return null;
     return {
       interviewId: menuBtn.getAttribute("data-interview-id"),
@@ -199,24 +272,56 @@
 
   function bindActionMenus(container) {
     var scope = container || document;
-    scope.querySelectorAll(".rcd-interview-actions").forEach(function (dropdown) {
+    var dropdowns = [];
+    if (scope.classList && scope.classList.contains("rcd-interview-actions")) {
+      dropdowns.push(scope);
+    } else {
+      scope.querySelectorAll(".rcd-interview-actions").forEach(function (d) {
+        dropdowns.push(d);
+      });
+    }
+    if (scope === document) {
+      document.querySelectorAll(".rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (menu) {
+        if (menu._originalParent && dropdowns.indexOf(menu._originalParent) === -1) {
+          dropdowns.push(menu._originalParent);
+        }
+      });
+    }
+
+    dropdowns.forEach(function (dropdown) {
       if (dropdown._bound) return;
       dropdown._bound = true;
+
+      var getMenu = function () {
+        var m = dropdown.querySelector(".rcd-applicant-actions__menu");
+        if (!m) {
+          document.querySelectorAll(".rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (item) {
+            if (item._originalParent === dropdown) m = item;
+          });
+        }
+        return m;
+      };
+
+      var menuEl = getMenu();
+      if (!menuEl) return;
 
       var map = {
         ".rec-int-action-profile": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openCandidateDrawer(d.appId);
         },
         ".rec-int-action-resume": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openResumeModal(d);
         },
         ".rec-int-action-download": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (!d || !d.hasResume) {
             notify("error", "No resume available.");
             return;
@@ -226,11 +331,13 @@
         ".rec-int-action-edit": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openRescheduleModal(d);
         },
         ".rec-int-action-cancel": async function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (!d || !d.canCancel) return;
           var ok = await confirmAction({
             title: "Cancel Interview",
@@ -252,6 +359,7 @@
         ".rec-int-action-complete": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (!d || !d.canComplete) return;
           patchJson(d.statusUrl, { status: "completed" })
             .then(function (body) {
@@ -265,33 +373,44 @@
         ".rec-int-action-feedback": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openFeedbackModal(d);
         },
         ".rec-int-action-whatsapp": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openWhatsAppModal(d);
         },
         ".rec-int-action-email": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openEmailModal(d, false);
         },
         ".rec-int-action-reminder": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openEmailModal(d, true);
         },
         ".rec-int-action-next": function (e) {
           e.preventDefault();
           var d = btnData(e.target);
+          closeAllPortalMenus();
           if (d) openCandidateDrawer(d.appId);
         },
       };
 
       Object.keys(map).forEach(function (sel) {
-        var el = dropdown.querySelector(sel);
+        var el = menuEl.querySelector(sel);
         if (el) el.addEventListener("click", map[sel]);
+      });
+
+      menuEl.querySelectorAll(".dropdown-item[href]").forEach(function (link) {
+        link.addEventListener("click", function () {
+          closeAllPortalMenus();
+        });
       });
     });
   }
@@ -407,13 +526,9 @@
   }
 
   function openResumeModal(app) {
-    var modalEl = document.getElementById("recResumeModal");
-    var frame = document.getElementById("recResumeFrame");
-    var title = document.getElementById("recResumeModalTitle");
-    if (!modalEl) return;
-    if (title) title.textContent = (app.name || "Candidate") + " — Resume";
-    if (frame) frame.src = app.resumePreviewUrl || app.resumeUrl + "?preview=1";
-    if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    if (window.openResumeModal && window.openResumeModal !== openResumeModal) {
+      return window.openResumeModal(app);
+    }
   }
 
   function openFeedbackModal(d) {
@@ -766,7 +881,7 @@
       escapeHtml(item.stage_label) +
       "</span></div>" +
       '<div class="rcd-interview-card__foot"><div class="dropdown rcd-interview-actions">' +
-      '<button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs dropdown-toggle rec-interview-actions-btn" data-bs-toggle="dropdown" data-bs-auto-close="true"' +
+      '<button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs dropdown-toggle rec-interview-actions-btn" aria-haspopup="true" aria-expanded="false"' +
       ' data-interview-id="' +
       escapeHtml(item.id) +
       '" data-app-id="' +
@@ -874,6 +989,7 @@
         if (payload.summary) updateStats(payload.summary);
         if (!payload.interviews) return;
         calEvents = payload.calendar_events || [];
+        closeAllPortalMenus();
         var list = document.getElementById("recInterviewsList");
         var empty = document.getElementById("recInterviewsEmpty");
         if (payload.interviews.length === 0) {
@@ -888,6 +1004,7 @@
             list.hidden = false;
             list.innerHTML = payload.interviews.map(renderInterviewCard).join("");
             bindActionMenus(list);
+            bindPortalMenus(list);
           }
         }
         if (document.getElementById("recInterviewsCalendarView") && !document.getElementById("recInterviewsCalendarView").hidden) {
@@ -1009,6 +1126,7 @@
     if (!root) return;
     readTemplates();
     bindActionMenus();
+    bindPortalMenus();
     bindScheduleModal();
     bindFeedbackModal();
     bindRescheduleModal();
@@ -1017,5 +1135,25 @@
     bindViewTabs();
     bindCalendarNav();
     bindPolling();
+
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(".rec-applicant-actions-btn, .rec-interview-actions-btn")) return;
+      if (e.target.closest(".rcd-applicant-actions__menu")) return;
+      closeAllPortalMenus();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeAllPortalMenus();
+    });
+
+    window.addEventListener("scroll", function () {
+      if (document.querySelector(".rcd-applicant-actions__menu.show")) {
+        closeAllPortalMenus();
+      }
+    }, true);
+
+    window.addEventListener("resize", function () {
+      closeAllPortalMenus();
+    });
   });
 })();

@@ -1,4 +1,5 @@
 {% extends "it/jobseeker/base_dashboard.html" %}
+{% load portal_urls %}
 {% load static %}
 
 {% block title %}Resume | {{ PLATFORM_NAME }}{% endblock %}
@@ -30,143 +31,203 @@
     {% endfor %}
 </section>
 
-<div class="jsd-res-grid">
-    <div class="jsd-res-main">
-        <section class="jsd-card jsd-res-upload" id="jsdResumePage"
-                 data-upload-url="{{ resume_page.upload_url }}"
-                 data-delete-url="{{ resume_page.delete_url }}"
-                 data-autofill-url="{{ resume_page.autofill_url }}"
-                 data-portal-api-url="{{ resume_page.portal_api_url }}">
-            <div class="jsd-card__body">
-                <h2><i class="bi bi-cloud-upload"></i> {% if resume_page.has_resume %}Manage Resume{% else %}Upload Resume{% endif %}</h2>
+<div class="jsd-res-layout">
 
-                <div class="jsd-res-dropzone" id="jsdResumeDropzone" tabindex="0" role="button" aria-label="Upload resume">
-                    <i class="bi bi-file-earmark-arrow-up"></i>
-                    <p class="mb-1 fw-semibold">Drag & drop your resume here</p>
-                    <p class="jsd-res-dropzone__hint mb-2">PDF or DOCX only · Max 5 MB</p>
-                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jsdResumeUploadBtn">
-                        {% if resume_page.has_resume %}Replace Resume{% else %}Choose File{% endif %}
-                    </button>
-                    <input type="file" id="jsdResumeInput" hidden
-                           accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-                    <p class="jsd-res-selected" id="jsdResumeSelected" hidden></p>
-                    <p class="jsd-res-error" id="jsdResumeError" role="alert" hidden></p>
-                    <div class="jsd-res-progress" id="jsdResumeProgress" hidden>
-                        <div class="jsd-res-progress__track"><div class="jsd-res-progress__bar" id="jsdResumeProgressBar"></div></div>
-                        <span id="jsdResumeProgressText">Uploading…</span>
+    <!-- 1. Manage Resume (Upload) -->
+    <section class="jsd-card jsd-res-upload" id="jsdResumePage"
+             data-upload-url="{{ resume_page.upload_url }}"
+             data-delete-url="{{ resume_page.delete_url }}"
+             data-autofill-url="{{ resume_page.autofill_url }}"
+             data-portal-api-url="{{ resume_page.portal_api_url }}">
+        <div class="jsd-card__body">
+            <h2>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-cloud-upload"></i> Manage Resume
+                    {% if resume_page.has_resume %}
+                    <span class="jsd-badge-success ms-2"><i class="bi bi-check-circle-fill"></i> Uploaded Successfully</span>
+                    {% endif %}
+                </div>
+            </h2>
+
+            <div class="jsd-res-dropzone {% if resume_page.has_resume %}jsd-res-dropzone--active{% endif %}" id="jsdResumeDropzone" tabindex="0" role="button" aria-label="Upload resume">
+                {% if resume_page.has_resume %}
+                <!-- Active Resume UI -->
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-file-earmark-check-fill text-success" style="font-size: 2.5rem; line-height: 1;"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h3 class="mb-0 fs-6 fw-bold text-dark">{{ resume_page.file_name|default:"Resume Document" }}</h3>
+                            <span class="jsd-badge-success"><i class="bi bi-check-circle-fill"></i> Current Resume</span>
+                        </div>
+                        <p class="mb-2 text-muted" style="font-size: 0.8rem;">Uploaded on {{ resume_page.uploaded_label }} · Version {{ resume_page.version }}</p>
+                        <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="jsdResumeUploadBtn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                            <i class="bi bi-arrow-repeat"></i> Upload Replacement
+                        </button>
                     </div>
                 </div>
-
-                {% if resume_page.has_resume %}
-                <div class="jsd-res-actions">
-                    {% if resume_page.preview_url %}
-                    <a href="{{ resume_page.preview_url }}" class="jsd-btn jsd-btn--outline" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Preview</a>
-                    {% endif %}
-                    {% if resume_page.download_url %}
-                    <a href="{{ resume_page.download_url }}" class="jsd-btn jsd-btn--soft"><i class="bi bi-download"></i> Download</a>
-                    {% endif %}
-                    <button type="button" class="jsd-btn jsd-btn--outline" id="jsdResumeReplaceBtn"><i class="bi bi-arrow-repeat"></i> Replace</button>
-                    <button type="button" class="jsd-btn jsd-btn--danger-outline" id="jsdResumeDeleteBtn"><i class="bi bi-trash3"></i> Delete</button>
-                </div>
+                {% else %}
+                <!-- Empty Upload UI -->
+                <i class="bi bi-file-earmark-arrow-up"></i>
+                <p class="mb-1 fw-semibold">Drag &amp; drop your resume here</p>
+                <p class="jsd-res-dropzone__hint mb-2">PDF or DOCX only · Max 5 MB</p>
+                <button type="button" class="jsd-btn jsd-btn--primary btn-sm mx-auto" id="jsdResumeUploadBtn">
+                    Choose File
+                </button>
                 {% endif %}
-            </div>
-        </section>
 
-        {% if resume_page.has_resume and resume_page.is_pdf and resume_page.preview_url %}
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2><i class="bi bi-file-earmark-pdf"></i> Resume Preview</h2>
-                <iframe class="jsd-res-preview" src="{{ resume_page.preview_url }}" title="Resume preview" loading="lazy"></iframe>
-            </div>
-        </section>
-        {% elif resume_page.has_resume and not resume_page.is_pdf %}
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2><i class="bi bi-file-earmark-word"></i> Resume Preview</h2>
-                <p class="text-muted mb-0">DOCX preview is not available in-browser. Download the file to review it locally.</p>
-            </div>
-        </section>
-        {% endif %}
-
-        {% if resume_page.parsed %}
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2><i class="bi bi-search"></i> Parsed Resume Data</h2>
-                <div class="jsd-res-parsed-grid">
-                    {% if resume_page.parsed.name %}<div><span>Name</span><strong>{{ resume_page.parsed.name }}</strong></div>{% endif %}
-                    {% if resume_page.parsed.email %}<div><span>Email</span><strong>{{ resume_page.parsed.email }}</strong></div>{% endif %}
-                    {% if resume_page.parsed.phone %}<div><span>Phone</span><strong>{{ resume_page.parsed.phone }}</strong></div>{% endif %}
+                <input type="file" id="jsdResumeInput" hidden accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                <p class="jsd-res-selected" id="jsdResumeSelected" hidden></p>
+                <p class="jsd-res-error" id="jsdResumeError" role="alert" hidden></p>
+                <div class="jsd-res-progress" id="jsdResumeProgress" hidden>
+                    <div class="jsd-res-progress__track"><div class="jsd-res-progress__bar" id="jsdResumeProgressBar"></div></div>
+                    <span id="jsdResumeProgressText" style="font-size: 0.8rem; margin-top: 0.25rem; display: block; color: var(--jsd-on-surface-variant);">Uploading…</span>
                 </div>
-                {% if resume_page.parsed.skills %}
-                <p class="small text-muted mt-2 mb-1">Skills detected</p>
-                <div class="jsd-res-tags">{% for s in resume_page.parsed.skills %}<span>{{ s }}</span>{% endfor %}</div>
-                {% endif %}
-                {% if resume_page.autofill_suggestions %}
-                <div class="jsd-res-autofill mt-3">
-                    <p class="fw-semibold mb-2">Suggested profile updates</p>
-                    <ul class="mb-2">{% for item in resume_page.autofill_suggestions %}<li>{{ item.label }}: {{ item.value }}</li>{% endfor %}</ul>
-                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jsdResumeAutofillBtn">
-                        Apply to Profile
-                    </button>
-                </div>
-                {% endif %}
             </div>
-        </section>
-        {% endif %}
-    </div>
 
-    <aside class="jsd-res-side">
-        <section class="jsd-card jsd-res-match">
-            <div class="jsd-card__body text-center">
-                <h2>Resume Match Score</h2>
-                <div class="jsd-res-score-ring" data-score="{{ resume_page.match_score }}">
+            {% if resume_page.has_resume %}
+            <div class="jsd-res-actions">
+                {% if resume_page.preview_url %}
+                <a href="{{ resume_page.preview_url }}" class="jsd-btn jsd-btn--outline" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Preview</a>
+                {% endif %}
+                {% if resume_page.download_url %}
+                <a href="{{ resume_page.download_url }}" class="jsd-btn jsd-btn--outline"><i class="bi bi-download"></i> Download</a>
+                {% endif %}
+                <button type="button" class="jsd-btn jsd-btn--outline" id="jsdResumeReplaceBtn"><i class="bi bi-arrow-repeat"></i> Replace</button>
+                <button type="button" class="jsd-btn jsd-btn--soft-danger ms-auto" id="jsdResumeDeleteBtn"><i class="bi bi-trash3"></i> Delete</button>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 2. Resume Match Score -->
+    {% if resume_page.has_resume %}
+    <section class="jsd-card jsd-res-match">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-bullseye"></i> Resume Match Score</h2>
+            <div class="jsd-res-match-container">
+                <div class="jsd-res-score-ring" style="--score: {{ resume_page.match_score }};">
                     <strong>{{ resume_page.match_score }}%</strong>
                 </div>
-                <p class="small text-muted mb-0">{{ resume_page.match_explanation }}</p>
+                <div class="jsd-res-match-content">
+                    <h3>{% if resume_page.match_score >= 80 %}Excellent Match{% elif resume_page.match_score >= 60 %}Good Match{% else %}Needs Improvement{% endif %}</h3>
+                    <p>{{ resume_page.match_explanation }}</p>
+                    <p class="mb-0 small text-muted"><i class="bi bi-info-circle"></i> This score represents how well your current resume aligns with active IT job listings.</p>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
+    {% endif %}
 
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2>Resume Details</h2>
-                <dl class="jsd-res-dl">
-                    <div><dt>File Name</dt><dd>{{ resume_page.file_name|default:"—" }}</dd></div>
-                    <div><dt>File Size</dt><dd>{{ resume_page.file_size_label }}</dd></div>
-                    <div><dt>File Type</dt><dd>{{ resume_page.file_type_label }}</dd></div>
-                    <div><dt>Uploaded</dt><dd>{{ resume_page.uploaded_label }}</dd></div>
-                    <div><dt>Last Updated</dt><dd>{{ resume_page.updated_label }}</dd></div>
-                    <div><dt>Version</dt><dd>v{{ resume_page.version }}</dd></div>
-                    <div><dt>Storage</dt><dd>{{ resume_page.storage_status }}</dd></div>
-                </dl>
+    <!-- 3. Resume Preview -->
+    {% if resume_page.has_resume and resume_page.is_pdf and resume_page.preview_url %}
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-file-earmark-pdf"></i> Resume Preview</h2>
+            <iframe class="jsd-res-preview" src="{{ resume_page.preview_url }}" title="Resume preview" loading="lazy"></iframe>
+        </div>
+    </section>
+    {% elif resume_page.has_resume and not resume_page.is_pdf %}
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-file-earmark-word"></i> Resume Preview</h2>
+            <div class="p-4 text-center bg-light rounded border">
+                <i class="bi bi-file-word fs-1 text-primary mb-3 d-block"></i>
+                <p class="text-muted mb-0 fw-semibold">DOCX preview is not available in-browser.</p>
+                <p class="small text-muted mt-1">Please download the file to review it locally.</p>
+                <a href="{{ resume_page.download_url }}" class="jsd-btn jsd-btn--outline mt-3 d-inline-flex"><i class="bi bi-download"></i> Download Resume</a>
             </div>
-        </section>
+        </div>
+    </section>
+    {% endif %}
 
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2>Recruiter Analytics</h2>
-                <dl class="jsd-res-dl">
-                    <div><dt>Resume Views</dt><dd>{{ resume_page.analytics.recruiter_views }}</dd></div>
-                    <div><dt>Recruiter Downloads</dt><dd>{{ resume_page.analytics.recruiter_downloads }}</dd></div>
-                    <div><dt>Last Viewed</dt><dd>{{ resume_page.analytics.last_viewed_label }}</dd></div>
-                    <div><dt>Last Downloaded</dt><dd>{{ resume_page.analytics.last_downloaded_label }}</dd></div>
-                </dl>
-            </div>
-        </section>
+    <!-- 4. AI Resume Analysis -->
+    {% if resume_page.parsed %}
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-robot"></i> AI Resume Analysis</h2>
 
-        <section class="jsd-card">
-            <div class="jsd-card__body">
-                <h2>Improvement Suggestions</h2>
-                <ul class="jsd-res-suggestions">
-                    {% for item in resume_page.suggestions %}
-                    <li class="jsd-res-suggestions__item jsd-res-suggestions__item--{{ item.tone }}">
-                        <p class="mb-1">{{ item.message }}</p>
-                        <a href="{{ item.action_url }}" class="jsd-link">{{ item.action_label }}</a>
-                    </li>
-                    {% endfor %}
-                </ul>
+            {% if resume_page.parsed.status == 'processing' %}
+            <div class="alert alert-info mt-3 d-flex align-items-center mb-0">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                <div>Your resume is currently being parsed by our system to extract skills and match you with better jobs. Check back in a minute.</div>
             </div>
-        </section>
-    </aside>
+            {% elif resume_page.parsed.status == 'failed' %}
+            <div class="alert alert-warning mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i> Our system encountered an error while parsing your resume. We will attempt to process it again later.
+            </div>
+            {% else %}
+            <div class="jsd-res-parsed-grid">
+                {% if resume_page.parsed.name %}<div><span>Name</span><strong>{{ resume_page.parsed.name }}</strong></div>{% endif %}
+                {% if resume_page.parsed.email %}<div><span>Email</span><strong>{{ resume_page.parsed.email }}</strong></div>{% endif %}
+                {% if resume_page.parsed.phone %}<div><span>Phone</span><strong>{{ resume_page.parsed.phone }}</strong></div>{% endif %}
+            </div>
+            {% if resume_page.parsed.skills %}
+            <div class="jsd-res-tags mt-3">{% for s in resume_page.parsed.skills %}<span>{{ s }}</span>{% endfor %}</div>
+            {% endif %}
+            {% if resume_page.autofill_suggestions %}
+            <div class="jsd-res-autofill">
+                <p class="fw-semibold mb-2">Suggested profile updates</p>
+                <ul class="mb-3">{% for item in resume_page.autofill_suggestions %}<li>{{ item.label }}: {{ item.value }}</li>{% endfor %}</ul>
+                <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jsdResumeAutofillBtn">
+                    Apply to Profile
+                </button>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 5. Resume Details -->
+    {% if resume_page.has_resume %}
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-info-square"></i> Resume Details</h2>
+            <dl class="jsd-res-data-grid">
+                <div class="jsd-res-data-item"><dt>File Name</dt><dd>{{ resume_page.file_name|default:"—" }}</dd></div>
+                <div class="jsd-res-data-item"><dt>File Size</dt><dd>{{ resume_page.file_size_label }}</dd></div>
+                <div class="jsd-res-data-item"><dt>File Type</dt><dd>{{ resume_page.file_type_label }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Uploaded</dt><dd>{{ resume_page.uploaded_label }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Last Updated</dt><dd>{{ resume_page.updated_label }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Version</dt><dd>v{{ resume_page.version }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Storage</dt><dd>{{ resume_page.storage_status }}</dd></div>
+            </dl>
+        </div>
+    </section>
+
+    <!-- 6. Recruiter Analytics -->
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-graph-up-arrow"></i> Recruiter Analytics</h2>
+            <dl class="jsd-res-data-grid">
+                <div class="jsd-res-data-item"><dt>Resume Views</dt><dd>{{ resume_page.analytics.recruiter_views }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Recruiter Downloads</dt><dd>{{ resume_page.analytics.recruiter_downloads }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Last Viewed</dt><dd>{{ resume_page.analytics.last_viewed_label }}</dd></div>
+                <div class="jsd-res-data-item"><dt>Last Downloaded</dt><dd>{{ resume_page.analytics.last_downloaded_label }}</dd></div>
+            </dl>
+        </div>
+    </section>
+
+    <!-- 7. Improvement Suggestions -->
+    <section class="jsd-card">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-lightbulb"></i> Improvement Suggestions</h2>
+            {% if resume_page.suggestions %}
+            <ul class="jsd-res-suggestions">
+                {% for item in resume_page.suggestions %}
+                <li class="jsd-res-suggestions__item jsd-res-suggestions__item--{{ item.tone }}">
+                    <p>{{ item.message }}</p>
+                    <a href="{{ item.action_url }}">{{ item.action_label }} <i class="bi bi-arrow-right"></i></a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mb-0">Your profile and resume are currently looking great. Keep it updated!</p>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
 </div>
 {% else %}
 <div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to manage your resume.</p></div></div>

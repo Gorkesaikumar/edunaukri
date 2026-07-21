@@ -451,8 +451,8 @@ class RecruiterCandidatesPortalService(BaseService):
             "initials": initials_from_name(app.applicant_name_snapshot, "JS"),
             "email": getattr(seeker.user, "email", "") if seeker else "",
             "phone": seeker.phone if seeker else "",
-            "job_title": app.job_title_snapshot,
-            "company_name": app.company_name_snapshot,
+            "job_title": (app.job_posting.title if getattr(app, "job_posting", None) else app.job_title_snapshot) or "IT Professional",
+            "company_name": (app.company.name if getattr(app, "company", None) else app.company_name_snapshot) or "",
             "status": app.status,
             "status_label": self.STATUS_LABELS.get(
                 app.status, app.status.replace("_", " ").title()

@@ -49,6 +49,38 @@
     </div>
 </div>
 
+{# Global Resume Modal #}
+<div class="modal fade" id="recResumeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rcd-bento border-0 rcd-resume-modal">
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title mb-0" id="recResumeModalTitle">Resume</h5>
+                    <p class="text-muted small mb-0" id="recResumeModalJob"></p>
+                </div>
+                <div class="d-flex flex-wrap gap-2 ms-auto me-2" id="recResumeToolbar">
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeZoomOut" title="Zoom out"><span class="material-symbols-outlined">zoom_out</span></button>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeZoomIn" title="Zoom in"><span class="material-symbols-outlined">zoom_in</span></button>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeFullscreen" title="Full screen"><span class="material-symbols-outlined">fullscreen</span></button>
+                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumePrint" title="Print"><span class="material-symbols-outlined">print</span></button>
+                    <a href="#" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeOpenTab" target="_blank" rel="noopener" title="Open in New Tab"><span class="material-symbols-outlined">open_in_new</span></a>
+                    <a href="#" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeDownload" target="_blank" rel="noopener">Download</a>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 position-relative">
+                <div id="recResumeEmpty" class="rcd-empty py-5" hidden>
+                    <span class="material-symbols-outlined">description</span>
+                    <p>No resume uploaded.</p>
+                </div>
+                <div class="rcd-resume-viewport" id="recResumeViewport">
+                    <iframe id="recResumeFrame" class="rcd-resume-frame" title="Resume preview"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="{% static 'js/edu-notify.js' %}"></script>

@@ -480,6 +480,9 @@ class JobSeekerProfileManageService(BaseService):
         profile.resume_file = stored
         profile.save(update_fields=["resume_file", "updated_at"])
 
+        from apps.applications.models import JobApplication
+        JobApplication.objects.filter(job_seeker=profile, is_deleted=False).update(resume_file=stored)
+
         if previous_file and previous_file.pk != stored.pk:
             self.storage.remove_stored_file(previous_file)
 

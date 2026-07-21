@@ -35,7 +35,28 @@ class ResumeRecruiterAccessService(BaseService):
             JobSeekerPrivacyService().ensure_can_download_resume(
                 application.job_seeker, actor, application=application
             )
-        stored = application.resume_file or application.job_seeker.resume_file
+        from apps.documents.services.storage_service import StorageService
+
+        stored = None
+        if application.resume_file_id and getattr(application, "resume_file", None):
+            f = application.resume_file
+            if getattr(f, "status", None) == "active" and not getattr(f, "is_deleted", False):
+                if StorageService().get_absolute_path(f).is_file():
+                    stored = f
+
+        if not stored and getattr(application, "job_seeker", None) and getattr(application.job_seeker, "resume_file", None):
+            f = application.job_seeker.resume_file
+            if getattr(f, "status", None) == "active" and not getattr(f, "is_deleted", False):
+                if StorageService().get_absolute_path(f).is_file():
+                    stored = f
+                    try:
+                        application.resume_file = stored
+                        application.save(update_fields=["resume_file"])
+                    except Exception:
+                        pass
+
+        if not stored:
+            stored = application.resume_file or getattr(application, "job_seeker", None) and getattr(application.job_seeker, "resume_file", None)
         if not stored:
             raise PermissionDenied("Resume not available for this application.")
         return stored

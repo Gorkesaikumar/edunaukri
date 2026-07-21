@@ -88,8 +88,81 @@
     };
   }
 
+  function closeAllPortalMenus() {
+    document.querySelectorAll(".rcd-applicant-actions__menu.show, .rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (ul) {
+      ul.classList.remove("show", "rcd-portal-menu--open");
+      ul.style.display = "none";
+      if (ul._originalParent) {
+        ul._originalParent.appendChild(ul);
+      }
+      ul._triggerBtn = null;
+    });
+  }
+
+  function togglePortalMenu(btn) {
+    var wrapper = btn.closest(".rcd-applicant-actions");
+    if (!wrapper) return;
+    var ul = wrapper.querySelector(".rcd-applicant-actions__menu");
+    if (!ul) {
+      var existing = document.querySelector(".rcd-applicant-actions__menu.show");
+      if (existing && existing._triggerBtn === btn) {
+        closeAllPortalMenus();
+      }
+      return;
+    }
+
+    var isOpen = ul.classList.contains("show");
+    closeAllPortalMenus();
+    if (isOpen) return;
+
+    ul._originalParent = wrapper;
+    ul._triggerBtn = btn;
+    document.body.appendChild(ul);
+
+    ul.style.position = "fixed";
+    ul.style.zIndex = "10600";
+    ul.style.display = "block";
+    ul.classList.add("show", "rcd-portal-menu--open");
+
+    var rect = btn.getBoundingClientRect();
+    var menuWidth = ul.offsetWidth || 230;
+    var menuHeight = ul.offsetHeight || 360;
+
+    var leftPos = rect.right - menuWidth;
+    if (leftPos < 10) leftPos = 10;
+    if (leftPos + menuWidth > window.innerWidth - 10) leftPos = window.innerWidth - menuWidth - 10;
+
+    var topPos = rect.bottom + 4;
+    if (topPos + menuHeight > window.innerHeight - 10 && rect.top - menuHeight - 4 > 10) {
+      topPos = rect.top - menuHeight - 4;
+    }
+
+    ul.style.left = leftPos + "px";
+    ul.style.top = topPos + "px";
+  }
+
+  function bindPortalMenus(container) {
+    var scope = container || document;
+    scope.querySelectorAll(".rec-applicant-actions-btn").forEach(function (btn) {
+      if (btn._portalBound) return;
+      btn._portalBound = true;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePortalMenu(btn);
+      });
+    });
+  }
+
   function appDataFromBtn(btn) {
-    var menuBtn = btn.closest(".rcd-applicant-actions").querySelector(".rec-applicant-actions-btn");
+    var menu = btn.closest(".rcd-applicant-actions__menu");
+    var menuBtn = null;
+    if (menu && menu._triggerBtn) {
+      menuBtn = menu._triggerBtn;
+    } else {
+      var actionsWrap = btn.closest(".rcd-applicant-actions");
+      if (actionsWrap) menuBtn = actionsWrap.querySelector(".rec-applicant-actions-btn");
+    }
     if (!menuBtn) return null;
     return {
       id: menuBtn.getAttribute("data-app-id"),
@@ -109,25 +182,61 @@
 
   function bindActionMenus(container) {
     var scope = container || document;
-    scope.querySelectorAll(".rcd-applicant-actions").forEach(function (dropdown) {
+    var dropdowns = [];
+    if (scope.classList && scope.classList.contains("rcd-applicant-actions")) {
+      dropdowns.push(scope);
+    } else {
+      scope.querySelectorAll(".rcd-applicant-actions").forEach(function (d) {
+        dropdowns.push(d);
+      });
+    }
+    // Also check any currently teleported menus
+    if (scope === document) {
+      document.querySelectorAll(".rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (menu) {
+        if (menu._originalParent && dropdowns.indexOf(menu._originalParent) === -1) {
+          dropdowns.push(menu._originalParent);
+        }
+      });
+    }
+
+    dropdowns.forEach(function (dropdown) {
       if (dropdown._bound) return;
       dropdown._bound = true;
 
-      dropdown.querySelector(".rec-action-profile").addEventListener("click", function (e) {
+      var getMenu = function () {
+        var m = dropdown.querySelector(".rcd-applicant-actions__menu");
+        if (!m) {
+          document.querySelectorAll(".rcd-applicant-actions__menu[style*='position: fixed']").forEach(function (item) {
+            if (item._originalParent === dropdown) m = item;
+          });
+        }
+        return m;
+      };
+
+      var menuEl = getMenu();
+      if (!menuEl) return;
+
+      var profileBtn = menuEl.querySelector(".rec-action-profile");
+      if (profileBtn) profileBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (app) openCandidateDrawer(app.id);
       });
 
-      dropdown.querySelector(".rec-action-resume").addEventListener("click", function (e) {
+      var resumeBtn = menuEl.querySelector(".rec-action-resume");
+      if (resumeBtn) resumeBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (app) openResumeModal(app);
       });
 
-      dropdown.querySelector(".rec-action-download").addEventListener("click", function (e) {
+      var downloadBtn = menuEl.querySelector(".rec-action-download");
+      if (downloadBtn) downloadBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (!app || !app.hasResume) {
           notify("error", "No resume available.");
           return;
@@ -135,15 +244,19 @@
         window.location.href = app.resumeUrl;
       });
 
-      dropdown.querySelector(".rec-action-shortlist").addEventListener("click", function (e) {
+      var shortlistBtn = menuEl.querySelector(".rec-action-shortlist");
+      if (shortlistBtn) shortlistBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (app) updateStatus(app.statusUrl, "shortlisted");
       });
 
-      dropdown.querySelector(".rec-action-reject").addEventListener("click", async function (e) {
+      var rejectBtn = menuEl.querySelector(".rec-action-reject");
+      if (rejectBtn) rejectBtn.addEventListener("click", async function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (!app) return;
         var ok = await confirmAction({
           title: "Reject Candidate",
@@ -156,23 +269,35 @@
         updateStatus(app.statusUrl, "rejected");
       });
 
-      dropdown.querySelector(".rec-action-interview").addEventListener("click", function (e) {
+      var interviewBtn = menuEl.querySelector(".rec-action-interview");
+      if (interviewBtn) interviewBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (app) openInterviewModal(app.interviewUrl, app.name);
       });
 
-      dropdown.querySelector(".rec-action-next").addEventListener("click", function (e) {
+      var nextBtn = menuEl.querySelector(".rec-action-next");
+      if (nextBtn) nextBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (!app) return;
         openCandidateDrawer(app.id);
       });
 
-      dropdown.querySelector(".rec-action-notes").addEventListener("click", function (e) {
+      var notesBtn = menuEl.querySelector(".rec-action-notes");
+      if (notesBtn) notesBtn.addEventListener("click", function (e) {
         e.preventDefault();
         var app = appDataFromBtn(e.target);
+        closeAllPortalMenus();
         if (app) openNotesModal(app.notesUrl, app.name);
+      });
+
+      menuEl.querySelectorAll(".dropdown-item[href]").forEach(function (link) {
+        link.addEventListener("click", function () {
+          closeAllPortalMenus();
+        });
       });
     });
   }
@@ -304,7 +429,7 @@
       escapeHtml(app.interview_schedule_url) +
       '" data-name="' +
       escapeHtml(app.applicant_name) +
-      '">Schedule Interview</button></div></div>"
+      '">Schedule Interview</button></div></div>'
     );
   }
 
@@ -358,75 +483,13 @@
   }
 
   function openResumeModal(app) {
-    var modalEl = document.getElementById("recResumeModal");
-    var frame = document.getElementById("recResumeFrame");
-    var empty = document.getElementById("recResumeEmpty");
-    var viewport = document.getElementById("recResumeViewport");
-    var toolbar = document.getElementById("recResumeToolbar");
-    var title = document.getElementById("recResumeModalTitle");
-    var jobEl = document.getElementById("recResumeModalJob");
-    var download = document.getElementById("recResumeDownload");
-    if (!modalEl) return;
-
-    if (title) title.textContent = app.name || "Resume";
-    if (jobEl) jobEl.textContent = app.job ? "Applied for " + app.job : "";
-
-    if (!app.hasResume) {
-      if (empty) empty.hidden = false;
-      if (viewport) viewport.hidden = true;
-      if (toolbar) toolbar.hidden = true;
-      if (frame) frame.src = "about:blank";
-    } else {
-      if (empty) empty.hidden = true;
-      if (viewport) viewport.hidden = false;
-      if (toolbar) toolbar.hidden = false;
-      resumeZoom = 1;
-      applyResumeZoom();
-      if (frame) frame.src = app.resumePreviewUrl || app.resumeUrl + "?preview=1";
-      if (download) download.href = app.resumeUrl;
-    }
-    if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).show();
-  }
-
-  function applyResumeZoom() {
-    var frame = document.getElementById("recResumeFrame");
-    if (frame) {
-      frame.style.transform = "scale(" + resumeZoom + ")";
-      frame.style.transformOrigin = "top center";
-      frame.style.height = Math.min(95 / resumeZoom, 95) + "vh";
+    if (window.openResumeModal && window.openResumeModal !== openResumeModal) {
+      return window.openResumeModal(app);
     }
   }
 
-  function bindResumeControls() {
-    var zoomIn = document.getElementById("recResumeZoomIn");
-    var zoomOut = document.getElementById("recResumeZoomOut");
-    var printBtn = document.getElementById("recResumePrint");
-    var fsBtn = document.getElementById("recResumeFullscreen");
-    if (zoomIn) {
-      zoomIn.addEventListener("click", function () {
-        resumeZoom = Math.min(2, resumeZoom + 0.15);
-        applyResumeZoom();
-      });
-    }
-    if (zoomOut) {
-      zoomOut.addEventListener("click", function () {
-        resumeZoom = Math.max(0.5, resumeZoom - 0.15);
-        applyResumeZoom();
-      });
-    }
-    if (printBtn) {
-      printBtn.addEventListener("click", function () {
-        var frame = document.getElementById("recResumeFrame");
-        if (frame && frame.contentWindow) frame.contentWindow.print();
-      });
-    }
-    if (fsBtn) {
-      fsBtn.addEventListener("click", function () {
-        var viewport = document.getElementById("recResumeViewport");
-        if (viewport && viewport.requestFullscreen) viewport.requestFullscreen();
-      });
-    }
-  }
+  function applyResumeZoom() {}
+  function bindResumeControls() {}
 
   function openNotesModal(url, name) {
     notesState = { url: url, name: name || "" };
@@ -532,6 +595,71 @@
     });
   }
 
+  function renderApplicantRows(apps) {
+    if (!apps || !apps.length) return "";
+    return apps
+      .map(function (app) {
+        var avatar = app.photo_url
+          ? '<img src="' + escapeHtml(app.photo_url) + '" alt="" class="rcd-applicants-table__photo">'
+          : '<span class="rcd-pipeline-card__avatar"><span>' + escapeHtml(app.initials) + "</span></span>";
+        var resumeDot = app.has_resume
+          ? '<span class="rcd-applicants-table__resume-dot" title="Resume available"><span class="material-symbols-outlined">description</span></span>'
+          : "";
+        var expLabel = app.experience_years !== "—" ? escapeHtml(app.experience_years) + " yrs" : "—";
+        var disabledAttr = app.has_resume ? "" : " disabled";
+        var emailItem = app.email_url
+          ? '<li><a class="dropdown-item" href="' + escapeHtml(app.email_url) + '"><span class="material-symbols-outlined">mail</span>Send Email</a></li>'
+          : "";
+
+        return (
+          '<tr class="rcd-applicants-table__row" data-application-id="' + escapeHtml(app.id) + '">' +
+          '<td><div class="rcd-applicants-table__candidate">' +
+          avatar +
+          '<div><strong class="rcd-applicants-table__name">' + escapeHtml(app.applicant_name) + '</strong>' +
+          resumeDot +
+          '<span class="text-muted small d-block rcd-applicants-table__hide-sm-inline">' + escapeHtml(app.email) + '</span></div></div></td>' +
+          '<td class="rcd-applicants-table__hide-sm"><span class="small">' + escapeHtml(app.job_title) + '</span></td>' +
+          '<td class="rcd-applicants-table__hide-md"><span class="small">' + expLabel + '</span></td>' +
+          '<td class="rcd-applicants-table__hide-lg"><span class="small text-truncate d-inline-block" style="max-width:10rem" title="' + escapeHtml(app.skills_label) + '">' + escapeHtml(app.skills_label) + '</span></td>' +
+          '<td class="rcd-applicants-table__hide-md"><span class="small">' + escapeHtml(app.current_company) + '</span></td>' +
+          '<td class="rcd-applicants-table__hide-sm"><span class="small">' + escapeHtml(app.location) + '</span></td>' +
+          '<td><span class="small">' + escapeHtml(app.applied_label) + '</span></td>' +
+          '<td><span class="rcd-status-pill rcd-status-pill--' + escapeHtml(app.status_tone) + '">' + escapeHtml(app.stage_label) + '</span></td>' +
+          '<td class="text-end">' +
+          '<div class="dropdown rcd-applicant-actions">' +
+          '<button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs rec-applicant-actions-btn"' +
+          ' aria-haspopup="true" aria-expanded="false"' +
+          ' data-app-id="' + escapeHtml(app.id) + '"' +
+          ' data-app-name="' + escapeHtml(app.applicant_name) + '"' +
+          ' data-app-job="' + escapeHtml(app.job_title) + '"' +
+          ' data-has-resume="' + (app.has_resume ? "1" : "0") + '"' +
+          ' data-status-url="' + escapeHtml(app.status_url) + '"' +
+          ' data-notes-url="' + escapeHtml(app.notes_url) + '"' +
+          ' data-resume-url="' + escapeHtml(app.resume_url) + '"' +
+          ' data-resume-preview-url="' + escapeHtml(app.resume_preview_url) + '"' +
+          ' data-detail-url="' + escapeHtml(app.detail_url) + '"' +
+          ' data-interview-url="' + escapeHtml(app.interview_schedule_url) + '"' +
+          ' data-email-url="' + escapeHtml(app.email_url) + '"' +
+          ' data-messages-url="' + escapeHtml(app.messages_url) + '">Actions</button>' +
+          '<ul class="dropdown-menu dropdown-menu-end rcd-applicant-actions__menu">' +
+          '<li><button type="button" class="dropdown-item rec-action-profile"><span class="material-symbols-outlined">person</span>View Profile</button></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-resume"' + disabledAttr + '><span class="material-symbols-outlined">visibility</span>View Resume</button></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-download"' + disabledAttr + '><span class="material-symbols-outlined">download</span>Download Resume</button></li>' +
+          '<li><hr class="dropdown-divider"></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-shortlist"><span class="material-symbols-outlined">star</span>Shortlist Candidate</button></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-reject"><span class="material-symbols-outlined">block</span>Reject Candidate</button></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-interview"><span class="material-symbols-outlined">calendar_today</span>Schedule Interview</button></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-next"><span class="material-symbols-outlined">trending_flat</span>Move to Next Stage</button></li>' +
+          '<li><hr class="dropdown-divider"></li>' +
+          '<li><button type="button" class="dropdown-item rec-action-notes"><span class="material-symbols-outlined">edit_note</span>Add Internal Notes</button></li>' +
+          '<li><a class="dropdown-item" href="' + escapeHtml(app.messages_url) + '"><span class="material-symbols-outlined">chat</span>Send Message</a></li>' +
+          emailItem +
+          '</ul></div></td></tr>'
+        );
+      })
+      .join("");
+  }
+
   function refreshApplicants(silent) {
     if (!root || !templates.list) return;
     var skeleton = document.getElementById("recApplicantsSkeleton");
@@ -550,6 +678,22 @@
       })
       .then(function (payload) {
         if (payload.analytics) updateStats(payload.analytics);
+        if (payload.applications) {
+          closeAllPortalMenus();
+          var tbody = document.getElementById("recApplicantsTableBody");
+          var empty = document.getElementById("recApplicantsEmpty");
+          if (tbody) {
+            tbody.innerHTML = renderApplicantRows(payload.applications);
+            bindActionMenus(tbody);
+            bindPortalMenus(tbody);
+          }
+          if (empty) {
+            empty.hidden = payload.applications.length > 0;
+          }
+          if (wrap && tbody) {
+            wrap.hidden = payload.applications.length === 0;
+          }
+        }
       })
       .catch(function () {})
       .finally(function () {
@@ -568,9 +712,30 @@
     if (!root) return;
     readTemplates();
     bindActionMenus();
+    bindPortalMenus();
     bindResumeControls();
     bindNotesModal();
     bindInterviewModal();
     bindPolling();
+
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(".rec-applicant-actions-btn, .rec-interview-actions-btn")) return;
+      if (e.target.closest(".rcd-applicant-actions__menu")) return;
+      closeAllPortalMenus();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeAllPortalMenus();
+    });
+
+    window.addEventListener("scroll", function () {
+      if (document.querySelector(".rcd-applicant-actions__menu.show")) {
+        closeAllPortalMenus();
+      }
+    }, true);
+
+    window.addEventListener("resize", function () {
+      closeAllPortalMenus();
+    });
   });
 })();

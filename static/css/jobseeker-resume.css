@@ -366,6 +366,18 @@
 .jsd-res-autofill p { font-size: 0.85rem; }
 .jsd-res-autofill ul { font-size: 0.85rem; color: var(--jsd-on-surface-variant); padding-left: 1.25rem; margin-bottom: 0.75rem; }
 
+/* Soft Danger Button (Delete action) */
+.jsd-btn--soft-danger {
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.jsd-btn--soft-danger:hover {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
 @media (max-width: 767.98px) {
   .jsd-res-match-container {
     flex-direction: column;

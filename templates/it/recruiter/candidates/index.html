@@ -140,36 +140,7 @@
     <div class="offcanvas-body" id="recCandidateDrawerBody"></div>
 </div>
 
-{# Resume modal #}
-<div class="modal fade" id="recResumeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content rcd-bento border-0 rcd-resume-modal">
-            <div class="modal-header border-0">
-                <div>
-                    <h5 class="modal-title mb-0" id="recResumeModalTitle">Resume</h5>
-                    <p class="text-muted small mb-0" id="recResumeModalJob"></p>
-                </div>
-                <div class="d-flex flex-wrap gap-2 ms-auto me-2" id="recResumeToolbar">
-                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeZoomOut" title="Zoom out"><span class="material-symbols-outlined">zoom_out</span></button>
-                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeZoomIn" title="Zoom in"><span class="material-symbols-outlined">zoom_in</span></button>
-                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeFullscreen" title="Full screen"><span class="material-symbols-outlined">fullscreen</span></button>
-                    <button type="button" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumePrint" title="Print"><span class="material-symbols-outlined">print</span></button>
-                    <a href="#" class="rcd-btn rcd-btn--soft rcd-btn--xs" id="recResumeDownload" target="_blank" rel="noopener">Download</a>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0 position-relative">
-                <div id="recResumeEmpty" class="rcd-empty py-5" hidden>
-                    <span class="material-symbols-outlined">description</span>
-                    <p>No resume uploaded.</p>
-                </div>
-                <div class="rcd-resume-viewport" id="recResumeViewport">
-                    <iframe id="recResumeFrame" class="rcd-resume-frame" title="Resume preview"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 {# Notes modal #}
 <div class="modal fade" id="recNotesModal" tabindex="-1" aria-hidden="true">

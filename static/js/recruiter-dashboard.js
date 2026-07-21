@@ -849,7 +849,115 @@
         openCandidateDrawerById(btn.getAttribute("data-application-id"));
       });
     });
+    bindGlobalResumeButtons();
   }
+
+  var resumeZoom = 1;
+
+  function applyResumeZoom() {
+    var frame = document.getElementById("recResumeFrame");
+    if (frame) {
+      frame.style.transform = "scale(" + resumeZoom + ")";
+      frame.style.transformOrigin = "top center";
+      frame.style.height = Math.min(95 / resumeZoom, 95) + "vh";
+    }
+  }
+
+  function openResumeModal(app) {
+    if (!app) return;
+    if (app.nodeType || (app.getAttribute && typeof app.getAttribute === "function")) {
+      app = {
+        id: app.getAttribute("data-app-id") || app.getAttribute("data-application-id"),
+        name: app.getAttribute("data-name") || app.getAttribute("data-app-name") || "Candidate",
+        job: app.getAttribute("data-job") || app.getAttribute("data-app-job") || "",
+        resumeUrl: app.getAttribute("data-resume-url") || "",
+        hasResume: app.getAttribute("data-has-resume") === "1" || app.getAttribute("data-has-resume") === "true" || (app.getAttribute("data-has-resume") === null && Boolean(app.getAttribute("data-resume-url")) && app.getAttribute("data-resume-url") !== "")
+      };
+    }
+
+    var modalEl = document.getElementById("recResumeModal");
+    var frame = document.getElementById("recResumeFrame");
+    var empty = document.getElementById("recResumeEmpty");
+    var viewport = document.getElementById("recResumeViewport");
+    var toolbar = document.getElementById("recResumeToolbar");
+    var title = document.getElementById("recResumeModalTitle");
+    var jobEl = document.getElementById("recResumeModalJob");
+    var download = document.getElementById("recResumeDownload");
+    var openTab = document.getElementById("recResumeOpenTab");
+    if (!modalEl) return;
+
+    if (title) title.textContent = (app.name || "Candidate") + " — Resume";
+    if (jobEl) jobEl.textContent = app.job ? "Applied for: " + app.job : "";
+
+    var previewUrl = app.resumePreviewUrl || (app.resumeUrl ? app.resumeUrl + "?preview=1" : "");
+    var dlUrl = app.resumeUrl || (app.resumePreviewUrl ? app.resumePreviewUrl.replace("?preview=1", "") : "");
+
+    if (!app.hasResume || !previewUrl) {
+      if (empty) empty.hidden = false;
+      if (viewport) viewport.hidden = true;
+      if (toolbar) toolbar.hidden = true;
+      if (frame) frame.src = "about:blank";
+    } else {
+      if (empty) empty.hidden = true;
+      if (viewport) viewport.hidden = false;
+      if (toolbar) toolbar.hidden = false;
+      resumeZoom = 1;
+      applyResumeZoom();
+      if (frame) frame.src = previewUrl;
+      if (download) download.href = dlUrl;
+      if (openTab) openTab.href = dlUrl || previewUrl;
+    }
+    if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  }
+  window.openResumeModal = openResumeModal;
+
+  function bindResumeControls() {
+    var zoomIn = document.getElementById("recResumeZoomIn");
+    var zoomOut = document.getElementById("recResumeZoomOut");
+    var printBtn = document.getElementById("recResumePrint");
+    var fsBtn = document.getElementById("recResumeFullscreen");
+    if (zoomIn && !zoomIn._bound) {
+      zoomIn._bound = true;
+      zoomIn.addEventListener("click", function () {
+        resumeZoom = Math.min(2, resumeZoom + 0.15);
+        applyResumeZoom();
+      });
+    }
+    if (zoomOut && !zoomOut._bound) {
+      zoomOut._bound = true;
+      zoomOut.addEventListener("click", function () {
+        resumeZoom = Math.max(0.5, resumeZoom - 0.15);
+        applyResumeZoom();
+      });
+    }
+    if (printBtn && !printBtn._bound) {
+      printBtn._bound = true;
+      printBtn.addEventListener("click", function () {
+        var frame = document.getElementById("recResumeFrame");
+        if (frame && frame.contentWindow) frame.contentWindow.print();
+      });
+    }
+    if (fsBtn && !fsBtn._bound) {
+      fsBtn._bound = true;
+      fsBtn.addEventListener("click", function () {
+        var viewport = document.getElementById("recResumeViewport");
+        if (viewport && viewport.requestFullscreen) viewport.requestFullscreen();
+      });
+    }
+  }
+
+  function bindGlobalResumeButtons() {
+    document.querySelectorAll(".btn-view-resume, [data-action='view-resume']").forEach(function (btn) {
+      if (btn._resumeBound) return;
+      btn._resumeBound = true;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openResumeModal(btn);
+      });
+    });
+  }
+
 
   function bindInterviewActions() {
     document.querySelectorAll(".rec-interview-cancel").forEach(function (btn) {
@@ -979,6 +1087,8 @@
     bindJobActions();
     bindInterviewActions();
     bindViewCandidateButtons();
+    bindResumeControls();
+    bindGlobalResumeButtons();
     if (window.RecAnalyticsSection) {
       window.RecAnalyticsSection.bindPeriods(refreshAnalyticsPeriod);
       window.RecAnalyticsSection.bindExport();

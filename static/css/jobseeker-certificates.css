@@ -95,11 +95,30 @@
   line-height: 1.25;
 }
 
-.jsd-cert-stat--primary i { color: var(--jsd-primary, #4f46e5); background: rgba(79, 70, 229, 0.1); }
-.jsd-cert-stat--success i { color: #059669; background: rgba(5, 150, 105, 0.1); }
-.jsd-cert-stat--review i  { color: #6366f1; background: rgba(99, 102, 241, 0.1); }
-.jsd-cert-stat--info i    { color: #0284c7; background: rgba(2, 132, 199, 0.1); }
-.jsd-cert-stat--offer i   { color: #db2777; background: rgba(219, 39, 119, 0.1); }
+.jsd-cert-stat--primary i {
+  color: var(--jsd-primary, #4f46e5);
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.jsd-cert-stat--success i {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+}
+
+.jsd-cert-stat--review i {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.jsd-cert-stat--info i {
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.1);
+}
+
+.jsd-cert-stat--offer i {
+  color: #db2777;
+  background: rgba(219, 39, 119, 0.1);
+}
 
 /* ── Filter Bar ──────────────────────────────────── */
 .jsd-cert-filters {
@@ -196,7 +215,9 @@
   position: relative;
 }
 
-.jsd-cert-card__thumb i { font-size: 1.4rem; }
+.jsd-cert-card__thumb i {
+  font-size: 1.4rem;
+}
 
 .jsd-cert-card__type {
   font-size: 0.55rem;
@@ -207,7 +228,10 @@
   text-transform: uppercase;
 }
 
-.jsd-cert-card__body { flex: 1; min-width: 0; }
+.jsd-cert-card__body {
+  flex: 1;
+  min-width: 0;
+}
 
 .jsd-cert-card__head {
   display: flex;
@@ -238,11 +262,35 @@
   border: 1px solid transparent;
 }
 
-.jsd-cert-badge--active   { background: rgba(5, 150, 105, 0.1); color: #047857; border-color: rgba(5, 150, 105, 0.2); }
-.jsd-cert-badge--expiring { background: rgba(245, 158, 11, 0.12); color: #b45309; border-color: rgba(245, 158, 11, 0.2); }
-.jsd-cert-badge--expired  { background: rgba(220, 38, 38, 0.1); color: #b91c1c; border-color: rgba(220, 38, 38, 0.2); }
-.jsd-cert-badge--lifetime { background: rgba(99, 102, 241, 0.1); color: #4338ca; border-color: rgba(99, 102, 241, 0.2); }
-.jsd-cert-badge--verified { background: rgba(2, 132, 199, 0.1); color: #0369a1; border-color: rgba(2, 132, 199, 0.2); }
+.jsd-cert-badge--active {
+  background: rgba(5, 150, 105, 0.1);
+  color: #047857;
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+.jsd-cert-badge--expiring {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.jsd-cert-badge--expired {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.jsd-cert-badge--lifetime {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.jsd-cert-badge--verified {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0369a1;
+  border-color: rgba(2, 132, 199, 0.2);
+}
 
 .jsd-cert-card__org {
   font-size: 0.85rem;
@@ -300,7 +348,9 @@
   white-space: nowrap;
 }
 
-.jsd-cert-card__actions .jsd-cert-btn i { font-size: 0.85rem; }
+.jsd-cert-card__actions .jsd-cert-btn i {
+  font-size: 0.85rem;
+}
 
 /* ── Status Modifiers ────────────────────────────── */
 .jsd-btn--danger-outline {
@@ -309,7 +359,9 @@
   background: #fff;
 }
 
-.jsd-btn--danger-outline:hover { background: #fef2f2; }
+.jsd-btn--danger-outline:hover {
+  background: #fef2f2;
+}
 
 .jsd-btn--danger {
   background: #dc2626;
@@ -317,7 +369,10 @@
   border: 0;
 }
 
-.jsd-btn--danger:hover { background: #b91c1c; color: #fff; }
+.jsd-btn--danger:hover {
+  background: #b91c1c;
+  color: #fff;
+}
 
 /* ── Empty State ─────────────────────────────────── */
 .jsd-cert-empty {
@@ -395,13 +450,37 @@
   font-size: 0.8rem;
 }
 
-.jsd-cert-selected { font-size: 0.85rem; font-weight: 600; color: var(--jsd-primary, #4f46e5); margin-top: 0.75rem; }
-.jsd-cert-error    { font-size: 0.8rem; color: #dc2626; margin-top: 0.75rem; }
+.jsd-cert-selected {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--jsd-primary, #4f46e5);
+  margin-top: 0.75rem;
+}
+
+.jsd-cert-error {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 0.75rem;
+}
 
 /* ── Progress Bar ────────────────────────────────── */
-.jsd-cert-progress { margin-top: 0.75rem; }
-.jsd-cert-progress__track { height: 0.4rem; background: rgba(199, 196, 216, 0.35); border-radius: 999px; overflow: hidden; }
-.jsd-cert-progress__bar   { height: 100%; width: 0; background: var(--jsd-primary, #4f46e5); transition: width 0.3s ease; }
+.jsd-cert-progress {
+  margin-top: 0.75rem;
+}
+
+.jsd-cert-progress__track {
+  height: 0.4rem;
+  background: rgba(199, 196, 216, 0.35);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.jsd-cert-progress__bar {
+  height: 100%;
+  width: 0;
+  background: var(--jsd-primary, #4f46e5);
+  transition: width 0.3s ease;
+}
 
 /* ── Preview Modal ───────────────────────────────── */
 .jsd-cert-preview-frame {

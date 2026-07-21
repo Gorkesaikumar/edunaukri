@@ -75,6 +75,32 @@ def _authorized(request) -> RecruiterProfile | None:
     return _get_profile(request.user)
 
 
+def _render_resume_error_html(title: str, message: str, icon: str = "📄", status_code: int = 404):
+    from django.http import HttpResponse
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body {{ font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #151521; color: #a1a5b7; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }}
+.card {{ background: #1e1e2d; padding: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }}
+h4 {{ color: #fff; margin: 16px 0 8px; font-size: 18px; font-weight: 600; }}
+p {{ font-size: 14px; line-height: 1.5; margin: 0; }}
+.icon {{ font-size: 48px; margin-bottom: 12px; display: inline-block; }}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="icon">{icon}</div>
+<h4>{title}</h4>
+<p>{message}</p>
+</div>
+</body>
+</html>"""
+    return HttpResponse(html, status=status_code, content_type="text/html")
+
+
+
 def _parse_json(request) -> dict:
     return json.loads(request.body.decode("utf-8") or "{}")
 
@@ -461,8 +487,12 @@ class RecruiterApplicationResumeAPIView(RecruiterScopedAPIView):
                 )
             return response
         except PermissionDeniedException as exc:
+            if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                return _render_resume_error_html("Access Denied", str(exc), icon="🔒", status_code=403)
             return JsonResponse({"success": False, "error": str(exc)}, status=403)
         except FileNotFoundError:
+            if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                return _render_resume_error_html("Resume File Unavailable", "The resume file for this candidate could not be found in storage. It may not have been uploaded during application or is temporarily inaccessible.", icon="📄", status_code=404)
             return JsonResponse(
                 {"success": False, "error": "Resume file missing from storage."},
                 status=404,
@@ -489,6 +519,8 @@ class RecruiterMarketplaceResumeAPIView(RecruiterScopedAPIView):
             .first()
         )
         if not seeker:
+            if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                return _render_resume_error_html("Candidate Not Found", "The requested candidate profile was not found.", icon="❌", status_code=404)
             return JsonResponse(
                 {"success": False, "error": "Candidate not found."}, status=404
             )
@@ -496,16 +528,26 @@ class RecruiterMarketplaceResumeAPIView(RecruiterScopedAPIView):
             JobSeekerPrivacyService().ensure_can_download_resume(seeker, request.user)
             stored = seeker.resume_file
             if not stored:
+                if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                    return _render_resume_error_html("No Resume Uploaded", "This candidate has not uploaded a resume document yet.", icon="📄", status_code=404)
                 return JsonResponse(
                     {"success": False, "error": "Resume not available."}, status=404
                 )
             path = StorageService().get_absolute_path(stored)
-            return FileResponse(
-                path.open("rb"), as_attachment=True, filename=stored.original_filename
-            )
+            inline = request.GET.get("preview") == "1"
+            response = FileResponse(path.open("rb"), filename=stored.original_filename)
+            if inline:
+                response["Content-Disposition"] = f'inline; filename="{stored.original_filename}"'
+            else:
+                response["Content-Disposition"] = f'attachment; filename="{stored.original_filename}"'
+            return response
         except PermissionDeniedException as exc:
+            if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                return _render_resume_error_html("Access Denied", str(exc), icon="🔒", status_code=403)
             return JsonResponse({"success": False, "error": str(exc)}, status=403)
         except FileNotFoundError:
+            if request.GET.get("preview") == "1" or "text/html" in request.headers.get("Accept", ""):
+                return _render_resume_error_html("Resume File Unavailable", "The resume file for this candidate could not be found in storage. It may not have been uploaded during application or is temporarily inaccessible.", icon="📄", status_code=404)
             return JsonResponse(
                 {"success": False, "error": "Resume file missing from storage."},
                 status=404,
