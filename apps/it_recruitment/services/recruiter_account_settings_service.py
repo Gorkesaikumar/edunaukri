@@ -54,21 +54,19 @@ class RecruiterAccountSettingsService(BaseService):
     def update_account_info(
         self, profile: RecruiterProfile, data: dict, *, actor_id, request_meta: dict
     ) -> dict:
-        first = (data.get("first_name") or "").strip()
-        last = (data.get("last_name") or "").strip()
-        phone = (data.get("phone") or "").strip()
-        official_email = (data.get("official_email") or "").strip()
-        designation = (data.get("designation") or "").strip()
-        if first:
+        if "first_name" in data:
+            first = (data.get("first_name") or "").strip()
+            if not first:
+                raise ValidationException("First name is required.")
             profile.first_name = first
-        if last:
-            profile.last_name = last
+        if "last_name" in data:
+            profile.last_name = (data.get("last_name") or "").strip()
         if "phone" in data:
-            profile.phone = phone
+            profile.phone = (data.get("phone") or "").strip()
         if "official_email" in data:
-            profile.official_email = official_email
+            profile.official_email = (data.get("official_email") or "").strip()
         if "designation" in data:
-            profile.designation = designation
+            profile.designation = (data.get("designation") or "").strip()
         profile.save(
             update_fields=[
                 "first_name",

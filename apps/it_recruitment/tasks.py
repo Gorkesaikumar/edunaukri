@@ -123,13 +123,17 @@ def parse_resume_task(self, stored_file_id: str, profile_id: str):
             return {"status": "skipped"}
 
         previous_score = ResumeMatchNotificationService().current_match_score(profile)
-        ResumeParsingService().parse_and_store(stored, profile=profile)
-        JobSeekerResumeAnalysisService().get_analysis(profile, force_refresh=True)
-        JobRecommendationEngineService().rebuild_for_seeker(
-            profile_id,
-            reason="resume_parsed",
-            notify=True,
+        
+        # Execute automated 5-step Resume Trust Pipeline (Upload -> Parse -> AI Analysis -> Trust Engine -> Dashboard)
+        from apps.resume_trust.services.resume_trust_pipeline_service import (
+            ResumeTrustPipelineService,
         )
+        ResumeTrustPipelineService().execute_pipeline(
+            profile=profile,
+            stored_file=stored,
+            domain="it",
+        )
+
         profile.refresh_from_db()
         ResumeMatchNotificationService().notify_if_improved(profile, previous_score)
         return {"status": "ok", "file_id": str(stored_file_id)}

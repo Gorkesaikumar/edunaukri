@@ -389,3 +389,56 @@
     justify-content: center;
   }
 }
+
+/* 8. Resume Trust Analysis Premium UI Styles */
+.badge-risk-low {
+  background-color: rgba(5, 150, 105, 0.1) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+.badge-risk-medium {
+  background-color: rgba(217, 119, 6, 0.1) !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+.badge-risk-high {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+.badge-risk-critical {
+  background-color: rgba(127, 29, 29, 0.15) !important;
+  color: #7f1d1d !important;
+  border: 1px solid rgba(127, 29, 29, 0.3);
+}
+
+.trust-category-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background-color: rgba(103, 80, 164, 0.08);
+  color: var(--jsd-primary);
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.trust-warning-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--jsd-surface-container);
+  border: 1px solid rgba(199, 196, 216, 0.25);
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+.trust-warning-card:hover {
+  border-color: rgba(199, 196, 216, 0.45);
+  transform: translateY(-1px);
+}
+
+.trust-score-sub {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--jsd-on-surface-variant);
+}
+

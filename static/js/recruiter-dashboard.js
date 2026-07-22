@@ -1078,6 +1078,134 @@
     }, 45000);
   }
 
+  window.buildRecruiterTrustReportHtml = function (report) {
+    if (!report || !report.has_analysis) {
+      return '<div class="alert alert-info border-0 shadow-sm"><i class="bi bi-info-circle me-2"></i> No automated trust scan is available for this candidate yet.</div>';
+    }
+
+    var scoreClass = "badge-risk-low";
+    if (report.risk_level === "MEDIUM") scoreClass = "badge-risk-medium";
+    if (report.risk_level === "HIGH") scoreClass = "badge-risk-high";
+    if (report.risk_level === "CRITICAL") scoreClass = "badge-risk-critical";
+
+    var recBadgeClass = "bg-success";
+    if (report.recommendation === "FLAG_FOR_REVIEW") recBadgeClass = "bg-warning text-dark";
+    if (report.recommendation === "REJECT") recBadgeClass = "bg-danger";
+
+    var html = "";
+    
+    // Header summary block
+    html += '<div class="card border-0 bg-light p-3 mb-4" style="border-radius: 0.75rem;">';
+    html += '  <div class="row align-items-center g-3">';
+    html += '    <div class="col-md-5 d-flex align-items-center gap-3">';
+    html += '      <div class="jsd-res-score-ring" style="--score: ' + report.trust_score + '; width: 4.5rem; height: 4.5rem;">';
+    html += '        <span>' + report.trust_score + '%</span>';
+    html += '      </div>';
+    html += '      <div>';
+    html += '        <h6 class="fw-bold mb-1 text-dark">Trust Score: ' + report.trust_score + '%</h6>';
+    html += '        <span class="badge ' + scoreClass + ' mb-1">' + report.risk_level + ' RISK</span>';
+    html += '        <p class="text-muted small mb-0">Analysis Date: ' + (report.analysis_date || "—") + '</p>';
+    html += '      </div>';
+    html += '    </div>';
+    html += '    <div class="col-md-7 border-start-md ps-md-4">';
+    html += '      <div class="d-flex align-items-center gap-2 mb-1">';
+    html += '        <span class="badge ' + recBadgeClass + ' px-2 py-1" style="font-size: 0.75rem;">' + (report.recommendation || "PASS").replace(/_/g, " ") + '</span>';
+    html += '        <span class="text-muted small fw-semibold">Recommendation</span>';
+    html += '      </div>';
+    html += '      <p class="small text-dark mb-0" style="line-height: 1.5;">' + escapeHtml(report.recommendation_message || "Resume passed automated checks.") + '</p>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // Verification Findings / Warnings (Recruiter friendly)
+    html += '<h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-exclamation text-primary me-2"></i> Verification Findings &amp; Signals (' + (report.warning_count || 0) + ')</h6>';
+    
+    if (!report.warnings || report.warnings.length === 0) {
+      html += '<div class="alert alert-success border-0 small"><i class="bi bi-check-circle me-1"></i> No inconsistencies or fraud signals were detected in this resume.</div>';
+    } else {
+      html += '<div class="d-flex flex-column gap-3 mb-2">';
+      report.warnings.forEach(function(w) {
+        var sevClass = "border-info";
+        var bgClass = "bg-info bg-opacity-10";
+        if (w.severity === "MEDIUM") { sevClass = "border-warning"; bgClass = "bg-warning bg-opacity-10"; }
+        if (w.severity === "HIGH" || w.severity === "CRITICAL") { sevClass = "border-danger"; bgClass = "bg-danger bg-opacity-10"; }
+
+        html += '<div class="card border-start border-4 ' + sevClass + ' shadow-sm" style="border-radius: 0.5rem;">';
+        html += '  <div class="card-body p-3">';
+        html += '    <div class="d-flex align-items-center justify-content-between mb-2">';
+        html += '      <div class="d-flex align-items-center gap-2">';
+        html += '        <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1" style="font-size: 0.75rem;">' + escapeHtml(w.category || "General") + '</span>';
+        html += '        <strong class="text-dark fs-6">' + escapeHtml(w.title || "Verification Signal") + '</strong>';
+        html += '      </div>';
+        html += '      <span class="badge ' + (w.severity === "CRITICAL" || w.severity === "HIGH" ? "bg-danger" : w.severity === "MEDIUM" ? "bg-warning text-dark" : "bg-info text-dark") + '">' + escapeHtml(w.severity) + '</span>';
+        html += '    </div>';
+        html += '    <p class="small text-dark mb-2" style="line-height: 1.5;">' + escapeHtml(w.description || "") + '</p>';
+        if (w.recommendation) {
+          html += '    <div class="p-2 rounded ' + bgClass + ' small text-dark d-flex align-items-start gap-2">';
+          html += '      <i class="bi bi-lightbulb text-warning fs-6"></i>';
+          html += '      <div><strong>Recruiter Guidance:</strong> ' + escapeHtml(w.recommendation) + '</div>';
+          html += '    </div>';
+        }
+        html += '  </div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    return html;
+  };
+
+  window.openRecruiterTrustReportModal = function (userId, domain, appId) {
+    var modalEl = document.getElementById("recruiterTrustReportModal");
+    if (!modalEl) return;
+    var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    var bodyEl = document.getElementById("recruiterTrustReportModalBody");
+    if (bodyEl) {
+      bodyEl.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="text-muted small mt-2">Loading verification report...</p></div>';
+    }
+    modal.show();
+
+    var url = "/api/resume-trust/recruiter-report/?domain=" + encodeURIComponent(domain || "it");
+    if (userId) url += "&user_id=" + encodeURIComponent(userId);
+    if (appId) url += "&application_id=" + encodeURIComponent(appId);
+
+    fetch(url, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "application/json"
+      }
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (payload) {
+        if (bodyEl) {
+          if (payload.success && payload.data) {
+            bodyEl.innerHTML = window.buildRecruiterTrustReportHtml(payload.data);
+          } else {
+            bodyEl.innerHTML = '<div class="alert alert-danger">' + escapeHtml(payload.error || "Unable to load candidate trust report.") + '</div>';
+          }
+        }
+      })
+      .catch(function () {
+        if (bodyEl) {
+          bodyEl.innerHTML = '<div class="alert alert-danger">Network error retrieving trust report.</div>';
+        }
+      });
+  };
+
+  function bindTrustReportButtons() {
+    document.querySelectorAll(".rec-action-trust-report").forEach(function (btn) {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var appId = btn.getAttribute("data-app-id");
+        var userId = btn.getAttribute("data-user-id");
+        var domain = btn.getAttribute("data-domain") || "it";
+        window.openRecruiterTrustReportModal(userId, domain, appId);
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     apiTemplatesFromPage();
     bindBentoPress();
@@ -1087,6 +1215,7 @@
     bindJobActions();
     bindInterviewActions();
     bindViewCandidateButtons();
+    bindTrustReportButtons();
     bindResumeControls();
     bindGlobalResumeButtons();
     if (window.RecAnalyticsSection) {

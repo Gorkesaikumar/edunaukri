@@ -82,6 +82,18 @@
 
                 <dt class="text-muted fw-normal">Publications</dt>
                 <dd class="fw-medium mb-3">{{ application_detail.research_publications_count }}</dd>
+
+                {% if application_detail.trust_report and application_detail.trust_report.has_analysis %}
+                <dt class="text-muted fw-normal">Resume Trust Score</dt>
+                <dd class="fw-medium mb-3">
+                    <span class="badge badge-risk-{{ application_detail.trust_report.risk_level|lower }} me-1">
+                        {{ application_detail.trust_report.trust_score }}% ({{ application_detail.trust_report.risk_level }} Risk)
+                    </span>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" onclick="openRecruiterTrustReportModal(null, 'faculty', '{{ application_detail.id }}')">
+                        View Report
+                    </button>
+                </dd>
+                {% endif %}
             </dl>
         </div>
     </div>

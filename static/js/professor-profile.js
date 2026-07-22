@@ -6,7 +6,7 @@
   var SECTION_FIELDS = {
     basic: [
       { name: "first_name", label: "First Name", type: "text", required: true },
-      { name: "last_name", label: "Last Name", type: "text", required: true },
+      { name: "last_name", label: "Last Name", type: "text" },
       { name: "phone", label: "Phone", type: "tel" },
     ],
     professional: [
@@ -98,7 +98,7 @@
 
   function text(id, value) {
     var el = document.getElementById(id);
-    if (el) el.textContent = value || "—";
+    if (el) el.textContent = value || "";
   }
 
   function applyProfile(data) {

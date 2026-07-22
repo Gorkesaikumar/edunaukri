@@ -84,6 +84,7 @@ LOCAL_APPS = [
     "apps.faculty",
     # Cross-domain
     "apps.applications",
+    "apps.resume_trust",
     "apps.billing",
     "apps.invoices",
     "apps.guarantee_claims",
@@ -487,3 +488,70 @@ LOGGING = get_logging_config(
     debug=DEBUG,
     log_to_file=not any("test" in arg or "pytest" in arg for arg in sys.argv),
 )
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Resume Trust & Fraud Detection Engine — Configuration
+# All thresholds, weights, and scoring parameters live here.
+# No values are hardcoded in the engine or rule classes.
+# ─────────────────────────────────────────────────────────────────────────────
+RESUME_TRUST_ENGINE = {
+    # ── Severity → base penalty mapping (used when a rule does not set its own weight)
+    "SEVERITY_WEIGHTS": {
+        "LOW": 5,
+        "MEDIUM": 15,
+        "HIGH": 30,
+        "CRITICAL": 50,
+    },
+
+    # ── Category → weight multiplier (0.0–2.0).
+    # Controls how much each category's penalty contributes to the overall risk score.
+    # 1.0 = equal weight; 2.0 = double impact; 0.5 = half impact.
+    "CATEGORY_WEIGHTS": {
+        "Timeline":          1.5,
+        "Education":         1.5,
+        "Skills":            1.0,
+        "Content Integrity": 1.0,
+        "Contact":           1.2,
+        "Completeness":      0.8,
+        "Employment":        1.3,
+        "Certifications":    1.0,
+    },
+
+    # ── Risk level thresholds (applied to the final weighted risk score 0–100)
+    "RISK_THRESHOLDS": {
+        "CRITICAL": 70,
+        "HIGH":     40,
+        "MEDIUM":   15,
+    },
+
+    # ── Confidence scoring parameters
+    "BASE_CONFIDENCE_NO_WARNINGS":    0.95,
+    "BASE_CONFIDENCE_WITH_WARNINGS":  1.00,
+    "CONFIDENCE_PENALTY_PER_WARNING": 0.02,
+    "MIN_CONFIDENCE":                 0.40,
+
+    # ── Rule-level weight overrides (rule_code → penalty override).
+    # Override a rule's DEFAULT_WEIGHT without touching rule code.
+    "RULE_WEIGHT_OVERRIDES": {
+        # "TIMELINE_001": 35,
+    },
+
+    # ── Popup Warning Threshold
+    # If trust_score < POPUP_TRUST_THRESHOLD (default 70), a respectful warning popup is shown once per resume version
+    "POPUP_TRUST_THRESHOLD": 70,
+
+    # ── Human-readable recommendation messages keyed by recommendation value
+    "RECOMMENDATION_MESSAGES": {
+        "PASS": (
+            "Resume passed all automated checks. Candidate may proceed to the next stage."
+        ),
+        "FLAG_FOR_REVIEW": (
+            "Resume has been flagged for manual review. "
+            "Verify the highlighted sections with the candidate before proceeding."
+        ),
+        "REJECT": (
+            "Resume failed critical trust checks. "
+            "This candidate should not proceed without thorough background verification."
+        ),
+    },
+}

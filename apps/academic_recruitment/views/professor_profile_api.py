@@ -83,7 +83,14 @@ class ProfessorProfileSectionAPIView(_ProfessorProfileAPIMixin):
             data = self._service().update_section(
                 profile, section, payload, actor_id=request.user.pk
             )
-            return JsonResponse({"success": True, "data": data})
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Profile updated successfully.",
+                    "data": data,
+                    "profile": data,
+                }
+            )
         except (
             json.JSONDecodeError,
             ValidationException,

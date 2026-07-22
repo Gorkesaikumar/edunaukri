@@ -137,6 +137,11 @@ def get_logging_config(*, debug: bool = False, log_to_file: bool = True) -> dict
             "level": "INFO",
             "propagate": False,
         },
+        "resume_trust": {
+            "handlers": ["console", "security_file", "errors_file"] if log_to_file else ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     }
 
     return {

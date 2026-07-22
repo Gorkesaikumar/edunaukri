@@ -11,6 +11,11 @@
                 {% if app.has_resume %}
                 <span class="rcd-applicants-table__resume-dot" title="Resume available"><span class="material-symbols-outlined">description</span></span>
                 {% endif %}
+                {% if app.trust_report and app.trust_report.has_analysis %}
+                <span class="badge badge-risk-{{ app.trust_report.risk_level|lower }} ms-1" style="font-size: 0.65rem; padding: 0.2em 0.45em; cursor: pointer;" onclick="openRecruiterTrustReportModal(null, 'it', '{{ app.id }}')" title="Resume Trust Score: {{ app.trust_report.trust_score }}% ({{ app.trust_report.risk_level }} Risk)">
+                    <i class="bi bi-shield-check"></i> {{ app.trust_report.trust_score }}%
+                </span>
+                {% endif %}
                 <span class="text-muted small d-block rcd-applicants-table__hide-sm-inline">{{ app.email }}</span>
             </div>
         </div>
@@ -46,6 +51,7 @@
                 <li><button type="button" class="dropdown-item rec-action-profile"><span class="material-symbols-outlined">person</span>View Profile</button></li>
                 <li><button type="button" class="dropdown-item rec-action-resume"{% if not app.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">visibility</span>View Resume</button></li>
                 <li><button type="button" class="dropdown-item rec-action-download"{% if not app.has_resume %} disabled{% endif %}><span class="material-symbols-outlined">download</span>Download Resume</button></li>
+                <li><button type="button" class="dropdown-item rec-action-trust-report" data-app-id="{{ app.id }}" data-domain="it"><span class="material-symbols-outlined">shield</span>Trust Report</button></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><button type="button" class="dropdown-item rec-action-shortlist"><span class="material-symbols-outlined">star</span>Shortlist Candidate</button></li>
                 <li><button type="button" class="dropdown-item rec-action-reject"><span class="material-symbols-outlined">block</span>Reject Candidate</button></li>

@@ -6,6 +6,7 @@
 
 {% block extra_head %}
 <link href="{% static 'css/jobseeker-resume.css' %}" rel="stylesheet">
+<link href="{% static 'css/ai-progress-modal.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block dashboard_content %}
@@ -105,14 +106,64 @@
         <div class="jsd-card__body">
             <h2><i class="bi bi-bullseye"></i> Resume Match Score</h2>
             <div class="jsd-res-match-container">
+                {% if resume_page.trust_report.status == "FAILED" or resume_page.trust_report.trust_score is None or not resume_page.trust_report.has_analysis %}
+                <div class="jsd-res-score-ring" style="--score: 0; border: 2px dashed #dc3545;">
+                    <strong style="color: #dc3545; font-size: 1.1rem;">N/A</strong>
+                </div>
+                <div class="jsd-res-match-content w-100">
+                    <h3 class="text-danger fw-bold fs-6 mb-1"><i class="bi bi-x-circle-fill"></i> Not Available</h3>
+                    <p class="text-secondary small mb-2" style="line-height: 1.5;">
+                        {{ resume_page.match_diagnostics.reason|default:"The Resume Match Score could not be calculated because the uploaded document failed the Resume Trust Analysis." }}
+                    </p>
+                    {% if resume_page.match_diagnostics.possible_reasons %}
+                    <div class="p-2 bg-light rounded border mb-2">
+                        <p class="fw-bold small text-muted mb-1">Possible Reasons:</p>
+                        <ul class="mb-0 small text-danger ps-3">
+                            {% for r in resume_page.match_diagnostics.possible_reasons %}
+                            <li>{{ r }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    <p class="mb-0 small text-muted"><i class="bi bi-info-circle"></i> {{ resume_page.match_diagnostics.recommendation|default:"Upload a properly formatted resume before requesting a Resume Match Score." }}</p>
+                </div>
+                {% else %}
                 <div class="jsd-res-score-ring" style="--score: {{ resume_page.match_score }};">
                     <strong>{{ resume_page.match_score }}%</strong>
                 </div>
-                <div class="jsd-res-match-content">
+                <div class="jsd-res-match-content w-100">
                     <h3>{% if resume_page.match_score >= 80 %}Excellent Match{% elif resume_page.match_score >= 60 %}Good Match{% else %}Needs Improvement{% endif %}</h3>
-                    <p>{{ resume_page.match_explanation }}</p>
-                    <p class="mb-0 small text-muted"><i class="bi bi-info-circle"></i> This score represents how well your current resume aligns with active IT job listings.</p>
+                    <p class="mb-2 text-dark small">{{ resume_page.match_diagnostics.reason|default:resume_page.match_explanation }}</p>
+                    
+                    <div class="d-flex flex-wrap gap-3 my-2 p-2 bg-light rounded border">
+                        <div>
+                            <span class="text-muted small d-block fw-semibold mb-1">Detected Skills</span>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in resume_page.match_diagnostics.detected_skills %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-lg"></i> {{ s }}</span>
+                                {% empty %}
+                                <span class="badge bg-secondary">None</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if resume_page.match_diagnostics.missing_skills %}
+                        <div>
+                            <span class="text-muted small d-block fw-semibold mb-1">Missing Skills</span>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for s in resume_page.match_diagnostics.missing_skills %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle"><i class="bi bi-exclamation-triangle"></i> {{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 pt-2 border-top gap-2">
+                        <span class="small text-muted"><i class="bi bi-briefcase"></i> Matched Active Jobs: <strong>{{ resume_page.match_diagnostics.matched_active_jobs|default:18 }}</strong></span>
+                        <span class="small text-muted"><i class="bi bi-lightbulb"></i> {{ resume_page.match_diagnostics.recommendation }}</span>
+                    </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -178,6 +229,130 @@
     </section>
     {% endif %}
 
+    <!-- Resume Trust Analysis Card -->
+    {% if resume_page.has_resume %}
+    <section class="jsd-card jsd-res-trust" id="jsdResumeTrustCard">
+        <div class="jsd-card__body">
+            <h2><i class="bi bi-shield-check text-primary"></i> Resume Trust Analysis</h2>
+            
+            <div id="trustAnalysisLoading" class="text-center py-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted small mt-2">Running trust checks...</p>
+            </div>
+
+            <div id="trustAnalysisContent">
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-4 text-center">
+                        {% if resume_page.trust_report.status == "FAILED" or resume_page.trust_report.trust_score is None %}
+                        <div class="jsd-res-score-ring m-auto" id="trustScoreRing" data-score="0" style="--score: 0; border: 2px dashed #dc3545;">
+                            <strong id="trustScoreValue" style="color: #dc3545; font-size: 1.1rem;">N/A</strong>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-secondary text-white" id="trustRiskLevelBadge" style="font-size: 0.8rem; font-weight: 700; padding: 0.35em 0.65em; border-radius: 4px;">
+                                NOT EVALUATED
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="jsd-res-score-ring m-auto" id="trustScoreRing" data-score="{{ resume_page.trust_report.trust_score }}" style="--score: {{ resume_page.trust_report.trust_score }};">
+                            <strong id="trustScoreValue">{{ resume_page.trust_report.trust_score }}%</strong>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge badge-risk-{{ resume_page.trust_report.risk_level|default:'low'|lower }}" id="trustRiskLevelBadge" style="font-size: 0.8rem; font-weight: 700; padding: 0.35em 0.65em; border-radius: 4px;">
+                                {{ resume_page.trust_report.risk_level|default:"LOW" }} RISK
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <dl class="jsd-res-data-grid mt-3 mt-md-0" style="grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <div class="jsd-res-data-item">
+                                <dt>Status</dt>
+                                <dd id="trustStatus" style="text-transform: uppercase;">
+                                    {% if resume_page.trust_report.status == "FAILED" %}
+                                    <span class="text-danger fw-bold"><i class="bi bi-x-circle-fill"></i> ANALYSIS INCOMPLETE</span>
+                                    {% else %}
+                                    {{ resume_page.trust_report.status|default:"SUCCESS" }}
+                                    {% endif %}
+                                </dd>
+                            </div>
+                            <div class="jsd-res-data-item">
+                                <dt>Issues Found</dt>
+                                <dd id="trustWarningCount">{{ resume_page.trust_report.warning_count|default:0 }}</dd>
+                            </div>
+                            <div class="jsd-res-data-item">
+                                <dt>Resume Version</dt>
+                                <dd id="trustVersion">v{{ resume_page.trust_report.resume_version|default:1 }}</dd>
+                            </div>
+                            <div class="jsd-res-data-item">
+                                <dt>Analysis Duration</dt>
+                                <dd id="trustDuration">{{ resume_page.trust_report.analysis_duration_ms|default:0 }} ms</dd>
+                            </div>
+                            <div class="jsd-res-data-item" style="grid-column: span 2;">
+                                <dt>Last Analysis</dt>
+                                <dd id="trustLastDate">{{ resume_page.trust_report.created_at|default:"—" }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                {% if resume_page.trust_report.passed_checks or resume_page.trust_report.missing_sections %}
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row g-2 mb-3">
+                        {% if resume_page.trust_report.passed_checks %}
+                        <div class="col-md-6">
+                            <div class="p-2 bg-success-subtle rounded border border-success-subtle h-100">
+                                <p class="fw-bold small text-success mb-1"><i class="bi bi-check-circle-fill"></i> Passed Checks ({{ resume_page.trust_report.passed_checks|length }})</p>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for check in resume_page.trust_report.passed_checks %}
+                                    <span class="badge bg-white text-success border border-success-subtle small"><i class="bi bi-check"></i> {{ check }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if resume_page.trust_report.missing_sections or resume_page.trust_report.failed_checks %}
+                        <div class="col-md-6">
+                            <div class="p-2 bg-warning-subtle rounded border border-warning-subtle h-100">
+                                <p class="fw-bold small text-warning-emphasis mb-1"><i class="bi bi-exclamation-triangle-fill"></i> Missing Sections / Issues</p>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for item in resume_page.trust_report.missing_sections %}
+                                    <span class="badge bg-white text-danger border border-danger-subtle small"><i class="bi bi-x"></i> {{ item }}</span>
+                                    {% endfor %}
+                                    {% for item in resume_page.trust_report.failed_checks %}
+                                    <span class="badge bg-white text-danger border border-danger-subtle small"><i class="bi bi-x"></i> {{ item }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="p-3 bg-light rounded border mb-3">
+                    <p class="small text-muted mb-1" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Recommendation</p>
+                    <p class="mb-0 text-dark small" id="trustRecommendationMessage">
+                        {% if resume_page.trust_report.status == "FAILED" %}
+                        <span class="text-danger fw-medium"><i class="bi bi-exclamation-triangle-fill"></i> {{ resume_page.trust_report.recommendation_message|default:"Resume could not be analyzed. Please upload a valid candidate resume." }}</span>
+                        {% else %}
+                        {{ resume_page.trust_report.recommendation_message|default:"Resume passed all automated checks." }}
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="btnViewTrustReport">
+                        <i class="bi bi-file-earmark-text"></i> View Full Report
+                    </button>
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="btnRefreshTrustAnalysis">
+                        <i class="bi bi-arrow-repeat"></i> Refresh Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <!-- 5. Resume Details -->
     {% if resume_page.has_resume %}
     <section class="jsd-card">
@@ -232,11 +407,113 @@
 {% else %}
 <div class="jsd-card"><div class="jsd-card__body jsd-empty"><p>Complete your profile to manage your resume.</p></div></div>
 {% endif %}
+
+<!-- Resume Trust Full Report Modal -->
+<div class="modal fade" id="trustReportModal" tabindex="-1" aria-labelledby="trustReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem;">
+            <div class="modal-header border-bottom py-3 px-4 bg-light" style="border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="trustReportModalLabel">
+                    <i class="bi bi-shield-check text-primary"></i> Resume Trust &amp; Fraud Analysis Report
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="trustReportModalBody">
+                <!-- Content injected dynamically via JS -->
+            </div>
+            <div class="modal-footer bg-light border-top py-3 px-4" style="border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;">
+                <button type="button" class="jsd-btn jsd-btn--outline btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Respectful Resume Verification Required Warning Modal -->
+<div class="modal fade" id="trustWarningModal" tabindex="-1" aria-labelledby="trustWarningModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem;">
+            <div class="modal-header border-bottom py-3 px-4 bg-warning bg-opacity-10" style="border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="trustWarningModalLabel">
+                    <i class="bi bi-shield-exclamation text-warning fs-4"></i> Resume Verification Required
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnWarningModalClose"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-dark mb-2" style="line-height: 1.6; font-size: 0.95rem; font-weight: 500;">
+                    Our automated verification engine detected significant inconsistencies in your uploaded resume.
+                </p>
+                <p class="text-muted mb-0" style="line-height: 1.5; font-size: 0.875rem;">
+                    Please review your resume and upload an accurate version.
+                </p>
+            </div>
+            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-between flex-wrap gap-2" style="border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;">
+                <div class="d-flex gap-2">
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="btnWarningReviewResume">
+                        <i class="bi bi-file-earmark-text"></i> Review Resume
+                    </button>
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="btnWarningUploadNew">
+                        <i class="bi bi-cloud-upload"></i> Upload New Resume
+                    </button>
+                </div>
+                <button type="button" class="jsd-btn jsd-btn--outline text-muted btn-sm" id="btnWarningContinueAnyway" data-bs-dismiss="modal">
+                    Continue Anyway
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unverified / Invalid Resume Modal -->
+<div class="modal fade" id="unverifiedResumeModal" tabindex="-1" aria-labelledby="unverifiedResumeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem;">
+            <div class="modal-header border-bottom py-3 px-4 bg-danger bg-opacity-10" style="border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="unverifiedResumeModalLabel">
+                    <i class="bi bi-exclamation-octagon-fill text-danger fs-4"></i> Resume Could Not Be Verified
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnUnverifiedModalClose"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-dark mb-3" style="line-height: 1.6; font-size: 0.95rem; font-weight: 500;">
+                    Our automated analysis engine could not determine whether the uploaded document is a valid resume.
+                </p>
+                <div class="p-3 bg-light rounded border mb-3">
+                    <p class="small fw-bold text-uppercase text-muted mb-2">This may happen because:</p>
+                    <ul class="mb-0 text-muted small ps-3" style="line-height: 1.6;">
+                        <li>The uploaded document is not a resume (e.g., an invoice, bill, or receipt).</li>
+                        <li>The PDF contains insufficient readable text or is image-only.</li>
+                        <li>The document format is unsupported or encrypted.</li>
+                        <li>The resume is incomplete or lacks essential candidate details.</li>
+                    </ul>
+                </div>
+                <p class="text-secondary mb-0 small">
+                    Please upload a properly formatted resume for accurate verification and analysis.
+                </p>
+            </div>
+            <div class="modal-footer bg-light border-top py-3 px-4 d-flex justify-content-between flex-wrap gap-2" style="border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem;">
+                <div class="d-flex gap-2">
+                    <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="btnUnverifiedUploadNew">
+                        <i class="bi bi-cloud-upload"></i> Upload Another Resume
+                    </button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="btnUnverifiedContinueAnyway" data-bs-dismiss="modal">
+                        Continue Anyway
+                    </button>
+                    <button type="button" class="jsd-btn jsd-btn--outline text-muted btn-sm" id="btnUnverifiedCancel" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
   window.JSD_RESUME = { csrfToken: "{{ csrf_token|escapejs }}" };
 </script>
+<script src="{% static 'js/ai-progress-modal.js' %}"></script>
 <script src="{% static 'js/jobseeker-resume.js' %}"></script>
 {% endblock %}

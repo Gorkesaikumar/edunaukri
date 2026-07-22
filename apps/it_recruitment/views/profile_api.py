@@ -103,8 +103,14 @@ class JobSeekerProfileSectionAPIView(_JobSeekerProfileAPIMixin):
                     profile,
                     force_rebuild=False,
                 )
-                data["recommendations"] = summary.to_dict()
-            return JsonResponse({"success": True, "data": data})
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Profile updated successfully.",
+                    "data": data,
+                    "profile": data,
+                }
+            )
         except (
             json.JSONDecodeError,
             ValidationException,

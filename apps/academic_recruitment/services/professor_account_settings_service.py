@@ -60,15 +60,15 @@ class ProfessorAccountSettingsService(BaseService):
     def update_account_info(
         self, profile: ProfessorProfile, data: dict, *, request_meta: dict
     ) -> dict:
-        first = (data.get("first_name") or "").strip()
-        last = (data.get("last_name") or "").strip()
-        phone = (data.get("phone") or "").strip()
-        if first:
+        if "first_name" in data:
+            first = (data.get("first_name") or "").strip()
+            if not first:
+                raise ValidationException("First name is required.")
             profile.first_name = first
-        if last:
-            profile.last_name = last
+        if "last_name" in data:
+            profile.last_name = (data.get("last_name") or "").strip()
         if "phone" in data:
-            profile.phone = phone
+            profile.phone = (data.get("phone") or "").strip()
         profile.save(update_fields=["first_name", "last_name", "phone", "updated_at"])
         if "phone" in data:
             settings = self.get_or_create_settings(profile)

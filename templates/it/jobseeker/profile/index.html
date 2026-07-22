@@ -67,13 +67,21 @@
                     </span>
                     {% endif %}
                 </h1>
-                <p class="jsp-headline" id="jspHeadline">{{ profile_page.headline }}</p>
-                <div class="jsp-meta">
+                {% if profile_page.profile.headline %}
+                <p class="jsp-headline" id="jspHeadline">{{ profile_page.profile.headline }}</p>
+                {% else %}
+                <p class="jsp-headline" id="jspHeadline" hidden></p>
+                {% endif %}
+                <div class="jsp-meta" id="jspMeta">
                     {% if profile_page.current_company %}
-                    <span><i class="bi bi-building"></i> {{ profile_page.current_company }}</span>
+                    <span id="jspMetaCompany"><i class="bi bi-building"></i> {{ profile_page.current_company }}</span>
                     {% endif %}
-                    <span><i class="bi bi-geo-alt"></i> {{ profile_page.location_display }}</span>
-                    <span><i class="bi bi-briefcase"></i> {{ profile_page.experience_display }}</span>
+                    {% if profile_page.profile.city or profile_page.profile.state or profile_page.profile.country or profile_page.profile.current_location %}
+                    <span id="jspMetaLocation"><i class="bi bi-geo-alt"></i> {{ profile_page.location_display }}</span>
+                    {% endif %}
+                    {% if profile_page.profile.experience_years != None %}
+                    <span id="jspMetaExperience"><i class="bi bi-briefcase"></i> {{ profile_page.experience_display }}</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -88,12 +96,24 @@
         <div class="jsp-section__body jsp-field-grid">
             <div class="jsp-field"><label>Full Name</label><p>{{ profile_page.full_name }}</p></div>
             <div class="jsp-field"><label>Email</label><p>{{ profile_page.user_email }}</p></div>
-            <div class="jsp-field"><label>Mobile</label><p>{{ profile_page.profile.phone|default:"—" }}</p></div>
+            {% if profile_page.profile.phone %}
+            <div class="jsp-field"><label>Mobile</label><p>{{ profile_page.profile.phone }}</p></div>
+            {% endif %}
+            {% if profile_page.profile.gender %}
             <div class="jsp-field"><label>Gender</label><p>{{ profile_page.gender_display }}</p></div>
+            {% endif %}
+            {% if profile_page.profile.date_of_birth %}
             <div class="jsp-field"><label>Date of Birth</label><p>{{ profile_page.date_of_birth_display }}</p></div>
-            <div class="jsp-field"><label>City</label><p>{{ profile_page.profile.city|default:"—" }}</p></div>
-            <div class="jsp-field"><label>State</label><p>{{ profile_page.profile.state|default:"—" }}</p></div>
-            <div class="jsp-field"><label>Country</label><p>{{ profile_page.profile.country|default:"—" }}</p></div>
+            {% endif %}
+            {% if profile_page.profile.city %}
+            <div class="jsp-field"><label>City</label><p>{{ profile_page.profile.city }}</p></div>
+            {% endif %}
+            {% if profile_page.profile.state %}
+            <div class="jsp-field"><label>State</label><p>{{ profile_page.profile.state }}</p></div>
+            {% endif %}
+            {% if profile_page.profile.country %}
+            <div class="jsp-field"><label>Country</label><p>{{ profile_page.profile.country }}</p></div>
+            {% endif %}
         </div>
     </section>
 

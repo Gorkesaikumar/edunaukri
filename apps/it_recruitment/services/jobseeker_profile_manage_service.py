@@ -680,23 +680,51 @@ class JobSeekerProfileManageService(BaseService):
         return value.strip() if isinstance(value, str) else value
 
     def _update_header(self, profile: JobSeekerProfile, data: dict, actor_id) -> None:
-        exp_years = data.get("experience_years", profile.experience_years)
-        if exp_years == "":
-            exp_years = None
+        first_name = self._strip(data.get("first_name"))
+        if first_name is not None and not first_name:
+            raise ValidationException("First name is required.")
+
+        last_name = self._strip(data.get("last_name"))
+        if last_name is None:
+            last_name = profile.last_name or ""
+
+        headline = self._strip(data.get("headline"))
+        if headline is None:
+            headline = profile.headline or ""
+
+        current_company = self._strip(data.get("current_company"))
+        if current_company is None:
+            current_company = profile.current_company or ""
+
+        current_location = self._strip(data.get("current_location"))
+        if current_location is None:
+            current_location = profile.current_location or ""
+
+        exp_years_raw = data.get("experience_years")
+        if exp_years_raw == "" or exp_years_raw is None:
+            exp_years = None if "experience_years" in data else profile.experience_years
+        else:
+            exp_years = self._optional_int(exp_years_raw)
+
+        payload = {
+            "first_name": first_name if first_name is not None else profile.first_name,
+            "last_name": last_name,
+            "headline": headline,
+            "current_company": current_company,
+            "current_location": current_location,
+            "experience_years": exp_years,
+        }
         self.profile_service.update_profile(
             user=profile.user,
             profile_type=ProfileType.JOB_SEEKER,
-            data={
-                "first_name": (data.get("first_name") or profile.first_name).strip(),
-                "last_name": (data.get("last_name") or profile.last_name).strip(),
-                "headline": (data.get("headline") or "").strip(),
-                "current_company": (data.get("current_company") or "").strip(),
-                "current_location": (data.get("current_location") or "").strip(),
-                "experience_years": exp_years,
-            },
+            data=payload,
         )
 
     def _update_basic(self, profile: JobSeekerProfile, data: dict, actor_id) -> None:
+        if "first_name" in data:
+            fn = self._strip(data["first_name"])
+            if not fn:
+                raise ValidationException("First name is required.")
         parsed_dob = (
             self._parse_optional_date(data.get("date_of_birth"))
             if "date_of_birth" in data
@@ -715,7 +743,7 @@ class JobSeekerProfileManageService(BaseService):
             "country",
         ):
             if field in data:
-                payload[field] = self._strip(data[field])
+                payload[field] = self._strip(data[field]) or ""
         if "date_of_birth" in data:
             payload["date_of_birth"] = parsed_dob
         self.profile_service.update_profile(

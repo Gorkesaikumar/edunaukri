@@ -100,6 +100,7 @@ urlpatterns = [
         name="super_admin_legacy_redirect",
     ),
     # Domain web routes
+    path("api/resume-trust/", include("apps.resume_trust.urls")),
     path("it/", include("apps.it_recruitment.urls.web")),
     path("auth/", include("apps.authentication.urls.web")),
     path("faculty/", include("apps.academic_recruitment.urls.web")),

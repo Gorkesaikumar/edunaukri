@@ -87,6 +87,13 @@
     if (!url) return;
     uploading = true;
     setProgress(0, true);
+
+    // Disable upload buttons to prevent duplicate submission
+    var uploadBtn  = document.getElementById("jsdResumeUploadBtn");
+    var replaceBtn = document.getElementById("jsdResumeReplaceBtn");
+    if (uploadBtn)  uploadBtn.disabled  = true;
+    if (replaceBtn) replaceBtn.disabled = true;
+
     var fd = new FormData();
     fd.append("file", file);
     fd.append("resume", file);
@@ -101,6 +108,9 @@
     xhr.addEventListener("load", function () {
       uploading = false;
       setProgress(100, false);
+      if (uploadBtn)  uploadBtn.disabled  = false;
+      if (replaceBtn) replaceBtn.disabled = false;
+
       var payload;
       try {
         payload = JSON.parse(xhr.responseText || "{}");
@@ -109,10 +119,28 @@
         return;
       }
       if (xhr.status >= 200 && xhr.status < 300 && payload.success) {
-        notify("success", "Resume uploaded successfully.");
-        window.setTimeout(function () {
-          window.location.reload();
-        }, 900);
+        // Launch AI Analysis Progress Modal immediately
+        if (window.AIProgressModal) {
+          window.AIProgressModal.open({
+            onComplete: function (trustScore, riskLevel) {
+              if (typeof window.JSD_refreshDashboard === "function") {
+                window.JSD_refreshDashboard();
+              } else {
+                window.location.reload();
+              }
+            },
+            onError: function (errorMessage) {
+              if (typeof window.JSD_refreshDashboard === "function") {
+                window.JSD_refreshDashboard();
+              } else {
+                window.setTimeout(function () { window.location.reload(); }, 800);
+              }
+            },
+          });
+        } else {
+          notify("success", "Resume uploaded successfully.");
+          window.setTimeout(function () { window.location.reload(); }, 900);
+        }
         return;
       }
       showError((payload && payload.error) || "Unable to upload your resume. Please try again.");
@@ -120,6 +148,8 @@
     xhr.addEventListener("error", function () {
       uploading = false;
       setProgress(0, false);
+      if (uploadBtn)  uploadBtn.disabled  = false;
+      if (replaceBtn) replaceBtn.disabled = false;
       showError("Network error. Please check your connection and try again.");
     });
     xhr.send(fd);
@@ -268,6 +298,11 @@
         });
     });
   }
+
+  // Expose reload hook for AIProgressModal
+  window.JSD_refreshDashboard = function () {
+    window.location.reload();
+  };
 
   document.addEventListener("DOMContentLoaded", function () {
     initScoreRing();

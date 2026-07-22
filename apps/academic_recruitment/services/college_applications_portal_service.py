@@ -404,6 +404,14 @@ class CollegeApplicationsPortalService(BaseService):
         can_offer_decline = (
             application.status == FacultyApplicationStatus.OFFER_RELEASED
         )
+        from apps.resume_trust.services.resume_fraud_report_service import ResumeFraudReportService
+        prof_user_id = getattr(professor, "user_id", None)
+        trust_report = (
+            ResumeFraudReportService().get_recruiter_trust_report(prof_user_id, domain="faculty")
+            if prof_user_id
+            else {"has_analysis": False, "trust_score": 100, "risk_level": "LOW"}
+        )
+
         return {
             "id": str(application.pk),
             "candidate": name,
@@ -455,6 +463,7 @@ class CollegeApplicationsPortalService(BaseService):
             if getattr(getattr(professor, "user", None), "email", "")
             else "",
             "cv_available": cv_available,
+            "trust_report": trust_report,
             "college_notes": application.college_notes or "",
             "internal_remarks": application.internal_remarks or "",
             "college_rating": rating_value,

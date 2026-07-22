@@ -270,8 +270,10 @@ class ProfessorProfileManageService(BaseService):
 
     def _section_payload(self, section: str, data: dict) -> dict:
         if section == "basic":
+            if "first_name" in data and not str(data.get("first_name") or "").strip():
+                raise ValidationException("First name is required.")
             return {
-                k: (data.get(k) or "").strip()
+                k: str(data.get(k) or "").strip()
                 for k in ("first_name", "last_name", "phone")
                 if k in data
             }
@@ -284,15 +286,22 @@ class ProfessorProfileManageService(BaseService):
                 "specialization",
             ):
                 if key in data:
-                    payload[key] = (data.get(key) or "").strip()
+                    payload[key] = str(data.get(key) or "").strip()
             for key in (
                 "teaching_experience_years",
                 "industry_experience_years",
                 "experience_years",
                 "publications_count",
             ):
-                if key in data and data[key] not in (None, ""):
-                    payload[key] = int(data[key])
+                if key in data:
+                    val = data[key]
+                    if val in (None, ""):
+                        payload[key] = None
+                    else:
+                        try:
+                            payload[key] = int(val)
+                        except (TypeError, ValueError):
+                            raise ValidationException(f"Invalid value for {key.replace('_', ' ')}.")
             if "expected_salary_lpa" in data:
                 lpa = data.get("expected_salary_lpa")
                 if lpa in (None, ""):
@@ -308,12 +317,16 @@ class ProfessorProfileManageService(BaseService):
         if section == "research":
             payload = {}
             if "research_interests" in data:
-                payload["research_interests"] = data.get("research_interests") or ""
-            if "publications_count" in data and data["publications_count"] not in (
-                None,
-                "",
-            ):
-                payload["publications_count"] = int(data["publications_count"])
+                payload["research_interests"] = str(data.get("research_interests") or "").strip()
+            if "publications_count" in data:
+                val = data["publications_count"]
+                if val in (None, ""):
+                    payload["publications_count"] = None
+                else:
+                    try:
+                        payload["publications_count"] = int(val)
+                    except (TypeError, ValueError):
+                        raise ValidationException("Invalid value for publications count.")
             return payload
         if section == "locations":
             raw = data.get("preferred_locations")

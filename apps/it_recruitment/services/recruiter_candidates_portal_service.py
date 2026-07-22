@@ -445,6 +445,13 @@ class RecruiterCandidatesPortalService(BaseService):
                 if getattr(link, "skill", None)
             ][:12]
 
+        from apps.resume_trust.services.resume_fraud_report_service import ResumeFraudReportService
+        trust_report = (
+            ResumeFraudReportService().get_recruiter_trust_report(seeker.user_id, domain="it")
+            if seeker and getattr(seeker, "user_id", None)
+            else {"has_analysis": False, "trust_score": 100, "risk_level": "LOW"}
+        )
+
         data = {
             "id": str(app.pk),
             "applicant_name": app.applicant_name_snapshot,
@@ -495,6 +502,7 @@ class RecruiterCandidatesPortalService(BaseService):
             "has_resume": bool(
                 app.resume_file_id or getattr(seeker, "resume_file_id", None)
             ),
+            "trust_report": trust_report,
             "photo_url": self._photo_url(seeker),
             "stage_label": self.STATUS_LABELS.get(
                 app.status, app.status.replace("_", " ").title()

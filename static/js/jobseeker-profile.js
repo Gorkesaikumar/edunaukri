@@ -1249,63 +1249,91 @@
 
 
   function applyProfileToPage(data) {
-
     var nameEl = document.getElementById("jspFullName");
-
     var headlineEl = document.getElementById("jspHeadline");
 
-    if (nameEl) nameEl.textContent = data.full_name || nameEl.textContent;
-
+    if (nameEl) nameEl.textContent = data.full_name || "";
     if (headlineEl) {
-
-      headlineEl.textContent = data.headline || "Add a professional headline";
-
+      if (data.headline && data.headline.trim()) {
+        headlineEl.textContent = data.headline;
+        headlineEl.hidden = false;
+      } else {
+        headlineEl.textContent = "";
+        headlineEl.hidden = true;
+      }
     }
 
+    var metaEl = document.getElementById("jspMeta");
+    if (metaEl) {
+      var companySpan = document.getElementById("jspMetaCompany");
+      if (data.current_company && data.current_company.trim()) {
+        if (!companySpan) {
+          companySpan = document.createElement("span");
+          companySpan.id = "jspMetaCompany";
+          metaEl.prepend(companySpan);
+        }
+        companySpan.innerHTML = '<i class="bi bi-building"></i> ' + escapeHtml(data.current_company);
+        companySpan.hidden = false;
+      } else if (companySpan) {
+        companySpan.remove();
+      }
 
+      var locSpan = document.getElementById("jspMetaLocation");
+      var locDisplay = data.city || data.state || data.country || data.current_location
+        ? [data.city, data.state, data.country].filter(Boolean).join(", ") || data.current_location
+        : "";
+      if (locDisplay) {
+        if (!locSpan) {
+          locSpan = document.createElement("span");
+          locSpan.id = "jspMetaLocation";
+          metaEl.appendChild(locSpan);
+        }
+        locSpan.innerHTML = '<i class="bi bi-geo-alt"></i> ' + escapeHtml(locDisplay);
+        locSpan.hidden = false;
+      } else if (locSpan) {
+        locSpan.remove();
+      }
+
+      var expSpan = document.getElementById("jspMetaExperience");
+      if (data.experience_years != null) {
+        var expText = data.experience_years === 0 ? "Fresher" : data.experience_years + " yr" + (data.experience_years !== 1 ? "s" : "");
+        if (!expSpan) {
+          expSpan = document.createElement("span");
+          expSpan.id = "jspMetaExperience";
+          metaEl.appendChild(expSpan);
+        }
+        expSpan.innerHTML = '<i class="bi bi-briefcase"></i> ' + escapeHtml(expText);
+        expSpan.hidden = false;
+      } else if (expSpan) {
+        expSpan.remove();
+      }
+    }
 
     var pct = data.completion && data.completion.percentage != null
-
       ? data.completion.percentage
-
       : data.completion_percentage;
 
     if (pct != null) {
-
       var pctLabel = document.getElementById("jspCompletionPctLabel");
-
       var bar = document.getElementById("jspCompletionBar");
-
       var mini = document.getElementById("jspCompletionMini");
 
       if (pctLabel) pctLabel.textContent = pct + "%";
-
       if (bar) bar.style.width = pct + "%";
-
       if (bar && bar.parentElement) {
-
         bar.parentElement.setAttribute("aria-valuenow", String(pct));
-
       }
 
       updateVerifiedBadge(pct, data);
-
       updateCompletionVerifiedLabel(pct, data);
 
       if (mini) {
-
         mini.classList.toggle("jsp-completion-mini--complete", isProfileVerified(data, pct));
-
       }
-
     }
 
-
-
     var headerName = document.querySelector(".jsd-header__profile-name");
-
     if (headerName && data.full_name) headerName.textContent = data.full_name;
-
   }
 
 
