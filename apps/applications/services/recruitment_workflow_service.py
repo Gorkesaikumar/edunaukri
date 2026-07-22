@@ -238,7 +238,7 @@ class RecruitmentWorkflowService(BaseService):
         return placement
 
     @transaction.atomic
-    def complete_interview_with_evaluation(self, domain: str, application_id: uuid.UUID, actor, data: dict) -> InterviewEvaluation:
+    def complete_interview_with_evaluation(self, domain: str, application_id: uuid.UUID, actor, data: dict) -> "InterviewEvaluation":
         """Saves interview evaluation ratings and moves the application to INTERVIEW_COMPLETED (or REJECTED)."""
         application = self.get_application(domain, application_id)
         

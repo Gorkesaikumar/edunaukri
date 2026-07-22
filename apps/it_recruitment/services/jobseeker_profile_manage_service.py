@@ -489,17 +489,18 @@ class JobSeekerProfileManageService(BaseService):
         from apps.it_recruitment.services.resume_analytics_service import (
             ResumeAnalyticsService,
         )
-        from apps.it_recruitment.services.resume_parsing_service import (
-            ResumeParsingService,
+        from apps.it_recruitment.services.universal_resume_parser import (
+            UniversalResumeParserService,
         )
         from apps.it_recruitment.services.jobseeker_resume_analysis_service import (
             JobSeekerResumeAnalysisService,
         )
 
         ResumeAnalyticsService.init_on_upload(stored, previous=previous_file)
-        ResumeParsingService().parse_and_store(stored, profile=profile)
-        JobSeekerResumeAnalysisService().get_analysis(profile, force_refresh=True)
-        self.completion_service.recalculate(profile)
+        
+        from apps.resume_trust.services.resume_progress_tracker import ResumeProgressTracker
+        ResumeProgressTracker.init_tracker(stored.pk)
+
         self._notify_resume_event(
             profile,
             "resume.uploaded",
@@ -508,6 +509,7 @@ class JobSeekerProfileManageService(BaseService):
         )
         self._trigger_recommendations(profile.pk, "resume_uploaded")
         self._queue_async_parse(stored.pk, profile.pk)
+        
         return self.serialize_profile(profile)
 
     @staticmethod

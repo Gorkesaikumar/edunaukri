@@ -66,6 +66,18 @@ class ResumeTrustAnalyzeAPIView(View):
 
             if file_id:
                 stored_file = StoredFile.objects.filter(pk=file_id, is_deleted=False).first()
+            else:
+                # Fallback to the user's current active resume if no file_id provided
+                if domain == "it":
+                    from apps.it_recruitment.models import JobSeekerProfile
+                    profile = JobSeekerProfile.objects.filter(user_id=user_id, is_deleted=False).select_related("resume_file").first()
+                    if profile:
+                        stored_file = profile.resume_file
+                else:
+                    from apps.academic_recruitment.models import AcademicCandidateProfile
+                    profile = AcademicCandidateProfile.objects.filter(user_id=user_id, is_deleted=False).select_related("resume_file").first()
+                    if profile:
+                        stored_file = profile.resume_file
 
             # If raw_text was not provided, try to extract it from the stored file
             # (this is needed for "Refresh Analysis" calls that don't pass text)
@@ -79,8 +91,8 @@ class ResumeTrustAnalyzeAPIView(View):
 
             # If parsed_data is empty, pull from existing stored file extraction
             if stored_file and not parsed_data:
-                from apps.it_recruitment.services.resume_parsing_service import ResumeParsingService
-                parsed_data = ResumeParsingService().get_extracted(stored_file) or {}
+                from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
+                parsed_data = UniversalResumeParserService().get_extracted(stored_file) or {}
 
             report = ResumeFraudDetectionService().initiate_analysis(
                 seeker_user_id=user_id,
@@ -187,14 +199,20 @@ class ResumeTrustProgressAPIView(View):
         if not user_id:
             return _unauthorized()
 
-        # Fetch the most-recent analysis for this user (any status)
-        analysis = (
-            ResumeFraudAnalysis.objects.filter(seeker_user_id=str(user_id), domain=domain)
-            .order_by("-created_at")
-            .first()
-        )
-
-        if not analysis:
+        # Fetch current profile's resume file ID
+        resume_file_id = None
+        if domain == FraudDomainType.IT:
+            from apps.it_recruitment.models import JobSeekerProfile
+            profile = JobSeekerProfile.objects.filter(user_id=user_id).first()
+            if profile:
+                resume_file_id = profile.resume_file_id
+        else:
+            from apps.accounts.models.professor_profile import ProfessorProfile
+            profile = ProfessorProfile.objects.filter(user_id=user_id).first()
+            if profile:
+                resume_file_id = getattr(profile, "cv_file_id", None)
+                
+        if not resume_file_id:
             return JsonResponse({
                 "success": True,
                 "status": "NO_ANALYSIS",
@@ -207,11 +225,21 @@ class ResumeTrustProgressAPIView(View):
                 "risk_level": None,
                 "created_at_ms": None,
             })
+            
+        from apps.resume_trust.services.resume_progress_tracker import ResumeProgressTracker
+        tracker_state = ResumeProgressTracker.get_progress(resume_file_id)
+        
+        # Merge backend state with analysis DB state if available
+        analysis = (
+            ResumeFraudAnalysis.objects.filter(stored_file_id=resume_file_id)
+            .order_by("-created_at")
+            .first()
+        )
 
-        db_status = (analysis.status or "PENDING").upper()
-        created_at_ms = int(analysis.created_at.timestamp() * 1000) if analysis.created_at else None
+        db_status = (analysis.status or "PENDING").upper() if analysis else "PENDING"
+        created_at_ms = int(analysis.created_at.timestamp() * 1000) if analysis and analysis.created_at else None
 
-        if db_status == "FAILED":
+        if tracker_state.get("status") == "failed" or db_status == "FAILED":
             return JsonResponse({
                 "success": True,
                 "status": "FAILED",
@@ -219,13 +247,13 @@ class ResumeTrustProgressAPIView(View):
                 "stages": ANALYSIS_STAGES,
                 "completed_keys": [],
                 "current_stage": None,
-                "error_message": analysis.error_message or "Resume analysis could not be completed.",
+                "error_message": tracker_state.get("error_message") or (analysis.error_message if analysis else "Analysis failed."),
                 "trust_score": None,
                 "risk_level": None,
                 "created_at_ms": created_at_ms,
             })
 
-        if db_status in ("SUCCESS", "COMPLETED"):
+        if tracker_state.get("status") == "completed" or db_status in ("SUCCESS", "COMPLETED"):
             return JsonResponse({
                 "success": True,
                 "status": "COMPLETED",
@@ -234,38 +262,22 @@ class ResumeTrustProgressAPIView(View):
                 "completed_keys": [s["key"] for s in ANALYSIS_STAGES],
                 "current_stage": "ANALYSIS_COMPLETED",
                 "error_message": None,
-                "trust_score": analysis.trust_score,
-                "risk_level": analysis.risk_level,
+                "trust_score": analysis.trust_score if analysis else None,
+                "risk_level": analysis.risk_level if analysis else None,
                 "created_at_ms": created_at_ms,
             })
-
-        # PENDING / PROCESSING — derive stage completion from elapsed seconds
-        import time as _time
-        from django.utils import timezone as _tz
-        elapsed = (_tz.now() - analysis.created_at).total_seconds()
-
-        completed_keys = []
-        for stage in ANALYSIS_STAGES:
-            # Map each stage to a rough elapsed-time window proportional to the percentage
-            threshold = (stage["pct"] / 100.0) * 28  # expect ~28 s total
-            if elapsed >= threshold:
-                completed_keys.append(stage["key"])
-
-        # Determine current active stage (first non-completed)
-        remaining = [s for s in ANALYSIS_STAGES if s["key"] not in completed_keys]
-        current_stage = remaining[0]["key"] if remaining else ANALYSIS_STAGES[-1]["key"]
-        percentage = int((len(completed_keys) / len(ANALYSIS_STAGES)) * 100)
 
         return JsonResponse({
             "success": True,
             "status": "PROCESSING",
-            "percentage": percentage,
+            "percentage": tracker_state.get("percentage", 0),
             "stages": ANALYSIS_STAGES,
-            "completed_keys": completed_keys,
-            "current_stage": current_stage,
-            "error_message": None,
+            "completed_keys": tracker_state.get("completed_stages", []),
+            "current_stage": tracker_state.get("current_stage"),
+            "error_message": tracker_state.get("error_message"),
             "trust_score": None,
             "risk_level": None,
+            "created_at_ms": created_at_ms,
         })
 
 

@@ -169,27 +169,6 @@
     </section>
     {% endif %}
 
-    <!-- 3. Resume Preview -->
-    {% if resume_page.has_resume and resume_page.is_pdf and resume_page.preview_url %}
-    <section class="jsd-card">
-        <div class="jsd-card__body">
-            <h2><i class="bi bi-file-earmark-pdf"></i> Resume Preview</h2>
-            <iframe class="jsd-res-preview" src="{{ resume_page.preview_url }}" title="Resume preview" loading="lazy"></iframe>
-        </div>
-    </section>
-    {% elif resume_page.has_resume and not resume_page.is_pdf %}
-    <section class="jsd-card">
-        <div class="jsd-card__body">
-            <h2><i class="bi bi-file-earmark-word"></i> Resume Preview</h2>
-            <div class="p-4 text-center bg-light rounded border">
-                <i class="bi bi-file-word fs-1 text-primary mb-3 d-block"></i>
-                <p class="text-muted mb-0 fw-semibold">DOCX preview is not available in-browser.</p>
-                <p class="small text-muted mt-1">Please download the file to review it locally.</p>
-                <a href="{{ resume_page.download_url }}" class="jsd-btn jsd-btn--outline mt-3 d-inline-flex"><i class="bi bi-download"></i> Download Resume</a>
-            </div>
-        </div>
-    </section>
-    {% endif %}
 
     <!-- 4. AI Resume Analysis -->
     {% if resume_page.parsed %}
@@ -218,7 +197,11 @@
             {% if resume_page.autofill_suggestions %}
             <div class="jsd-res-autofill">
                 <p class="fw-semibold mb-2">Suggested profile updates</p>
-                <ul class="mb-3">{% for item in resume_page.autofill_suggestions %}<li>{{ item.label }}: {{ item.value }}</li>{% endfor %}</ul>
+                <ul class="mb-3 text-muted small" style="line-height: 1.6;">
+                    {% for item in resume_page.autofill_suggestions %}
+                    <li>Add <strong>{{ item.label }}</strong> to profile: {{ item.value }}</li>
+                    {% endfor %}
+                </ul>
                 <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="jsdResumeAutofillBtn">
                     Apply to Profile
                 </button>
@@ -343,9 +326,6 @@
                 <div class="d-flex gap-2">
                     <button type="button" class="jsd-btn jsd-btn--primary btn-sm" id="btnViewTrustReport">
                         <i class="bi bi-file-earmark-text"></i> View Full Report
-                    </button>
-                    <button type="button" class="jsd-btn jsd-btn--outline btn-sm" id="btnRefreshTrustAnalysis">
-                        <i class="bi bi-arrow-repeat"></i> Refresh Analysis
                     </button>
                 </div>
             </div>

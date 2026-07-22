@@ -10,6 +10,7 @@ from apps.core.services.base import BaseService
 from apps.resume_trust.models import FraudDomainType
 from apps.resume_trust.services.resume_fraud_detection_service import ResumeFraudDetectionService
 from apps.resume_trust.services.resume_placeholder_analyzer import ResumePlaceholderAnalyzer
+from apps.resume_trust.services.resume_progress_tracker import ResumeProgressTracker
 
 logger = logging.getLogger("resume_trust")
 
@@ -63,15 +64,15 @@ class ResumeTrustPipelineService(BaseService):
 
         # Step 2: Resume Parsing — extract raw text and structured data
         if domain == FraudDomainType.IT:
-            from apps.it_recruitment.services.resume_parsing_service import ResumeParsingService
+            from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 
             logger.info("Pipeline Step 2 START: Parsing IT resume for user %s", user_id)
-            parsing_result = ResumeParsingService().parse_and_store(stored_file, profile=profile)
-            parsed_data = ResumeParsingService().get_extracted(stored_file) or {}
+            parsing_result = UniversalResumeParserService().parse_and_store(stored_file, profile=profile)
+            parsed_data = UniversalResumeParserService().get_extracted(stored_file) or {}
 
-            # CRITICAL FIX: raw_text is NOT stored on StoredFile model.
-            # Re-extract it directly from the file after parse_and_store has verified storage is working.
-            raw_text = self._extract_text_from_stored_file(stored_file)
+            # Raw text is now robustly extracted by UniversalResumeParserService.
+            # We can re-extract or just use what was generated during parse_and_store.
+            raw_text = UniversalResumeParserService()._extract_text(stored_file)
 
             if not raw_text and parsed_data.get("text_length", 0) == 0:
                 logger.warning(
@@ -90,13 +91,14 @@ class ResumeTrustPipelineService(BaseService):
         else:
             # Faculty Domain Parsing
             from apps.academic_recruitment.models.resume import ParsedResume, ParsedResumeStatus
+            from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 
             logger.info("Pipeline Step 2 START: Parsing Faculty CV for user %s", user_id)
             parsed_resume, _ = ParsedResume.objects.get_or_create(profile=profile, cv_file=stored_file)
             parsed_resume.status = ParsedResumeStatus.PROCESSING
             parsed_resume.save(update_fields=["status"])
 
-            raw_text = self._extract_text_from_stored_file(stored_file)
+            raw_text = UniversalResumeParserService()._extract_text(stored_file)
             parsed_resume.raw_text = raw_text
             parsed_resume.status = ParsedResumeStatus.SUCCESS
             parsed_resume.save(update_fields=["status", "raw_text"])
@@ -119,6 +121,7 @@ class ResumeTrustPipelineService(BaseService):
             )
             JobSeekerResumeAnalysisService().get_analysis(profile, force_refresh=True)
             logger.info("Pipeline Step 3 PASSED: AI Resume Analysis completed for user %s", user_id)
+            ResumeProgressTracker.advance(stored_file.pk, "AI_ANALYSIS_COMPLETED")
 
         # Placeholder analyzer baseline check
         placeholder_signals = self.placeholder_analyzer.get_all_placeholder_signals(
@@ -148,7 +151,12 @@ class ResumeTrustPipelineService(BaseService):
             trust_report.get("trust_score"),
             trust_report.get("risk_level"),
         )
-
+        
+        if trust_report.get("status") == "FAILED":
+            ResumeProgressTracker.mark_failed(stored_file.pk, trust_report.get("error_message") or "Document rejected by Trust Analysis engine.")
+            return {"success": False, "report": trust_report}
+            
+        ResumeProgressTracker.advance(stored_file.pk, "TRUST_ANALYSIS_COMPLETED")
 
         # Step 5: Update Dashboard & Recalculate Profile Completeness
         if domain == FraudDomainType.IT:
@@ -163,6 +171,12 @@ class ResumeTrustPipelineService(BaseService):
             )
 
             JobSeekerProfileManageService().completion_service.recalculate(profile)
+            ResumeProgressTracker.advance(stored_file.pk, "MATCH_SCORE_COMPLETED")
+            # Recommendations are rebuilt conditionally below based on trust report status
+            ResumeProgressTracker.advance(stored_file.pk, "PROFILE_UPDATED")
+            ResumeProgressTracker.advance(stored_file.pk, "ANALYSIS_COMPLETED")
+            
+            logger.info("Pipeline Step 5 PASSED: Profile Completeness recalculated and Dashboard updated.")
             if trust_report.get("status") == "SUCCESS":
                 JobRecommendationEngineService().rebuild_for_seeker(
                     profile.pk, reason="resume_trust_pipeline_completed", notify=False
@@ -190,108 +204,4 @@ class ResumeTrustPipelineService(BaseService):
             "stored_file_id": str(stored_file.pk),
             "trust_report": trust_report,
         }
-
-    @staticmethod
-    def _extract_text_from_stored_file(stored_file) -> str:
-        """
-        Extract raw text from a StoredFile (PDF or DOCX).
-
-        Strategy:
-        1. Try pypdf for PDFs (handles text-based PDFs with formatting).
-        2. If pypdf returns < 50 chars, fall back to latin-1 byte decoding (catches some scanned PDFs).
-        3. For DOCX: parse word/document.xml directly.
-        4. Log each stage clearly.
-        """
-        import logging as _log
-        log = _log.getLogger("resume_trust")
-
-        try:
-            from apps.documents.services.storage_service import StorageService
-            from pathlib import Path as _Path
-
-            path: _Path = StorageService().get_absolute_path(stored_file)
-            original_name = (getattr(stored_file, "original_filename", "") or "").lower()
-
-            # ── DOCX extraction ──────────────────────────────────────────────
-            if original_name.endswith(".docx"):
-                log.info("Text extraction: DOCX mode for %s", getattr(stored_file, "pk", None))
-                try:
-                    import zipfile
-                    from xml.etree import ElementTree
-                    parts = []
-                    with zipfile.ZipFile(path) as zf:
-                        if "word/document.xml" in zf.namelist():
-                            xml = zf.read("word/document.xml")
-                            root = ElementTree.fromstring(xml)
-                            ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-                            for node in root.findall(".//w:t", ns):
-                                if node.text:
-                                    parts.append(node.text)
-                    text = " ".join(parts)
-                    log.info("DOCX extraction: %d chars from %s", len(text), getattr(stored_file, "pk", None))
-                    return text
-                except Exception as exc:
-                    log.warning("DOCX extraction failed for %s: %s", getattr(stored_file, "pk", None), exc)
-                    return ""
-
-            # ── PDF extraction ────────────────────────────────────────────────
-            log.info("Text extraction: PDF mode for %s", getattr(stored_file, "pk", None))
-            try:
-                from pypdf import PdfReader
-                reader = PdfReader(str(path))
-                parts = []
-                for page in reader.pages[:30]:
-                    page_text = page.extract_text() or ""
-                    if page_text.strip():
-                        parts.append(page_text)
-                pypdf_text = "\n".join(parts)
-                log.info(
-                    "pypdf extraction: %d chars from %d pages for %s",
-                    len(pypdf_text), len(reader.pages), getattr(stored_file, "pk", None),
-                )
-                if len(pypdf_text.strip()) >= 50:
-                    return pypdf_text
-
-                # Fallback for scanned/image-heavy PDFs: raw byte decoding
-                log.warning(
-                    "pypdf returned < 50 chars for %s — attempting raw byte fallback",
-                    getattr(stored_file, "pk", None),
-                )
-                import re as _re
-                raw = path.read_bytes()
-                decoded = raw.decode("latin-1", errors="ignore")
-                chunks = _re.findall(r"\(([^()\\]{3,120})\)", decoded)
-                fallback_text = " ".join(chunks)
-                if len(fallback_text.strip()) >= 50:
-                    log.info(
-                        "Fallback byte extraction: %d chars for %s",
-                        len(fallback_text), getattr(stored_file, "pk", None),
-                    )
-                    return fallback_text
-
-                # If we got something from pypdf even < 50 chars, return it
-                # rather than returning empty (better than nothing)
-                if pypdf_text.strip():
-                    return pypdf_text
-
-                log.warning(
-                    "All text extraction methods returned insufficient content for %s (may be scanned/image PDF)",
-                    getattr(stored_file, "pk", None),
-                )
-                return ""
-
-            except ImportError:
-                log.warning("pypdf not available — using raw byte fallback for %s", getattr(stored_file, "pk", None))
-                import re as _re
-                raw = path.read_bytes()
-                decoded = raw.decode("latin-1", errors="ignore")
-                chunks = _re.findall(r"\(([^()\\]{3,120})\)", decoded)
-                return " ".join(chunks)
-
-        except Exception as exc:
-            log.error(
-                "Text extraction completely failed for %s: %s",
-                getattr(stored_file, "pk", None), exc, exc_info=True,
-            )
-            return ""
 

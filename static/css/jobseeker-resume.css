@@ -342,6 +342,8 @@
 .jsd-res-parsed-grid div strong {
   font-size: 0.85rem;
   color: var(--jsd-on-surface);
+  word-break: break-word;
+  display: block;
 }
 
 .jsd-res-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }

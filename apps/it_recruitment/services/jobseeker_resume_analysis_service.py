@@ -120,23 +120,28 @@ class JobSeekerResumeAnalysisService(BaseService):
         resume_data = (
             (profile.resume_file.parsed_data or {}) if profile.resume_file_id else {}
         )
-        if isinstance(resume_data.get("skills"), list):
-            for item in resume_data["skills"]:
-                token = str(item).strip().lower()
+        extracted_data = resume_data.get("extracted", {})
+
+        if isinstance(extracted_data.get("skills"), list):
+            for item in extracted_data["skills"]:
+                token = str(item).strip().title()
                 if token:
                     keywords.add(token)
-        if isinstance(resume_data.get("keywords"), list):
-            keywords.update(
-                str(k).strip().lower() for k in resume_data["keywords"] if k
-            )
-        if isinstance(resume_data.get("projects"), list):
-            projects.extend(str(p) for p in resume_data["projects"] if p)
-        if isinstance(resume_data.get("certifications"), list):
-            certifications.extend(str(c) for c in resume_data["certifications"] if c)
 
-        merged_skills = sorted(
-            {s for s in skill_names if s} | {k.title() for k in keywords if len(k) > 2}
-        )
+        if isinstance(extracted_data.get("keywords"), list):
+            keywords.update(
+                str(k).strip().lower() for k in extracted_data["keywords"] if k
+            )
+        if isinstance(extracted_data.get("projects"), list):
+            projects.extend(str(p) for p in extracted_data["projects"] if p)
+        if isinstance(extracted_data.get("certifications"), list):
+            certifications.extend(str(c) for c in extracted_data["certifications"] if c)
+
+        # Only merge actual profile skills + explicitly extracted resume skills
+        resume_skills_set = {str(item).strip().title() for item in (extracted_data.get("skills") or []) if str(item).strip()}
+        profile_skills_set = {s.title() for s in skill_names if s}
+        merged_skills = sorted(profile_skills_set | resume_skills_set)
+
         return ResumeAnalysis(
             skills=merged_skills[:50],
             keywords=sorted(keywords)[:120],

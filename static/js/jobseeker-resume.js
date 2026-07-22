@@ -410,7 +410,6 @@
 
   function initTrustAnalysisHandlers() {
     var btnView = document.getElementById("btnViewTrustReport");
-    var btnRefresh = document.getElementById("btnRefreshTrustAnalysis");
 
     if (btnView) {
       btnView.addEventListener("click", function () {
@@ -447,50 +446,6 @@
       });
     }
 
-    if (btnRefresh) {
-      btnRefresh.addEventListener("click", function () {
-        btnRefresh.disabled = true;
-        var origHtml = btnRefresh.innerHTML;
-        btnRefresh.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Scanning...';
-
-        var contentEl = document.getElementById("trustAnalysisContent");
-        var loadingEl = document.getElementById("trustAnalysisLoading");
-        if (contentEl) contentEl.style.opacity = "0.4";
-        if (loadingEl) loadingEl.style.display = "block";
-
-        fetch("/api/resume-trust/analyze/", {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": getCsrfToken(),
-            "X-Requested-With": "XMLHttpRequest",
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({})
-        })
-          .then(function (res) { return res.json(); })
-          .then(function (payload) {
-            btnRefresh.disabled = false;
-            btnRefresh.innerHTML = origHtml;
-            if (contentEl) contentEl.style.opacity = "1";
-            if (loadingEl) loadingEl.style.display = "none";
-
-            if (payload.success) {
-              notify("success", "Trust analysis completed successfully.");
-              refreshDashboardUI();
-            } else {
-              notify("error", payload.error || "Trust scan failed.");
-            }
-          })
-          .catch(function (err) {
-            btnRefresh.disabled = false;
-            btnRefresh.innerHTML = origHtml;
-            if (contentEl) contentEl.style.opacity = "1";
-            if (loadingEl) loadingEl.style.display = "none";
-            notify("error", "Network error running trust scan.");
-          });
-      });
-    }
   }
 
   function buildFullReportHtml(report) {

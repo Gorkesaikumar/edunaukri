@@ -77,6 +77,13 @@ class JobSeekerResumeAutofillAPIView(LoginRequiredMixin, View):
     login_url = "/it/login/job-seeker/"
     http_method_names = ["post"]
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super().dispatch(request, *args, **kwargs)
+        except Exception as exc:
+            logger.exception("Error in autofill dispatch: %s", exc)
+            return JsonResponse({"success": False, "message": "Server error in dispatch: " + str(exc)}, status=500)
+
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse(

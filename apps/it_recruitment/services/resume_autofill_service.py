@@ -7,7 +7,7 @@ import logging
 from apps.core.exceptions.domain_exceptions import ValidationException
 from apps.core.services.base import BaseService
 from apps.it_recruitment.models import JobSeekerProfile
-from apps.it_recruitment.services.resume_parsing_service import ResumeParsingService
+from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 from apps.it_recruitment.services.resume_profile_mapper import ResumeProfileMapper
 from apps.it_recruitment.services.resume_profile_synchronizer import (
     ResumeProfileSynchronizer,
@@ -26,7 +26,7 @@ class ResumeAutofillService(BaseService):
         if not profile.resume_file_id or not profile.resume_file:
             raise ValidationException("Upload a resume before applying parsed data.")
 
-        parsed = ResumeParsingService().get_extracted(profile.resume_file)
+        parsed = UniversalResumeParserService().get_extracted(profile.resume_file)
         if not parsed:
             raise ValidationException(
                 "Resume parsing is still in progress or not available. Try again shortly."

@@ -112,7 +112,7 @@ def parse_resume_task(self, stored_file_id: str, profile_id: str):
     from apps.it_recruitment.services.resume_match_notification_service import (
         ResumeMatchNotificationService,
     )
-    from apps.it_recruitment.services.resume_parsing_service import ResumeParsingService
+    from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 
     try:
         stored = StoredFile.objects.filter(pk=stored_file_id, is_deleted=False).first()
@@ -121,6 +121,8 @@ def parse_resume_task(self, stored_file_id: str, profile_id: str):
         ).first()
         if not stored or not profile:
             return {"status": "skipped"}
+
+        UniversalResumeParserService().parse_and_store(stored, profile=profile)
 
         previous_score = ResumeMatchNotificationService().current_match_score(profile)
         

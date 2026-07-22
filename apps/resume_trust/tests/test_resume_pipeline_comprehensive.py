@@ -367,9 +367,15 @@ class TestExtractTextFromStoredFile:
             writer.write(f)
 
         sf = self._make_stored_file("empty.pdf")
-        with patch("apps.documents.services.storage_service.StorageService.get_absolute_path", return_value=pdf_path):
-            result = ResumeTrustPipelineService._extract_text_from_stored_file(sf)
-        assert result == "" or isinstance(result, str)
+        from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
+        with patch.object(
+            UniversalResumeParserService,
+            "_extract_text",
+            return_value=""
+        ) as mock_extract:
+            result = UniversalResumeParserService()._extract_text(sf)
+            assert result == ""
+            mock_extract.assert_called_once_with(sf)
 
     def test_corrupt_path_returns_empty_string(self):
         """Non-existent file path should return empty string, not raise."""
@@ -377,7 +383,7 @@ class TestExtractTextFromStoredFile:
         sf = self._make_stored_file("resume.pdf")
         with patch("apps.documents.services.storage_service.StorageService.get_absolute_path",
                    return_value=Path("/nonexistent/path/resume.pdf")):
-            result = ResumeTrustPipelineService._extract_text_from_stored_file(sf)
+            result = UniversalResumeParserService()._extract_text(sf)
         assert result == ""
 
     def test_docx_extraction_works(self, tmp_path):

@@ -22,7 +22,7 @@ from apps.it_recruitment.services.jobseeker_resume_analysis_service import (
     JobSeekerResumeAnalysisService,
 )
 from apps.it_recruitment.services.resume_analytics_service import ResumeAnalyticsService
-from apps.it_recruitment.services.resume_parsing_service import ResumeParsingService
+from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 
 
 @dataclass
@@ -83,7 +83,7 @@ class JobSeekerResumePortalService(BaseService):
         kpis = JobSeekerDashboardKPIService().build(profile)
         analytics = ResumeAnalyticsService().build(profile)
         analysis = JobSeekerResumeAnalysisService().get_analysis(profile)
-        parsed = ResumeParsingService().get_extracted(stored) if stored else {}
+        parsed = UniversalResumeParserService().get_extracted(stored) if stored else {}
 
         from apps.resume_trust.services.resume_fraud_report_service import ResumeFraudReportService
         trust_report = ResumeFraudReportService().get_user_latest_report(user.pk, domain="it")
@@ -109,34 +109,54 @@ class JobSeekerResumePortalService(BaseService):
         if stored and ext.lower() == "pdf":
             preview_url = pu("jobseeker_profile_resume_preview")
 
-        match_score = kpis.resume_match_score if is_trust_verified else 0
-        match_explanation = (
-            self._match_explanation(profile, match_score, analysis)
-            if is_trust_verified
-            else "Resume Match Score cannot be calculated because the uploaded document could not be successfully verified or analyzed."
-        )
-
         profile_skills = []
         if hasattr(profile, "skills"):
             try:
                 profile_skills = list(profile.skills.filter(is_deleted=False).values_list("skill__name", flat=True))
             except Exception:
                 profile_skills = []
-        detected_skills = list(set((analysis.skills if hasattr(analysis, "skills") else []) + profile_skills))
+        
+        # Safely extract skills from analysis which might be a dataclass, dict, or object
+        parsed_skills = []
+        if hasattr(analysis, "skills") and analysis.skills:
+            parsed_skills = analysis.skills
+        elif isinstance(analysis, dict) and analysis.get("skills"):
+            parsed_skills = analysis.get("skills")
+
+        detected_skills = list(set(list(parsed_skills) + profile_skills))
         snapshot = JobRecommendationCacheService().get_snapshot(profile)
         matched_active_jobs_count = (getattr(snapshot, "total_matches", None) or 18) if snapshot else 18
 
-        all_trending_skills = ["Docker", "AWS", "Kubernetes", "Redis", "Celery", "GraphQL", "TypeScript", "React"]
-        missing_skills = [s for s in all_trending_skills if s.lower() not in [ds.lower() for ds in detected_skills]][:4]
+        all_trending_skills = ["Docker", "AWS", "Kubernetes", "Redis", "Celery", "GraphQL", "TypeScript", "React", "Python", "Django", "PostgreSQL", "REST API", "Microservices"]
+        missing_skills = [s for s in all_trending_skills if s.lower() not in [ds.lower() for ds in detected_skills]][:5]
+
+        # Calculate a real-time dynamic score based on the skills detected
+        if is_trust_verified:
+            base_score = 45 # minimum score if verified
+            skill_bonus = min(40, len(detected_skills) * 8)
+            trending_bonus = min(15, len([s for s in detected_skills if s.lower() in [ts.lower() for ts in all_trending_skills]]) * 5)
+            match_score = min(99, base_score + skill_bonus + trending_bonus)
+            
+            # If we have a real job match score that is higher, use that
+            if snapshot and getattr(snapshot, "top_match_score", 0) > match_score:
+                match_score = snapshot.top_match_score
+        else:
+            match_score = 0
+
+        match_explanation = (
+            self._match_explanation(profile, match_score, analysis)
+            if is_trust_verified
+            else "Resume Match Score cannot be calculated because the uploaded document could not be successfully verified or analyzed."
+        )
 
         if is_trust_verified:
             match_diagnostics = {
                 "status": "Excellent Match" if match_score >= 80 else ("Good Match" if match_score >= 60 else "Needs Improvement"),
                 "reason": "The score was calculated using the information successfully extracted from your resume and profile.",
-                "detected_skills": detected_skills or ["Python", "Django", "PostgreSQL", "REST API"],
+                "detected_skills": detected_skills,
                 "missing_skills": missing_skills,
                 "matched_active_jobs": matched_active_jobs_count,
-                "matched_skills_count": len(detected_skills) or 4,
+                "matched_skills_count": len(detected_skills),
                 "recommendation": "Adding missing high-demand skills to your resume and profile may improve your job matching score.",
             }
         else:
@@ -161,7 +181,7 @@ class JobSeekerResumePortalService(BaseService):
             match_explanation=match_explanation,
             profile_contribution=self.RESUME_SECTION_WEIGHT if has_resume else 0,
             suggestions=self._suggestions(profile, parsed, completion.percentage, pu),
-            autofill_suggestions=ResumeParsingService.suggest_profile_autofill(
+            autofill_suggestions=UniversalResumeParserService.suggest_profile_autofill(
                 parsed, profile
             )
             if parsed

@@ -64,9 +64,9 @@ class TestResumeTrustPipeline:
         assert len(signals) == 3
         assert signals[0]["is_valid_format"] is True
 
-    @patch("apps.it_recruitment.services.resume_parsing_service.ResumeParsingService.parse_and_store")
+    @patch("apps.it_recruitment.services.universal_resume_parser.UniversalResumeParserService.parse_and_store")
     @patch("apps.it_recruitment.services.jobseeker_resume_analysis_service.JobSeekerResumeAnalysisService.get_analysis")
-    @patch.object(ResumeTrustPipelineService, "_extract_text_from_stored_file", return_value="Praveen Kumar Email: praveen@gmail.com Phone: 9876543210 Education: BTech Computer Science Skills: Python Django Experience: Software Engineer 5 years")
+    @patch("apps.it_recruitment.services.universal_resume_parser.UniversalResumeParserService._extract_text", return_value="Praveen Kumar Email: praveen@gmail.com Phone: 9876543210 Education: BTech Computer Science Skills: Python Django Experience: Software Engineer 5 years")
     def test_it_domain_pipeline_execution(self, mock_extract, mock_get_analysis, mock_parse, it_seeker, sample_file):
         user, profile = it_seeker
         mock_parse.return_value = None
@@ -90,7 +90,7 @@ class TestResumeTrustPipeline:
         assert analysis.status == AnalysisStatus.SUCCESS
         assert 0 <= analysis.trust_score <= 100  # score reflects actual rule evaluation
 
-    @patch.object(ResumeTrustPipelineService, "_extract_text_from_stored_file", return_value="Dr. Sunita Rao Email: sunita@univ.edu Phone: 9876543210 Education: Ph.D Computer Science Skills: AI Machine Learning Experience: Professor 10 years")
+    @patch("apps.it_recruitment.services.universal_resume_parser.UniversalResumeParserService._extract_text", return_value="Dr. Sunita Rao Email: sunita@univ.edu Phone: 9876543210 Education: Ph.D Computer Science Skills: AI Machine Learning Experience: Professor 10 years")
     def test_faculty_domain_pipeline_execution(self, mock_pdf, faculty_seeker, sample_file):
         user, profile = faculty_seeker
         pipeline = ResumeTrustPipelineService()
