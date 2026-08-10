@@ -116,6 +116,7 @@ class ProfileService(BaseService):
         "current_institution",
         "expected_salary",
         "preferred_locations",
+        "linkedin_url",
         "profile_photo_id",
         "cv_file_id",
         "profile_visibility",
