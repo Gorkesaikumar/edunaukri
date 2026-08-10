@@ -19,6 +19,9 @@ from apps.academic_recruitment.views.professor_interviews_api import (
     ProfessorInterviewConfirmAPIView,
     ProfessorInterviewRescheduleAPIView,
 )
+from apps.academic_recruitment.views.professor_resume_api import (
+    ProfessorResumePortalAPIView,
+)
 from apps.academic_recruitment.views.professor_profile_api import (
     ProfessorProfileAPIView,
     ProfessorProfileCVAPIView,
@@ -103,12 +106,8 @@ urlpatterns = [
         ProfessorApplicationOfferAPIView.as_view(),
         name="professor_application_offer_api",
     ),
-    path(
-        "api/applications/",
-        ProfessorApplicationsAPIView.as_view(),
-        name="professor_applications_api",
-    ),
-
+    path("api/applications/", ProfessorApplicationsAPIView.as_view(), name="professor_applications_api"),
+    path("api/resume/portal/", ProfessorResumePortalAPIView.as_view(), name="professor_resume_portal_api"),
     path("saved-jobs/", ProfessorSavedJobsView.as_view(), name="professor_saved_jobs"),
     path("tracker/", ProfessorTrackerView.as_view(), name="professor_tracker"),
     path("resume/", ProfessorResumeView.as_view(), name="professor_resume"),

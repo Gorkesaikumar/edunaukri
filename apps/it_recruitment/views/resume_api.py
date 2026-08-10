@@ -61,6 +61,8 @@ class JobSeekerResumePortalAPIView(LoginRequiredMixin, View):
                         "parsed": page.parsed,
                         "version": page.version,
                         "autofill_suggestions": page.autofill_suggestions,
+                        "trust_report": page.trust_report,
+                        "match_diagnostics": page.match_diagnostics,
                     },
                 }
             )

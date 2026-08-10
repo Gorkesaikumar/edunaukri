@@ -119,11 +119,14 @@ class JobSeekerResumePortalService(BaseService):
         # Safely extract skills from analysis which might be a dataclass, dict, or object
         parsed_skills = []
         if hasattr(analysis, "skills") and analysis.skills:
-            parsed_skills = analysis.skills
+            parsed_skills = list(analysis.skills)
         elif isinstance(analysis, dict) and analysis.get("skills"):
-            parsed_skills = analysis.get("skills")
+            parsed_skills = list(analysis.get("skills"))
+            
+        if parsed and parsed.get("skills"):
+            parsed_skills.extend(parsed.get("skills"))
 
-        detected_skills = list(set(list(parsed_skills) + profile_skills))
+        detected_skills = list(set(parsed_skills + profile_skills))
         snapshot = JobRecommendationCacheService().get_snapshot(profile)
         matched_active_jobs_count = (getattr(snapshot, "total_matches", None) or 18) if snapshot else 18
 

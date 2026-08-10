@@ -54,6 +54,7 @@ class ResumePortalContext:
     analytics: dict | None = None
     trust_report: dict = field(default_factory=dict)
     match_diagnostics: dict = field(default_factory=dict)
+    portal_api_url: str = ""
 
 
 class ProfessorResumePortalService(BaseService):
@@ -85,12 +86,7 @@ class ProfessorResumePortalService(BaseService):
             if has_resume and ext.lower() == "pdf"
             else None
         )
-        score = completion.percentage if is_trust_verified else 0
-        match_explanation = (
-            self._match_explanation(profile, score, has_resume)
-            if is_trust_verified
-            else "Resume Match Score cannot be calculated because the uploaded document could not be successfully verified or analyzed."
-        )
+
 
         parsed_data = None
         parsed_resume = getattr(profile, "parsed_resume", None)
@@ -105,7 +101,25 @@ class ProfessorResumePortalService(BaseService):
             parsed_data = {"status": "failed"}
 
         faculty_skills = (parsed_resume.extracted_skills if parsed_resume and parsed_resume.extracted_skills else []) + (profile.research_interests or [])
-        faculty_skills = list(set(faculty_skills)) or ["Curriculum Design", "Research Methodology", "Grant Writing", "Academic Publishing"]
+        faculty_skills = list(set(faculty_skills))
+
+        # Calculate a real-time dynamic score based on the skills detected
+        if is_trust_verified:
+            base_score = 45 # minimum score if verified
+            skill_bonus = min(40, len(faculty_skills) * 8)
+            score = min(99, base_score + skill_bonus)
+            
+            # If we have a real completion score that is higher, use that
+            if completion.percentage > score:
+                score = completion.percentage
+        else:
+            score = 0
+            
+        match_explanation = (
+            self._match_explanation(profile, score, has_resume)
+            if is_trust_verified
+            else "Resume Match Score cannot be calculated because the uploaded document could not be successfully verified or analyzed."
+        )
 
         if is_trust_verified:
             match_diagnostics = {
@@ -161,6 +175,7 @@ class ProfessorResumePortalService(BaseService):
             },
             trust_report=trust_report,
             match_diagnostics=match_diagnostics,
+            portal_api_url=pu("professor_resume_portal_api"),
         )
 
     def _summary_cards(
