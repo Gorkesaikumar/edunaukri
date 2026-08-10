@@ -598,7 +598,7 @@ class InstitutionMarketplaceService(BaseService):
             title=job.title,
             domain="it",
             location=self._mapper._location(
-                job.city, job.state, job.is_remote, job.location
+                city=job.city, state=job.state, remote=job.is_remote, fallback=job.location
             ),
             salary_display=self._mapper._salary(
                 job.salary_min, job.salary_max, job.salary_visibility
@@ -621,7 +621,7 @@ class InstitutionMarketplaceService(BaseService):
             title=vacancy.title,
             domain="faculty",
             location=self._mapper._location(
-                vacancy.city, vacancy.state, False, vacancy.campus
+                city=vacancy.city, state=vacancy.state, remote=False, fallback=vacancy.campus
             ),
             salary_display=self._mapper._salary(
                 vacancy.salary_min, vacancy.salary_max, vacancy.salary_visibility
