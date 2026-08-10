@@ -37,6 +37,7 @@ class ProfessorProfile(AuditedBaseModel):
         max_digits=12, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)]
     )
     preferred_locations = models.JSONField(default=list, blank=True)
+    linkedin_url = models.URLField(max_length=500, blank=True)
     profile_photo = models.ForeignKey(
         StoredFile,
         on_delete=models.SET_NULL,

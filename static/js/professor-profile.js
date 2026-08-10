@@ -26,6 +26,9 @@
     locations: [
       { name: "preferred_locations", label: "Preferred Locations (comma-separated)", type: "text" },
     ],
+    social: [
+      { name: "linkedin_url", label: "LinkedIn URL", type: "url" },
+    ],
   };
 
   var SECTION_TITLES = {
@@ -33,6 +36,7 @@
     professional: "Professional Details",
     research: "Research",
     locations: "Preferred Locations",
+    social: "Social Links",
   };
 
   function root() {
@@ -155,8 +159,10 @@
       var listEl = document.getElementById("fjpCompletionList");
       listEl.innerHTML = data.completion.checklist.map(function (item) {
         var isDone = item.completed;
-        var chipClass = isDone ? "fjd-status-chip--done" : "fjd-status-chip--pending";
-        var chipText = isDone ? "Completed" : "Incomplete";
+        var isOptional = item.is_optional && !isDone;
+        var chipClass = isDone ? "fjd-status-chip--done" : (isOptional ? "fjd-status-chip--pending text-muted" : "fjd-status-chip--pending");
+        var chipStyle = isOptional ? "background: #f1f5f9; color: #64748b !important;" : "";
+        var chipText = isDone ? "Completed" : (isOptional ? "Optional" : "Incomplete");
         var iconClass = isDone ? "bi-check-circle-fill" : "bi-circle";
         var iconTint = isDone ? "icon--done" : "icon--pending";
         var itemClass = isDone ? "fjd-profile-card__item is-completed" : "fjd-profile-card__item";
@@ -167,7 +173,7 @@
               '<span class="fjd-profile-card__label">' + item.label + '</span>' +
             '</div>' +
             '<div class="fjd-profile-card__row-right">' +
-              '<span class="fjd-status-chip ' + chipClass + '">' + chipText + '</span>' +
+              '<span class="fjd-status-chip ' + chipClass + '" style="' + chipStyle + '">' + chipText + '</span>' +
               '<i class="bi bi-chevron-right fjd-profile-card__chevron" aria-hidden="true"></i>' +
             '</div>' +
           '</a></li>';
@@ -177,6 +183,20 @@
     var avatar = document.getElementById("fjpAvatar");
     if (avatar && data.avatar_url) {
       avatar.innerHTML = '<img src="' + data.avatar_url + '" alt="">';
+    }
+
+    var socialEl = document.getElementById("fjpSocialLinks");
+    if (socialEl) {
+      var linksHtml = "";
+      var sm = [
+        {k: "linkedin_url", icon: "linkedin", label: "LinkedIn"},
+      ];
+      sm.forEach(function(s) {
+        if (data[s.k]) {
+          linksHtml += '<a href="' + data[s.k] + '" id="fjpSocial_' + s.k + '" target="_blank" rel="noopener" class="fjd-btn fjd-btn--outline btn-sm"><i class="bi bi-' + s.icon + '"></i> ' + s.label + '</a> ';
+        }
+      });
+      socialEl.innerHTML = linksHtml;
     }
 
     notify("success", "Profile updated.");
@@ -222,6 +242,11 @@
       if (section === "locations" && f.name === "preferred_locations") {
         var locEl = document.getElementById("fjpLocations");
         input.value = locEl && locEl.textContent !== "—" ? locEl.textContent : "";
+        return;
+      }
+      if (section === "social") {
+        var linkEl = document.getElementById("fjpSocial_" + f.name);
+        input.value = linkEl ? linkEl.getAttribute("href") : "";
         return;
       }
       var src = document.getElementById(

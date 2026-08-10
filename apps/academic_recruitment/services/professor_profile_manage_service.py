@@ -121,6 +121,7 @@ class ProfessorProfilePageContext:
             "qualifications": qualifications,
             "departments": departments,
             "phone": p.phone or "",
+            "linkedin_url": p.linkedin_url or "",
             "completion": ProfessorProfileCompletionService()
             .get_dashboard_state(p)
             .to_dict(),
@@ -337,6 +338,14 @@ class ProfessorProfileManageService(BaseService):
             else:
                 locations = []
             return {"preferred_locations": locations}
+        if section == "social":
+            payload = {}
+            for key in (
+                "linkedin_url",
+            ):
+                if key in data:
+                    payload[key] = str(data.get(key) or "").strip()
+            return payload
         return {}
 
     @staticmethod

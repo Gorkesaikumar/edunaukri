@@ -127,7 +127,6 @@ class ProfileCompletionService(BaseService):
             (10, profile.profile_photo_id is not None),
             (10, bool(profile.preferred_locations)),
             (5, has_languages),
-            (10, has_social),
         ]
         return self._score(checks)
 

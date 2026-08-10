@@ -113,6 +113,17 @@
                 <p id="fjpLocations">{{ profile_page.preferred_locations_display }}</p>
             </section>
 
+            <section class="fjp-section fjd-card" id="social">
+                <div class="fjp-section__head">
+                    <h3 class="fjd-widget__title"><i class="bi bi-link-45deg"></i> Social Links</h3>
+                    <button type="button" class="fjp-btn-text" data-fjp-edit="social">Edit</button>
+                </div>
+                <p class="fjd-profile-card__desc text-muted mb-3">Optional — Add your professional/social profiles to help institutions learn more about you.</p>
+                <div class="d-flex flex-wrap gap-3" id="fjpSocialLinks">
+                    {% if profile_page.linkedin_url %}<a href="{{ profile_page.linkedin_url }}" id="fjpSocial_linkedin_url" target="_blank" rel="noopener" class="fjd-btn fjd-btn--outline btn-sm"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+                </div>
+            </section>
+
             <section class="fjp-section fjd-card" id="cv">
                 <div class="fjp-section__head">
                     <h3 class="fjd-widget__title"><i class="bi bi-file-earmark-pdf"></i> Resume / CV</h3>
@@ -163,6 +174,8 @@
                             <div class="fjd-profile-card__row-right">
                                 {% if item.completed %}
                                 <span class="fjd-status-chip fjd-status-chip--done">Completed</span>
+                                {% elif item.is_optional %}
+                                <span class="fjd-status-chip fjd-status-chip--pending text-muted" style="background: #f1f5f9; color: #64748b !important;">Optional</span>
                                 {% else %}
                                 <span class="fjd-status-chip fjd-status-chip--pending">Incomplete</span>
                                 {% endif %}

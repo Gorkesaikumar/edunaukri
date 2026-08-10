@@ -23,6 +23,7 @@ class CompletionChecklistItem:
     label: str
     completed: bool
     url: str = ""
+    is_optional: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -30,6 +31,7 @@ class CompletionChecklistItem:
             "label": self.label,
             "completed": self.completed,
             "url": self.url,
+            "is_optional": self.is_optional,
         }
 
 
@@ -224,12 +226,7 @@ class ProfessorProfileCompletionService(BaseService):
             or profile.industry_experience_years is not None
             or profile.experience_years is not None
         )
-        has_social = (
-            _filled(getattr(profile, "linkedin_url", None))
-            or _filled(getattr(profile, "google_scholar_url", None))
-            or _filled(getattr(profile, "website_url", None))
-            or (profile.publications_count > 0)
-        )
+        has_social = _filled(getattr(profile, "linkedin_url", None))
         has_languages = _filled(getattr(profile, "languages", None)) or bool(
             profile.preferred_locations
         )
@@ -296,6 +293,7 @@ class ProfessorProfileCompletionService(BaseService):
                 label="Social Links",
                 completed=has_social,
                 url=profile_url,
+                is_optional=True,
             ),
         ]
 
