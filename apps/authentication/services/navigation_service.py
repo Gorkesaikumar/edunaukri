@@ -9,7 +9,10 @@ from django.urls import reverse
 from apps.authentication.services.portal_url_service import PortalURLService
 
 from apps.accounts.constants.enums import ITUserRoleType
+from apps.accounts.models.admin_user import AdminUser
+from apps.accounts.models.college_user import CollegeUser
 from apps.accounts.models.it_user import ITUser
+from apps.accounts.models.professor_user import ProfessorUser
 from apps.accounts.services.role_assignment_service import RoleAssignmentService
 from apps.authentication.services.web_jwt_service import WebJWTService
 from apps.it_recruitment.models import JobSeekerProfile, RecruiterProfile
@@ -75,20 +78,29 @@ class NavigationService:
     """Resolve header navigation from the current request user."""
 
     def build(self, request) -> NavigationContext:
-        user = WebJWTService.resolve_it_user(request)
+        user = WebJWTService.resolve_web_user(request)
         if user is None:
             return NavigationContext(
                 is_authenticated=False, logout_url=reverse("logout")
             )
 
-        roles = RoleAssignmentService()
-        is_recruiter = roles.user_has_it_role(user, ITUserRoleType.RECRUITER)
-        is_seeker = roles.user_has_it_role(user, ITUserRoleType.JOB_SEEKER)
+        if isinstance(user, CollegeUser):
+            return self._college_nav(user)
+        if isinstance(user, ProfessorUser):
+            return self._professor_nav(user)
+        if isinstance(user, AdminUser):
+            return self._admin_nav(user)
 
-        if is_recruiter:
-            return self._recruiter_nav(user)
-        if is_seeker:
-            return self._seeker_nav(user)
+        if isinstance(user, ITUser):
+            roles = RoleAssignmentService()
+            is_recruiter = roles.user_has_it_role(user, ITUserRoleType.RECRUITER)
+            is_seeker = roles.user_has_it_role(user, ITUserRoleType.JOB_SEEKER)
+
+            if is_recruiter:
+                return self._recruiter_nav(user)
+            if is_seeker:
+                return self._seeker_nav(user)
+
         return NavigationContext(is_authenticated=False, logout_url=reverse("logout"))
 
     def _seeker_nav(self, user: ITUser) -> NavigationContext:
@@ -156,5 +168,77 @@ class NavigationService:
             role_label="Recruiter",
             menu=menu,
             dashboard_url=pr("recruiter_dashboard"),
+            logout_url=reverse("logout"),
+        )
+
+    def _college_nav(self, user: CollegeUser) -> NavigationContext:
+        from apps.colleges.selectors.college_selector import CollegeMemberSelector, CollegeSelector
+        
+        membership = CollegeMemberSelector().primary_for_user(user)
+        college = membership.college if membership else CollegeSelector().for_college_user(user).first()
+        
+        display_name = college.name if college else user.email.split("@")[0]
+        avatar = _media_url(college.logo_file) if college and college.logo_file else None
+        
+        pu = lambda name: PortalURLService.college(user, name)
+        menu = [
+            NavMenuItem("Dashboard", pu("college_dashboard"), "bi-speedometer2"),
+            NavMenuItem("Profile", pu("college_profile"), "bi-building"),
+            NavMenuItem("Settings", pu("college_settings"), "bi-gear"),
+        ]
+        return NavigationContext(
+            is_authenticated=True,
+            display_name=display_name,
+            initials=_initials(display_name, user.email[:2]),
+            avatar_url=avatar,
+            role="college",
+            role_label="Institution",
+            menu=menu,
+            dashboard_url=pu("college_dashboard"),
+            logout_url=reverse("logout"),
+        )
+
+    def _professor_nav(self, user: ProfessorUser) -> NavigationContext:
+        from apps.academic_recruitment.models.professor import ProfessorProfile
+        
+        profile = ProfessorProfile.objects.filter(user=user, is_deleted=False).select_related("profile_photo").first()
+        display_name = profile.full_name if profile else user.email.split("@")[0]
+        avatar = _media_url(profile.profile_photo) if profile and profile.profile_photo else None
+        
+        pu = lambda name: PortalURLService.professor(user, name)
+        menu = [
+            NavMenuItem("Dashboard", pu("professor_dashboard"), "bi-speedometer2"),
+            NavMenuItem("My Profile", pu("professor_profile"), "bi-person"),
+            NavMenuItem("Settings", pu("professor_settings"), "bi-gear"),
+        ]
+        return NavigationContext(
+            is_authenticated=True,
+            display_name=display_name,
+            initials=_initials(display_name, user.email[:2]),
+            avatar_url=avatar,
+            role="professor",
+            role_label="Professor",
+            menu=menu,
+            dashboard_url=pu("professor_dashboard"),
+            logout_url=reverse("logout"),
+        )
+
+    def _admin_nav(self, user: AdminUser) -> NavigationContext:
+        display_name = user.email.split("@")[0]
+        
+        pu = lambda name: PortalURLService.super_admin(user, name)
+        menu = [
+            NavMenuItem("Dashboard", pu("super_admin_dashboard"), "bi-speedometer2"),
+            NavMenuItem("Settings", pu("super_admin_settings"), "bi-gear"),
+        ]
+        return NavigationContext(
+            is_authenticated=True,
+            display_name=display_name,
+            initials=_initials(display_name, user.email[:2]),
+            avatar_url=None,
+            role="admin",
+            role_label="Admin",
+            menu=menu,
+            dashboard_url=pu("super_admin_dashboard"),
             logout_url=reverse("logout"),
         )

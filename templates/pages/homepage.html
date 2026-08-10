@@ -91,25 +91,23 @@
                 <p class="ed-body-md ed-text-variant mb-0">The latest approved roles from across IT &amp; Faculty recruitment, updated in real time.</p>
             </div>
             <div class="d-flex align-items-center gap-3 flex-shrink-0">
-                <div class="ed-carousel__nav d-none" data-carousel-nav>
-                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-prev aria-label="Previous jobs">
-                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                    </button>
-                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-next aria-label="Next jobs">
-                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                    </button>
-                </div>
                 <a class="ed-link-arrow" href="#">View all jobs <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
 
         {% if featured_jobs %}
-            <div class="ed-carousel" data-carousel role="region" aria-label="Featured opportunities carousel" tabindex="0">
-                {% for job in featured_jobs %}
-                    <div class="ed-carousel__item">
-                        {% include "partials/job_card.html" with job=job %}
-                    </div>
-                {% endfor %}
+            <div class="ed-marquee" aria-label="Featured opportunities carousel">
+                <div class="ed-marquee__track">
+                    {% for pass in "12" %}
+                        <div class="ed-marquee__group"{% if forloop.counter == 2 %} aria-hidden="true"{% endif %}>
+                            {% for job in featured_jobs %}
+                                <div class="ed-marquee__item">
+                                    {% include "partials/job_card.html" with job=job %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% else %}
             <div class="ed-empty-state">
@@ -133,47 +131,19 @@
         </div>
 
         {% if hiring_partners %}
-            {# Quick filters + search #}
-            <div class="ed-partner-toolbar ed-mb-lg">
-                <div class="ed-filter-chips" role="tablist" aria-label="Filter hiring partners by type">
-                    {% for chip in partner_filters %}
-                        <button type="button" class="ed-filter-chip{% if chip.slug == 'all' %} is-active{% endif %}"
-                                data-partner-filter="{{ chip.slug }}" aria-pressed="{% if chip.slug == 'all' %}true{% else %}false{% endif %}">
-                            {{ chip.label }}
-                        </button>
+            <div class="ed-partner-marquee" aria-label="Hiring partners logo carousel">
+                <div class="ed-partner-marquee__track">
+                    {% for pass in "12" %}
+                        <div class="ed-partner-marquee__group"{% if forloop.counter == 2 %} aria-hidden="true"{% endif %}>
+                            {% for partner in hiring_partners %}
+                                <div class="ed-partner-marquee__item">
+                                    {% include "partials/partner_card.html" with partner=partner %}
+                                </div>
+                            {% endfor %}
+                        </div>
                     {% endfor %}
                 </div>
-                <div class="ed-partner-search">
-                    <i class="bi bi-search" aria-hidden="true"></i>
-                    <input type="search" class="ed-partner-search__input" placeholder="Search organization or location"
-                           aria-label="Search hiring partners" data-partner-search>
-                </div>
             </div>
-
-            {# Navigation controls #}
-            <div class="d-flex justify-content-end ed-mb-md">
-                <div class="ed-carousel__nav d-none" data-carousel-nav>
-                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-prev aria-label="Previous partners">
-                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                    </button>
-                    <button class="ed-icon-btn ed-icon-btn--md" type="button" data-carousel-next aria-label="Next partners">
-                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="ed-carousel ed-carousel--partners" data-carousel data-partner-track
-                 role="region" aria-label="Hiring partners carousel" tabindex="0">
-                {% for partner in hiring_partners %}
-                    <div class="ed-carousel__item ed-carousel__item--partner">
-                        {% include "partials/partner_card.html" with partner=partner %}
-                    </div>
-                {% endfor %}
-            </div>
-
-            <p class="ed-partner-noresults d-none text-center ed-body-md ed-text-variant" data-partner-noresults>
-                No organizations match your filters.
-            </p>
         {% else %}
             <div class="ed-empty-state">
                 <div class="ed-empty-state__icon" aria-hidden="true">
@@ -474,8 +444,8 @@
             <span class="ed-cta__blob ed-cta__blob--tr" aria-hidden="true"></span>
             <span class="ed-cta__blob ed-cta__blob--bl" aria-hidden="true"></span>
             <div class="ed-cta__content">
-                <h2 class="ed-display-lg ed-mb-md">Ready to Start Your Education Career?</h2>
-                <p class="ed-body-lg ed-mb-xl" style="opacity:.9;">Join 50,000+ top-tier educators and 3,500+ premium institutions today.</p>
+                <h2 class="ed-display-lg ed-mb-md">Ready to Start Your Career?</h2>
+                <p class="ed-body-lg ed-mb-xl" style="opacity:.9;">Explore your next opportunity and take the next step toward a better career..</p>
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
                     <a href="#" class="ed-btn ed-btn--light">For Candidates</a>
                     <a href="#" class="ed-btn ed-btn--outline-light">For Institutions</a>

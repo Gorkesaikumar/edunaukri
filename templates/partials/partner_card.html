@@ -5,12 +5,6 @@
          data-location="{{ partner.location_display|lower }}"
          tabindex="0">
     <div class="ed-partner-card__media">
-        {% if partner.banner_url %}
-            <div class="ed-partner-card__banner" style="background-image:url('{{ partner.banner_url }}');"></div>
-        {% else %}
-            <div class="ed-partner-card__banner ed-partner-card__banner--gradient"></div>
-        {% endif %}
-        <div class="ed-partner-card__overlay"></div>
         <span class="ed-hiring-badge ed-hiring-badge--{{ partner.hiring_status }}">
             <span class="ed-hiring-badge__dot"></span>{{ partner.hiring_label }}
         </span>

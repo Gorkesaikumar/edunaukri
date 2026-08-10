@@ -102,7 +102,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   margin: 0 auto;
   min-height: calc(100vh - 40px);
   display: flex;
