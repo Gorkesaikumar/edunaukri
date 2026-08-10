@@ -135,7 +135,7 @@ class ResumeFraudReportService(BaseService):
             cache.set(cache_key, result, CACHE_TTL_SECONDS)
             return result
 
-        report = analysis.analysis_report or {}
+        report = analysis.json_analysis_report or {}
         raw_warnings = report.get("warnings") or []
 
         # Sanitize internal engine details — keep only recruiter-relevant fields

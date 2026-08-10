@@ -247,6 +247,7 @@ class CollegeApplicationsPortalService(BaseService):
             {"id": str(v.pk), "title": v.title}
             for v in FacultyVacancySelector()
             .for_college_user(user)
+            .select_related(None)
             .only("pk", "title")[:50]
         ]
 

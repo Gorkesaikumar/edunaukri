@@ -151,7 +151,7 @@
 }
 
 .icd-sidebar__link--active {
-  background: var(--icd-secondary-container);
+  background: var(--icd-primary);
   color: #fff;
 }
 

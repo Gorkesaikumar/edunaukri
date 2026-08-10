@@ -3,8 +3,8 @@
     {% for item in sidebar.primary %}
 
     {% if item.key == 'post_vacancy' and not is_profile_completed %}
-    <a class="icd-sidebar__link text-muted"
-       href="#" aria-disabled="true" title="Complete Profile First" data-bs-toggle="tooltip" data-bs-placement="right">
+    <a class="icd-sidebar__link{% if not item.active %} text-muted{% endif %}{% if item.active %} icd-sidebar__link--active{% endif %}"
+       href="{{ item.url }}" title="Complete Profile First" data-bs-toggle="tooltip" data-bs-placement="right">
         <i class="bi bi-lock-fill" aria-hidden="true"></i>
         <span>{{ item.label }}</span>
     </a>

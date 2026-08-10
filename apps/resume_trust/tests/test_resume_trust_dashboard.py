@@ -114,7 +114,7 @@ class TestResumeTrustDashboardIntegration:
         mock_analysis.warning_count = 1
         mock_analysis.status = "SUCCESS"
         mock_analysis.created_at = None
-        mock_analysis.analysis_report = {
+        mock_analysis.json_analysis_report = {
             "recommendation_message": "Review candidate credentials.",
             "warnings": [
                 {
