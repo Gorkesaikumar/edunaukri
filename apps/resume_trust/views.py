@@ -207,7 +207,7 @@ class ResumeTrustProgressAPIView(View):
             if profile:
                 resume_file_id = profile.resume_file_id
         else:
-            from apps.accounts.models.professor_profile import ProfessorProfile
+            from apps.academic_recruitment.models.professor import ProfessorProfile
             profile = ProfessorProfile.objects.filter(user_id=user_id).first()
             if profile:
                 resume_file_id = getattr(profile, "cv_file_id", None)

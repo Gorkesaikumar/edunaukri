@@ -42,7 +42,7 @@ class TimelineValidationRule(BaseResumeRule):
 
         # Validate experience blocks
         intervals: List[Tuple[int, int]] = []
-        for exp in experiences:
+        for exp in self._iter_dicts(experiences):
             start_year = self._extract_year(exp.get("start_date") or exp.get("from") or "")
             raw_end = exp.get("end_date") or exp.get("to") or ""
             is_present = self._is_present(raw_end)

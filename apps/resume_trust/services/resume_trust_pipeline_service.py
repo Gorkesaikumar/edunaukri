@@ -94,23 +94,36 @@ class ResumeTrustPipelineService(BaseService):
             from apps.it_recruitment.services.universal_resume_parser import UniversalResumeParserService
 
             logger.info("Pipeline Step 2 START: Parsing Faculty CV for user %s", user_id)
-            parsed_resume, _ = ParsedResume.objects.get_or_create(profile=profile, cv_file=stored_file)
-            parsed_resume.status = ParsedResumeStatus.PROCESSING
-            parsed_resume.save(update_fields=["status"])
+            # Hard-delete any existing ParsedResume (including soft-deleted rows) so
+            # the UNIQUE constraint on profile_id is fully cleared before re-creating.
+            # NOTE: .objects.delete() only soft-deletes (UPDATE is_deleted=True) and
+            # leaves the DB row — so we must use all_objects + hard_delete().
+            from django.db import transaction
+            with transaction.atomic():
+                ParsedResume.all_objects.filter(profile=profile).hard_delete()
+                parsed_resume = ParsedResume.objects.create(
+                    profile=profile,
+                    cv_file=stored_file,
+                    status=ParsedResumeStatus.PROCESSING,
+                    error_message="",
+                )
 
+            parsed_data = UniversalResumeParserService().parse_and_store(stored_file, profile=profile)
+            
             raw_text = UniversalResumeParserService()._extract_text(stored_file)
             parsed_resume.raw_text = raw_text
+            
+            # Map AI parsed data to ParsedResume model
+            parsed_resume.extracted_skills = parsed_data.get("skills", [])
+            parsed_resume.extracted_education = parsed_data.get("education", [])
+            parsed_resume.extracted_experience = parsed_data.get("experience", [])
+            
             parsed_resume.status = ParsedResumeStatus.SUCCESS
-            parsed_resume.save(update_fields=["status", "raw_text"])
-
-            parsed_data = {
-                "skills": getattr(parsed_resume, "extracted_skills", []),
-                "education": getattr(parsed_resume, "extracted_education", []),
-            }
+            parsed_resume.save(update_fields=["status", "raw_text", "extracted_skills", "extracted_education", "extracted_experience"])
 
             logger.info(
-                "Pipeline Step 2 PASSED: Faculty CV text extracted | User: %s | Length: %d chars",
-                user_id, len(raw_text),
+                "Pipeline Step 2 PASSED: Faculty CV text extracted and analyzed | User: %s | Length: %d chars | Skills: %s",
+                user_id, len(raw_text), len(parsed_data.get("skills", []))
             )
 
         # Step 3: AI Resume Analysis
@@ -189,6 +202,9 @@ class ResumeTrustPipelineService(BaseService):
             )
 
             ProfessorProfileCompletionService().recalculate(profile)
+            ResumeProgressTracker.advance(stored_file.pk, "MATCH_SCORE_COMPLETED")
+            ResumeProgressTracker.advance(stored_file.pk, "PROFILE_UPDATED")
+            ResumeProgressTracker.advance(stored_file.pk, "ANALYSIS_COMPLETED")
 
         logger.info(
             "Resume Pipeline Completed Successfully | Domain: %s | User: %s | TrustScore: %s",

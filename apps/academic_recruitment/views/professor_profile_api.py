@@ -122,6 +122,8 @@ class ProfessorProfilePhotoAPIView(_ProfessorProfileAPIMixin):
 
 @method_decorator(csrf_protect, name="dispatch")
 class ProfessorProfileCVAPIView(_ProfessorProfileAPIMixin):
+    http_method_names = ["get", "post", "patch", "delete"]
+
     def post(self, request, **kwargs):
         profile = self._authorize(request)
         if profile is None:

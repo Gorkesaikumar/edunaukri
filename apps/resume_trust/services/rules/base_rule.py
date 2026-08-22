@@ -107,3 +107,24 @@ class BaseResumeRule(ABC):
             recommendation=recommendation,
             metadata=metadata or {},
         )
+
+    @staticmethod
+    def _as_dict(item: Any) -> Dict[str, Any]:
+        """Safely coerce a list item to a dict.
+
+        The AI parser sometimes returns strings instead of structured dicts
+        (e.g. experience/education entries as plain text). This helper ensures
+        rule code can always call .get() on items without AttributeError.
+        """
+        if isinstance(item, dict):
+            return item
+        return {"raw": str(item)} if item is not None else {}
+
+    @classmethod
+    def _iter_dicts(cls, items: Any):
+        """Yield dict-coerced entries from a list, skipping non-iterable values."""
+        if not isinstance(items, (list, tuple)):
+            return
+        for item in items:
+            yield cls._as_dict(item)
+

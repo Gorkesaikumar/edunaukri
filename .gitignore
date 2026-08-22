@@ -89,3 +89,10 @@ logs/
 # Archives
 *.tar
 *.tar.gz
+
+
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
+# Celery Beat runtime schedule files
+celerybeat-schedule*

@@ -55,6 +55,12 @@ class AbstractDomainUser(
     def is_superuser(self) -> bool:
         return False
 
+    def has_perm(self, perm, obj=None) -> bool:
+        return self.is_superuser
+
+    def has_module_perms(self, app_label: str) -> bool:
+        return self.is_superuser
+
     def record_failed_login(self, *, lock_after: int, lock_minutes: int) -> None:
         self.failed_login_attempts += 1
         update_fields = ["failed_login_attempts", "updated_at"]

@@ -42,15 +42,11 @@ class UniversalResumeParserService(BaseService):
         
         # In a more granular implementation we could hook into the analyzer directly, 
         # but for simplicity we simulate the analyzer's rapid stages here:
-        import time
         ResumeProgressTracker.advance(stored.pk, "AI_ANALYSIS_STARTED")
-        time.sleep(0.5)
         if parsed.get("skills"):
             ResumeProgressTracker.advance(stored.pk, "SKILLS_ANALYZED")
-            time.sleep(0.5)
         if parsed.get("education"):
             ResumeProgressTracker.advance(stored.pk, "EDUCATION_ANALYZED")
-            time.sleep(0.5)
         if parsed.get("experience"):
             ResumeProgressTracker.advance(stored.pk, "EXPERIENCE_ANALYZED")
         

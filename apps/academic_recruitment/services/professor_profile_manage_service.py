@@ -52,6 +52,7 @@ class ProfessorProfilePageContext:
     completion_status: str
     avatar_url: str | None
     cv_filename: str | None
+    linkedin_url: str | None
     api_urls: dict = field(default_factory=dict)
 
     def to_template_dict(self) -> dict:
@@ -168,6 +169,7 @@ class ProfessorProfileManageService(BaseService):
             .status_label,
             avatar_url=media_url(profile.profile_photo),
             cv_filename=cv_name,
+            linkedin_url=profile.linkedin_url or "",
             api_urls={
                 "profile": pu("professor_profile_api"),
                 "section": pu(
@@ -244,10 +246,13 @@ class ProfessorProfileManageService(BaseService):
         if previous_file and previous_file.pk != stored.pk:
             self.storage.remove_stored_file(previous_file)
         self.completion_service.calculate(profile, ProfileType.PROFESSOR)
-        
         # Trigger background parsing task
         from apps.academic_recruitment.tasks import parse_faculty_resume_task
-        parse_faculty_resume_task.delay(profile.pk, stored.pk)
+        from apps.resume_trust.services.resume_progress_tracker import ResumeProgressTracker
+        from django.db import transaction
+        
+        ResumeProgressTracker.init_tracker(stored.pk)
+        transaction.on_commit(lambda: parse_faculty_resume_task.delay(profile.pk, stored.pk))
         
         return self.serialize_profile(profile)
 
@@ -261,8 +266,15 @@ class ProfessorProfileManageService(BaseService):
         )
         if previous:
             self.storage.remove_stored_file(previous)
+        # Hard-delete the parsed-resume record so a re-upload starts fresh.
+        # Must use all_objects + hard_delete() because .objects.delete() only
+        # soft-deletes (UPDATE is_deleted=True) and leaves the DB row.
+        from apps.academic_recruitment.models.resume import ParsedResume
+        ParsedResume.all_objects.filter(profile=profile).hard_delete()
         profile.refresh_from_db()
+        self.completion_service.calculate(profile, ProfileType.PROFESSOR)
         return self.serialize_profile(profile)
+
 
     def get_cv_file(self, profile: ProfessorProfile):
         if not profile.cv_file_id or not profile.cv_file:

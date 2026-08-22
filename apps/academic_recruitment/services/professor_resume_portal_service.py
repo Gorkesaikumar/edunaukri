@@ -90,15 +90,16 @@ class ProfessorResumePortalService(BaseService):
 
         parsed_data = None
         parsed_resume = getattr(profile, "parsed_resume", None)
-        if parsed_resume and parsed_resume.status == "success" and is_trust_verified:
-            parsed_data = {
-                "skills": parsed_resume.extracted_skills,
-                "education": parsed_resume.extracted_education,
-            }
-        elif parsed_resume and parsed_resume.status == "processing":
-            parsed_data = {"status": "processing"}
-        elif (parsed_resume and parsed_resume.status == "failed") or not is_trust_verified:
-            parsed_data = {"status": "failed"}
+        if has_resume:
+            if parsed_resume and parsed_resume.status == "success" and is_trust_verified:
+                parsed_data = {
+                    "skills": parsed_resume.extracted_skills,
+                    "education": parsed_resume.extracted_education,
+                }
+            elif parsed_resume and parsed_resume.status == "processing":
+                parsed_data = {"status": "processing"}
+            elif (parsed_resume and parsed_resume.status == "failed") or not is_trust_verified:
+                parsed_data = {"status": "failed"}
 
         faculty_skills = (parsed_resume.extracted_skills if parsed_resume and parsed_resume.extracted_skills else []) + (profile.research_interests or [])
         faculty_skills = list(set(faculty_skills))

@@ -299,14 +299,19 @@
                     </button>
                     <input type="file" id="imageUploadInput" accept="image/jpeg,image/png,image/webp">
                 </div>
-                <div class="icd-profile-titles pb-2">
-                    <h1>
+                <div class="icd-profile-titles pb-2 d-flex flex-column justify-content-center">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-1 rounded-pill" style="font-weight: 600; letter-spacing: 0.5px;">{{ profile_page.institution.member_role_label|upper }}</span>
+                    </div>
+                    <h1 class="mb-2">
                         {{ profile_page.institution.name }}
                         {% if profile_page.institution.is_verified %}
-                        <i class="bi bi-patch-check-fill text-primary" title="Verified Institution"></i>
+                        <i class="bi bi-patch-check-fill text-primary ms-1" style="font-size: 1.25rem;" title="Verified Institution"></i>
                         {% endif %}
                     </h1>
-                    <p>{{ profile_page.institution.city }}, {{ profile_page.institution.country }} • {{ profile_page.institution.member_role_label }}</p>
+                    <p class="text-muted mb-0 d-flex align-items-center gap-1">
+                        <i class="bi bi-geo-alt"></i> {{ profile_page.institution.city }}, {{ profile_page.institution.country }}
+                    </p>
                 </div>
             </div>
             

@@ -54,7 +54,7 @@ class ResumeCompletenessRule(BaseResumeRule):
         # 3. Experience entries with zero description
         experience = parsed_data.get("experience") or parsed_data.get("work_experience") or []
         empty_desc_count = sum(
-            1 for exp in experience
+            1 for exp in self._iter_dicts(experience)
             if not (exp.get("description") or exp.get("responsibilities") or exp.get("summary") or "").strip()
         )
         if experience and empty_desc_count == len(experience):

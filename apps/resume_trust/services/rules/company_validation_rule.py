@@ -51,7 +51,7 @@ class CompanyValidationRule(BaseResumeRule):
         evidences: List[str] = []
         seen_companies: Dict[str, List] = {}
 
-        for exp in experience:
+        for exp in self._iter_dicts(experience):
             company = (exp.get("company") or exp.get("organization") or "").strip()
             if not company:
                 issues.append("Experience entry with no company name")

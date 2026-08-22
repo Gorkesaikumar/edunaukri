@@ -62,7 +62,7 @@ class EducationValidationRule(BaseResumeRule):
 
         # Detect duplicate degree levels
         claimed_levels = []
-        for edu in education:
+        for edu in self._iter_dicts(education):
             degree = (edu.get("degree") or edu.get("qualification") or "").lower()
             if "phd" in degree or "ph.d" in degree or "doctorate" in degree:
                 claimed_levels.append("phd")

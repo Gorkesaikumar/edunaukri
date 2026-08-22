@@ -18,7 +18,9 @@
   function getCsrfToken() {
     if (cfg().csrfToken) return cfg().csrfToken;
     var meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.getAttribute("content") : "";
+    if (meta) return meta.getAttribute("content") || "";
+    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
   }
 
   function notify(type, message) {

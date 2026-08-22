@@ -80,7 +80,7 @@ class DuplicateKeywordRule(BaseResumeRule):
 
         # 3. Duplicate job description sentences
         job_descs: List[str] = []
-        for exp in (parsed_data.get("experience") or []):
+        for exp in self._iter_dicts(parsed_data.get("experience") or []):
             desc = exp.get("description") or exp.get("responsibilities") or ""
             if desc:
                 job_descs.append(desc.strip().lower())

@@ -124,11 +124,10 @@ class SkillInflationRule(BaseResumeRule):
             metadata={"issues": issues, "skill_count": len(skills)},
         )
 
-    @staticmethod
-    def _earliest_start_year(experience_list: List[Dict]) -> int:
+    def _earliest_start_year(self, experience_list: List[Dict]) -> int:
         years = []
         pattern = re.compile(r"\b(19|20)\d{2}\b")
-        for exp in experience_list:
+        for exp in self._iter_dicts(experience_list):
             raw = str(exp.get("start_date") or exp.get("from") or "")
             m = pattern.search(raw)
             if m:
