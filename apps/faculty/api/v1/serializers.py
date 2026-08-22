@@ -87,7 +87,6 @@ class FacultyVacancySerializer(serializers.ModelSerializer):
             "college_name_snapshot",
             "application_count",
             "view_count",
-            "moderation_status",
             "campuses",
             "created_at",
             "updated_at",

@@ -80,7 +80,6 @@ class JobPostingSerializer(serializers.ModelSerializer):
             "company_name_snapshot",
             "application_count",
             "view_count",
-            "moderation_status",
             "locations",
             "required_skill_names",
             "preferred_skill_names",

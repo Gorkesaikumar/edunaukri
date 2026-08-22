@@ -139,7 +139,6 @@ class JobPostingAdmin(admin.ModelAdmin):
             "Lifecycle",
             {"fields": ("status", "published_at", "expires_at", "closed_at")},
         ),
-        ("Moderation", {"fields": ("moderation_status", "moderation_remarks")}),
         (
             "Counters",
             {"fields": ("application_count", "view_count", "company_name_snapshot")},
