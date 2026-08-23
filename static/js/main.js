@@ -756,6 +756,45 @@
     });
   }
 
+  /* ------------------------------------------------------------------
+     5. Mobile Navigation Offcanvas Accessibility & Auto-Close
+     ------------------------------------------------------------------ */
+  function initMobileNav() {
+    var offcanvasEl = document.getElementById("edMobileNav");
+    var togglerBtn = document.getElementById("edNavToggler");
+    if (!offcanvasEl || !togglerBtn) return;
+
+    offcanvasEl.addEventListener("show.bs.offcanvas", function () {
+      togglerBtn.setAttribute("aria-expanded", "true");
+      var icon = togglerBtn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("bi-list");
+        icon.classList.add("bi-x-lg");
+      }
+    });
+
+    offcanvasEl.addEventListener("hide.bs.offcanvas", function () {
+      togglerBtn.setAttribute("aria-expanded", "false");
+      var icon = togglerBtn.querySelector("i");
+      if (icon) {
+        icon.classList.remove("bi-x-lg");
+        icon.classList.add("bi-list");
+      }
+    });
+
+    var links = offcanvasEl.querySelectorAll("a");
+    Array.prototype.forEach.call(links, function (link) {
+      link.addEventListener("click", function () {
+        if (window.bootstrap && window.bootstrap.Offcanvas) {
+          var bsOffcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasEl);
+          if (bsOffcanvas) {
+            bsOffcanvas.hide();
+          }
+        }
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initTimeline();
     initStoriesCarousel();
@@ -765,5 +804,6 @@
     initPartnerFilters();
     initReveal();
     initNewsletter();
+    initMobileNav();
   });
 })();

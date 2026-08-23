@@ -7,8 +7,8 @@
             <img class="ed-brand__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo">
         </a>
 
-        {# Center links (desktop) #}
-        <div class="ed-nav-links d-none d-lg-flex mx-auto">
+        {# Center links (desktop >= 1025px) #}
+        <div class="ed-nav-links d-none d-xl-flex mx-auto">
             <a class="ed-nav-link{% if nav.active == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if nav.active == 'home' %} aria-current="page"{% endif %}>Home</a>
             <a class="ed-nav-link{% if nav.active == 'jobs' %} active{% endif %}" href="{% url 'marketplace_browse_jobs' %}"{% if nav.active == 'jobs' %} aria-current="page"{% endif %}>Jobs</a>
             <a class="ed-nav-link{% if nav.active == 'institutions' %} active{% endif %}" href="{% url 'institutions_browse' %}"{% if nav.active == 'institutions' %} aria-current="page"{% endif %}>Institutions</a>
@@ -16,8 +16,8 @@
             <a class="ed-nav-link" href="#">Contact</a>
         </div>
 
-        {# Right actions (desktop) #}
-        <div class="ed-navbar__actions d-none d-lg-flex">
+        {# Right actions (desktop >= 1025px) #}
+        <div class="ed-navbar__actions d-none d-xl-flex">
             {% if nav.is_authenticated %}
                 {% include "partials/nav_user_menu.html" %}
             {% else %}
@@ -26,9 +26,9 @@
             {% endif %}
         </div>
 
-        {# Mobile toggler #}
-        <button class="ed-navbar__toggler d-lg-none" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#edMobileNav" aria-controls="edMobileNav" aria-label="Open navigation menu">
+        {# Mobile toggler (< 1025px) #}
+        <button class="ed-navbar__toggler d-xl-none" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#edMobileNav" aria-controls="edMobileNav" aria-expanded="false" aria-label="Toggle navigation menu" id="edNavToggler">
             <i class="bi bi-list" aria-hidden="true"></i>
         </button>
     </div>

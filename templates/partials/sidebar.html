@@ -1,31 +1,42 @@
 {% load static %}
-{# Mobile Navigation Sidebar (Bootstrap offcanvas) — shown on < lg viewports, toggled from the navbar burger #}
+{# Mobile Navigation Sidebar (Bootstrap offcanvas) — shown on <= 1024px viewports #}
 <div class="offcanvas offcanvas-end ed-offcanvas" tabindex="-1" id="edMobileNav" aria-labelledby="edMobileNavLabel">
-    <div class="offcanvas-header">
+    <div class="offcanvas-header ed-offcanvas__header">
         <a class="ed-brand d-flex align-items-center gap-2" href="{% url 'home' %}" id="edMobileNavLabel">
-            <img class="ed-brand__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo"
-                 onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AP1WRLtuLCVpL1N1oSPKLcPHJRmyivmb4A1iI35dPnvur1lnoyD2XaihcDYTQ6HiiWw5Zas7PI5OXBoUp97qg3il_RkUaLKLx7XYr2pmsQTQOfS0X7yXtgYD4Ss4l5u6H2OojavLVKMQLPJYC29fBSBswXy7EElwgL8UqiIi8I5FtdobJbCwsatU62Q57DWJwiyNQp8HFd-c8YxrcxnO8MzCbfEZch8AhcAcQqkofRxIkxkGovmD8EO5bg87CQg';">
+            <img class="ed-brand__logo" src="{% static 'img/screen.jpeg' %}" alt="{{ PLATFORM_NAME }} logo">
         </a>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close ed-offcanvas__close" data-bs-dismiss="offcanvas" aria-label="Close navigation menu"></button>
     </div>
-    <div class="offcanvas-body d-flex flex-column">
-        <nav class="ed-nav-links flex-column align-items-stretch gap-0" aria-label="Mobile navigation">
-            <a class="ed-nav-link{% if nav.active == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if nav.active == 'home' %} aria-current="page"{% endif %}>Home</a>
-            <a class="ed-nav-link{% if nav.active == 'jobs' %} active{% endif %}" href="{% url 'marketplace_browse_jobs' %}"{% if nav.active == 'jobs' %} aria-current="page"{% endif %}>Jobs</a>
-            <a class="ed-nav-link{% if nav.active == 'institutions' %} active{% endif %}" href="{% url 'institutions_browse' %}"{% if nav.active == 'institutions' %} aria-current="page"{% endif %}>Institutions</a>
-            <a class="ed-nav-link" href="#">About</a>
-            <a class="ed-nav-link" href="#">Contact</a>
+    <div class="offcanvas-body ed-offcanvas__body d-flex flex-column">
+        <nav class="ed-mobile-nav-links d-flex flex-column gap-1" aria-label="Mobile navigation">
+            <a class="ed-mobile-nav-link{% if nav.active == 'home' %} active{% endif %}" href="{% url 'home' %}"{% if nav.active == 'home' %} aria-current="page"{% endif %}>
+                <i class="bi bi-house-door" aria-hidden="true"></i> Home
+            </a>
+            <a class="ed-mobile-nav-link{% if nav.active == 'jobs' %} active{% endif %}" href="{% url 'marketplace_browse_jobs' %}"{% if nav.active == 'jobs' %} aria-current="page"{% endif %}>
+                <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs
+            </a>
+            <a class="ed-mobile-nav-link{% if nav.active == 'institutions' %} active{% endif %}" href="{% url 'institutions_browse' %}"{% if nav.active == 'institutions' %} aria-current="page"{% endif %}>
+                <i class="bi bi-buildings" aria-hidden="true"></i> Institutions
+            </a>
+            <a class="ed-mobile-nav-link{% if nav.active == 'about' %} active{% endif %}" href="{% url 'about' %}"{% if nav.active == 'about' %} aria-current="page"{% endif %}>
+                <i class="bi bi-info-circle" aria-hidden="true"></i> About
+            </a>
+            <a class="ed-mobile-nav-link" href="#">
+                <i class="bi bi-envelope" aria-hidden="true"></i> Contact
+            </a>
         </nav>
 
+        <hr class="ed-offcanvas__divider my-4">
+
         {% if nav.is_authenticated %}
-        <div class="ed-mobile-user mt-4">
+        <div class="ed-mobile-user mt-auto">
             <p class="ed-mobile-user__label">Account</p>
             {% include "partials/nav_user_menu.html" with mobile=True %}
         </div>
         {% else %}
-        <div class="d-grid gap-3 mt-4">
-            <a href="{% url 'domain_selection' %}" class="ed-btn ed-btn-link text-start">Sign In</a>
-            <a href="{% url 'signup_domain_selection' %}" class="ed-btn ed-btn--primary">Get Started</a>
+        <div class="d-flex flex-column gap-2 mt-auto pt-3">
+            <a href="{% url 'domain_selection' %}" class="ed-btn ed-btn--outline-primary w-100 text-center justify-content-center py-2">Sign In</a>
+            <a href="{% url 'signup_domain_selection' %}" class="ed-btn ed-btn--primary w-100 text-center justify-content-center py-2">Get Started</a>
         </div>
         {% endif %}
     </div>
