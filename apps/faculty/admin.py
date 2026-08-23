@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.core.admin_mixins import SoftDeleteAdminMixin
 from apps.faculty.models import (
     FacultyVacancy,
     FacultyVacancyCampus,
@@ -20,7 +21,7 @@ class FacultyVacancyDepartmentInline(admin.TabularInline):
 
 
 @admin.register(FacultyVacancy)
-class FacultyVacancyAdmin(admin.ModelAdmin):
+class FacultyVacancyAdmin(SoftDeleteAdminMixin, admin.ModelAdmin):
     list_display = (
         "title",
         "college",

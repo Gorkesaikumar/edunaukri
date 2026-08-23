@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.core.admin_mixins import SoftDeleteAdminMixin
 from apps.applications.models import (
     FacultyApplication,
     FacultyApplicationStatusHistory,
@@ -11,7 +12,7 @@ from apps.applications.models import (
 
 
 @admin.register(JobApplication)
-class JobApplicationAdmin(admin.ModelAdmin):
+class JobApplicationAdmin(SoftDeleteAdminMixin, admin.ModelAdmin):
     list_display = (
         "job_title_snapshot",
         "applicant_name_snapshot",
@@ -56,7 +57,7 @@ class JobApplicationTimelineEventAdmin(admin.ModelAdmin):
 
 
 @admin.register(FacultyApplication)
-class FacultyApplicationAdmin(admin.ModelAdmin):
+class FacultyApplicationAdmin(SoftDeleteAdminMixin, admin.ModelAdmin):
     list_display = (
         "vacancy_title_snapshot",
         "applicant_name_snapshot",

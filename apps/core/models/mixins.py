@@ -30,14 +30,50 @@ class SoftDeleteMixin(models.Model):
 
     class Meta:
         abstract = True
+        default_manager_name = "objects"
+        base_manager_name = "objects"
+
+    def purge_soft_deleted_dependents(self):
+        """Purge (hard-delete) any soft-deleted child objects linked to this instance."""
+        from django.db import transaction
+
+        with transaction.atomic():
+            for field in self._meta.get_fields():
+                if (field.one_to_many or field.one_to_one) and field.auto_created and not field.concrete:
+                    related_model = field.related_model
+                    if not related_model:
+                        continue
+                    remote_name = field.remote_field.name if field.remote_field else None
+                    if not remote_name:
+                        continue
+                    if hasattr(related_model, "all_objects") and hasattr(related_model, "is_deleted"):
+                        try:
+                            soft_deleted_qs = related_model.all_objects.filter(
+                                **{remote_name: self, "is_deleted": True}
+                            )
+                            if soft_deleted_qs.exists():
+                                if hasattr(soft_deleted_qs, "hard_delete"):
+                                    soft_deleted_qs.hard_delete()
+                                else:
+                                    soft_deleted_qs.delete()
+                        except Exception:
+                            pass
 
     def delete(self, using=None, keep_parents=False):
-        self.is_deleted = True
-        self.deleted_at = timezone.now()
-        self.save(update_fields=["is_deleted", "deleted_at", "updated_at"])
+        from django.db import transaction
+
+        with transaction.atomic():
+            self.purge_soft_deleted_dependents()
+            self.is_deleted = True
+            self.deleted_at = timezone.now()
+            self.save(update_fields=["is_deleted", "deleted_at", "updated_at"])
 
     def hard_delete(self, using=None, keep_parents=False):
-        return super().delete(using=using, keep_parents=keep_parents)
+        from django.db import transaction
+
+        with transaction.atomic():
+            self.purge_soft_deleted_dependents()
+            return super().delete(using=using, keep_parents=keep_parents)
 
     def restore(self):
         self.is_deleted = False

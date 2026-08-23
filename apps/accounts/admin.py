@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.db.models import CharField, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 
+from apps.core.admin_mixins import SoftDeleteAdminMixin
 from apps.accounts.admin_mixins import RoleDisplayAdminMixin
 from apps.accounts.admin_role_display import (
     FACULTY_JOB_SEEKER_LABEL,
@@ -42,7 +43,7 @@ class AdminUserRoleMixin(RoleDisplayAdminMixin):
 
 
 @admin.register(AdminUser)
-class AdminUserAdmin(AdminUserRoleMixin, BaseUserAdmin):
+class AdminUserAdmin(SoftDeleteAdminMixin, AdminUserRoleMixin, BaseUserAdmin):
     list_display = (
         "email",
         "role_display",
@@ -91,7 +92,7 @@ class AdminUserAdmin(AdminUserRoleMixin, BaseUserAdmin):
     )
 
 
-class DomainUserAdmin(RoleDisplayAdminMixin, BaseUserAdmin):
+class DomainUserAdmin(SoftDeleteAdminMixin, RoleDisplayAdminMixin, BaseUserAdmin):
     """Domain portal users — includes secure admin password reset via UserAdmin."""
 
     list_display = (

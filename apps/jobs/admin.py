@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from apps.core.admin_mixins import SoftDeleteAdminMixin
 from apps.jobs.models import (
     JobLocation,
     JobPosting,
@@ -29,7 +30,7 @@ class JobLocationInline(admin.TabularInline):
 
 
 @admin.register(JobPosting)
-class JobPostingAdmin(admin.ModelAdmin):
+class JobPostingAdmin(SoftDeleteAdminMixin, admin.ModelAdmin):
     list_display = (
         "title",
         "company",
