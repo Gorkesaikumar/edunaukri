@@ -200,4 +200,3 @@ networks:
     driver: bridge
   data_net:
     driver: bridge
-    internal: true  # Prevents direct external network access to backend data tier
