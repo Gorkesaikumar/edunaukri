@@ -55,6 +55,7 @@ Thumbs.db
 
 # Docker
 *.pid
+docker-compose.override.yml
 
 .cursor/
 .cursor/mcp.json
