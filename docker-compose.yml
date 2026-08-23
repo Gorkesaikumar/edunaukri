@@ -112,7 +112,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - data_net
+      data_net:
+        aliases:
+          - db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-edunaukri} -d ${DB_NAME:-edunaukri}"]
       interval: 10s
@@ -129,7 +131,9 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - data_net
+      data_net:
+        aliases:
+          - redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
