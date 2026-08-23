@@ -34,12 +34,14 @@ if [ -n "${REDIS_URL:-}" ]; then
     wait_for_service "$REDIS_HOST" "$REDIS_PORT" "Redis"
 fi
 
-echo "Running database migrations..."
-python manage.py migrate --noinput
+if [ "${SKIP_MIGRATIONS:-false}" != "true" ]; then
+    echo "Running database migrations..."
+    python manage.py migrate --noinput
+fi
 
-if [ "${DJANGO_SETTINGS_MODULE}" = "config.settings.production" ]; then
+if [ "${DJANGO_SETTINGS_MODULE}" = "config.settings.production" ] && [ "${SKIP_COLLECTSTATIC:-false}" != "true" ]; then
     echo "Collecting static files..."
-    python manage.py collectstatic --noinput --clear
+    python manage.py collectstatic --noinput
 fi
 
 exec "$@"
