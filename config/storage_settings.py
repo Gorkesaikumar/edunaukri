@@ -31,6 +31,6 @@ def build_storages(env, base_dir: Path) -> dict:
             "OPTIONS": {"location": media_root},
         },
         "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }

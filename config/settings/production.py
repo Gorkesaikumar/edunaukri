@@ -63,11 +63,11 @@ STORAGES = build_storages(env, BASE_DIR)  # noqa: F405
 if env("STORAGE_BACKEND", default="local").lower() == "s3":
     INSTALLED_APPS += ["storages"]  # noqa: F405
     STORAGES["staticfiles"] = {  # noqa: F405
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     }
 else:
     STORAGES["staticfiles"] = {  # noqa: F405
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     }
 
 SECURE_SSL_REDIRECT = True

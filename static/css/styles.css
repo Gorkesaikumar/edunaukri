@@ -356,6 +356,13 @@ a {
   gap: var(--ed-space-md);
 }
 
+@media (max-width: 991.98px) {
+  .ed-nav-links,
+  .ed-navbar__actions {
+    display: none !important;
+  }
+}
+
 .ed-btn-link {
   background: none;
   border: none;
