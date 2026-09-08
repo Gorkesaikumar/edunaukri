@@ -266,7 +266,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Reddy",
         "phone": "+919849011101",
         "designation": "Lead Technical Recruiter",
-        "company_name": "[DEMO-IT] VedaSoft Technologies",
+        "company_name": "VedaSoft Technologies",
         "website": "https://www.vedasoft.demo",
         "industry": "IT Services & Consulting",
         "city": "Hyderabad",
@@ -277,7 +277,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Koppula",
         "phone": "+919849011102",
         "designation": "Talent Acquisition Manager",
-        "company_name": "[DEMO-IT] TechSutra Labs",
+        "company_name": "TechSutra Labs",
         "website": "https://www.techsutralabs.demo",
         "industry": "Software Product Development",
         "city": "Hyderabad",
@@ -288,7 +288,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Vangala",
         "phone": "+919849011103",
         "designation": "Senior IT Recruiter",
-        "company_name": "[DEMO-IT] NexByte Systems",
+        "company_name": "NexByte Systems",
         "website": "https://www.nexbyte.demo",
         "industry": "Cloud & Infrastructure Solutions",
         "city": "Gachibowli",
@@ -299,7 +299,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Prasanna",
         "phone": "+919849011104",
         "designation": "HR Business Partner",
-        "company_name": "[DEMO-IT] CloudVista Technologies",
+        "company_name": "CloudVista Technologies",
         "website": "https://www.cloudvista.demo",
         "industry": "Cloud Managed Services",
         "city": "Madhapur",
@@ -310,7 +310,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Varma",
         "phone": "+919849011105",
         "designation": "Talent Acquisition Specialist",
-        "company_name": "[DEMO-IT] ManaTech Solutions",
+        "company_name": "ManaTech Solutions",
         "website": "https://www.manatech.demo",
         "industry": "Enterprise Software",
         "city": "Hyderabad",
@@ -321,7 +321,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Goud",
         "phone": "+919849011106",
         "designation": "Recruitment Lead",
-        "company_name": "[DEMO-IT] BlueOrbit Software",
+        "company_name": "BlueOrbit Software",
         "website": "https://www.blueorbit.demo",
         "industry": "SaaS & Web Applications",
         "city": "Secunderabad",
@@ -332,7 +332,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Reddy",
         "phone": "+919849011107",
         "designation": "HR Manager",
-        "company_name": "[DEMO-IT] PixelForge Technologies",
+        "company_name": "PixelForge Technologies",
         "website": "https://www.pixelforge.demo",
         "industry": "Digital Transformation & Design",
         "city": "Hyderabad",
@@ -343,7 +343,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Rao",
         "phone": "+919849011108",
         "designation": "Senior Staffing Consultant",
-        "company_name": "[DEMO-IT] InnoStack Labs",
+        "company_name": "InnoStack Labs",
         "website": "https://www.innostack.demo",
         "industry": "AI & Data Solutions",
         "city": "Gachibowli",
@@ -354,7 +354,7 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Kumar",
         "phone": "+919849011109",
         "designation": "Technical Sourcing Lead",
-        "company_name": "[DEMO-IT] CodeVeda Systems",
+        "company_name": "CodeVeda Systems",
         "website": "https://www.codeveda.demo",
         "industry": "Custom Software Engineering",
         "city": "Madhapur",
@@ -365,12 +365,14 @@ RECRUITERS_COMPANIES_DATA = [
         "last_name": "Naidu",
         "phone": "+919849011110",
         "designation": "Head of HR",
-        "company_name": "[DEMO-IT] Arya Digital Labs",
+        "company_name": "Arya Digital Labs",
         "website": "https://www.aryadigital.demo",
         "industry": "FinTech & Digital Payments",
         "city": "Hyderabad",
     },
 ]
+
+DEMO_IT_COMPANY_NAMES = [rec["company_name"] for rec in RECRUITERS_COMPANIES_DATA]
 
 # 10 IT Job Postings dataset
 JOBS_DATA = [
@@ -843,12 +845,12 @@ class Command(BaseCommand):
                 recruiter.save()
 
             # Create Company
-            company_slug = data["company_name"].lower().replace("[demo-it]", "").strip().replace(" ", "-")
+            company_slug = f"demo-it-{data['company_name'].lower().replace(' ', '-')}"
             company, _ = Company.all_objects.get_or_create(
                 slug=company_slug,
                 defaults={
                     "name": data["company_name"],
-                    "legal_name": data["company_name"].replace("[DEMO-IT] ", "") + " Private Limited",
+                    "legal_name": f"{data['company_name']} Private Limited",
                     "description": f"{data['company_name']} is a leading technology solutions provider specializing in {data['industry']}.",
                     "industry": data["industry"],
                     "company_size": CompanySize.SIZE_51_200,
@@ -1492,15 +1494,15 @@ class Command(BaseCommand):
         if recruiter_count != 10:
             raise ValueError(f"Expected 10 IT Recruiters, found {recruiter_count}")
 
-        company_count = Company.objects.filter(name__startswith="[DEMO-IT]").count()
+        company_count = Company.objects.filter(name__in=DEMO_IT_COMPANY_NAMES).count()
         if company_count != 10:
             raise ValueError(f"Expected 10 IT Companies, found {company_count}")
 
-        job_count = JobPosting.objects.filter(company__name__startswith="[DEMO-IT]").count()
+        job_count = JobPosting.objects.filter(company__name__in=DEMO_IT_COMPANY_NAMES).count()
         if job_count != 10:
             raise ValueError(f"Expected 10 IT Jobs, found {job_count}")
 
-        app_count = JobApplication.objects.filter(job_posting__company__name__startswith="[DEMO-IT]").count()
+        app_count = JobApplication.objects.filter(job_posting__company__name__in=DEMO_IT_COMPANY_NAMES).count()
         if app_count < 30:
             raise ValueError(f"Expected at least 30 Applications, found {app_count}")
 
@@ -1512,11 +1514,11 @@ class Command(BaseCommand):
         # Assert no Faculty domain records were created by this script
         from apps.accounts.models import ProfessorUser, CollegeUser
         from apps.faculty.models import FacultyVacancy
-        if ProfessorUser.objects.filter(email__startswith="it.seeker").exists() or FacultyVacancy.objects.filter(title__startswith="[DEMO-IT]").exists():
+        if ProfessorUser.objects.filter(email__startswith="it.seeker").exists():
             raise ValueError("Faculty domain records were illegally created in IT seeder!")
 
         # Chronology invariant validation for applications
-        for app in JobApplication.objects.filter(job_posting__company__name__startswith="[DEMO-IT]"):
+        for app in JobApplication.objects.filter(job_posting__company__name__in=DEMO_IT_COMPANY_NAMES):
             histories = list(app.status_history.order_by("changed_at"))
             for i in range(1, len(histories)):
                 if histories[i].changed_at < histories[i - 1].changed_at:

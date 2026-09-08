@@ -3,6 +3,7 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from unittest.mock import patch
 
 # Initialize Django if executed standalone
@@ -38,6 +39,20 @@ def _safe_delete(qs):
             return res
         return 0
     return 0
+
+
+DEMO_FACULTY_INSTITUTION_NAMES = [
+    "Veda Institute of Technology",
+    "Sree Akshara Degree College",
+    "ManaTech Engineering College",
+    "BlueSky School of Management",
+    "Pragathi PG College",
+    "Nova Institute of Sciences",
+    "Arya College of Engineering",
+    "Sahasra Degree & PG College",
+    "VidyaVeda Academy",
+    "NextGen Institute of Technology",
+]
 
 
 class Command(BaseCommand):
@@ -79,7 +94,7 @@ class Command(BaseCommand):
 
             # 2. Identify demo applications
             demo_apps = FacultyApplication.all_objects.filter(
-                college__name__startswith="[DEMO-FACULTY]"
+                Q(college__name__in=DEMO_FACULTY_INSTITUTION_NAMES) | Q(college__name__startswith="[DEMO-FACULTY]")
             )
             demo_app_ids = list(demo_apps.values_list("id", flat=True))
 
@@ -129,12 +144,14 @@ class Command(BaseCommand):
 
             # 9. Delete Vacancies
             demo_vacancies = FacultyVacancy.all_objects.filter(
-                college__name__startswith="[DEMO-FACULTY]"
+                Q(college__name__in=DEMO_FACULTY_INSTITUTION_NAMES) | Q(college__name__startswith="[DEMO-FACULTY]")
             )
             stats["vacancies"] += _safe_delete(demo_vacancies)
 
             # 10. Delete College Members & Colleges
-            demo_colleges = College.all_objects.filter(name__startswith="[DEMO-FACULTY]")
+            demo_colleges = College.all_objects.filter(
+                Q(name__in=DEMO_FACULTY_INSTITUTION_NAMES) | Q(name__startswith="[DEMO-FACULTY]")
+            )
             demo_college_ids = list(demo_colleges.values_list("id", flat=True))
 
             stats["college_members"] += _safe_delete(

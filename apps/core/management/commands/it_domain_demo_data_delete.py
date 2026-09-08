@@ -9,6 +9,7 @@ if __name__ == "__main__":
     import django
     django.setup()
 
+from django.db.models import Q
 from apps.accounts.models import ITUser
 from apps.accounts.models.it_user_role import ITUserRole
 from apps.companies.models import Company, CompanyMember, CompanyLocation
@@ -67,6 +68,20 @@ DEMO_RECRUITER_EMAILS = [
 ]
 
 
+DEMO_IT_COMPANY_NAMES = [
+    "VedaSoft Technologies",
+    "TechSutra Labs",
+    "NexByte Systems",
+    "CloudVista Technologies",
+    "ManaTech Solutions",
+    "BlueOrbit Software",
+    "PixelForge Technologies",
+    "InnoStack Labs",
+    "CodeVeda Systems",
+    "Arya Digital Labs",
+]
+
+
 class Command(BaseCommand):
     help = "Safely deletes ONLY the IT domain demo data created by it_domain_demo_data seeder."
 
@@ -99,7 +114,7 @@ class Command(BaseCommand):
         recruiter_profile_ids = [p.pk for p in recruiter_profiles]
 
         # Find target demo companies
-        companies = list(Company.all_objects.filter(name__startswith="[DEMO-IT]"))
+        companies = list(Company.all_objects.filter(Q(name__in=DEMO_IT_COMPANY_NAMES) | Q(name__startswith="[DEMO-IT]")))
         company_ids = [c.pk for c in companies]
 
         # Find target demo jobs

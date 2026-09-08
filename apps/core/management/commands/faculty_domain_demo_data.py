@@ -300,10 +300,10 @@ FACULTY_RECRUITERS_DATA = [
     },
 ]
 
-# Fictional Educational Institutions dataset tagged with [DEMO-FACULTY]
+# Fictional Educational Institutions dataset
 FACULTY_INSTITUTIONS_DATA = [
     {
-        "name": "[DEMO-FACULTY] Veda Institute of Technology",
+        "name": "Veda Institute of Technology",
         "slug": "demo-fac-veda-institute-of-technology",
         "institution_type": InstitutionType.ENGINEERING,
         "ownership_type": OwnershipType.PRIVATE,
@@ -316,7 +316,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 180,
     },
     {
-        "name": "[DEMO-FACULTY] Sree Akshara Degree College",
+        "name": "Sree Akshara Degree College",
         "slug": "demo-fac-sree-akshara-degree-college",
         "institution_type": InstitutionType.ARTS_SCIENCE,
         "ownership_type": OwnershipType.PRIVATE,
@@ -329,7 +329,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 65,
     },
     {
-        "name": "[DEMO-FACULTY] ManaTech Engineering College",
+        "name": "ManaTech Engineering College",
         "slug": "demo-fac-manatech-engineering-college",
         "institution_type": InstitutionType.ENGINEERING,
         "ownership_type": OwnershipType.AUTONOMOUS,
@@ -342,7 +342,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 240,
     },
     {
-        "name": "[DEMO-FACULTY] BlueSky School of Management",
+        "name": "BlueSky School of Management",
         "slug": "demo-fac-bluesky-school-of-management",
         "institution_type": InstitutionType.MANAGEMENT,
         "ownership_type": OwnershipType.PRIVATE,
@@ -355,7 +355,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 45,
     },
     {
-        "name": "[DEMO-FACULTY] Pragathi PG College",
+        "name": "Pragathi PG College",
         "slug": "demo-fac-pragathi-pg-college",
         "institution_type": InstitutionType.UNIVERSITY,
         "ownership_type": OwnershipType.PRIVATE,
@@ -368,7 +368,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 55,
     },
     {
-        "name": "[DEMO-FACULTY] Nova Institute of Sciences",
+        "name": "Nova Institute of Sciences",
         "slug": "demo-fac-nova-institute-of-sciences",
         "institution_type": InstitutionType.ARTS_SCIENCE,
         "ownership_type": OwnershipType.PRIVATE,
@@ -381,7 +381,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 40,
     },
     {
-        "name": "[DEMO-FACULTY] Arya College of Engineering",
+        "name": "Arya College of Engineering",
         "slug": "demo-fac-arya-college-of-engineering",
         "institution_type": InstitutionType.ENGINEERING,
         "ownership_type": OwnershipType.PRIVATE,
@@ -394,7 +394,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 110,
     },
     {
-        "name": "[DEMO-FACULTY] Sahasra Degree & PG College",
+        "name": "Sahasra Degree & PG College",
         "slug": "demo-fac-sahasra-degree-pg-college",
         "institution_type": InstitutionType.ARTS_SCIENCE,
         "ownership_type": OwnershipType.PRIVATE,
@@ -407,7 +407,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 75,
     },
     {
-        "name": "[DEMO-FACULTY] VidyaVeda Academy",
+        "name": "VidyaVeda Academy",
         "slug": "demo-fac-vidyaveda-academy",
         "institution_type": InstitutionType.POLYTECHNIC,
         "ownership_type": OwnershipType.PRIVATE,
@@ -420,7 +420,7 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 50,
     },
     {
-        "name": "[DEMO-FACULTY] NextGen Institute of Technology",
+        "name": "NextGen Institute of Technology",
         "slug": "demo-fac-nextgen-institute-of-technology",
         "institution_type": InstitutionType.ENGINEERING,
         "ownership_type": OwnershipType.AUTONOMOUS,
@@ -433,6 +433,8 @@ FACULTY_INSTITUTIONS_DATA = [
         "number_of_faculty": 195,
     },
 ]
+
+DEMO_FACULTY_INSTITUTION_NAMES = [inst["name"] for inst in FACULTY_INSTITUTIONS_DATA]
 
 # Realistic Faculty Vacancies dataset
 FACULTY_JOBS_DATA = [
@@ -1343,15 +1345,15 @@ class Command(BaseCommand):
         if recruiter_count != 10:
             raise ValueError(f"Expected 10 Faculty Recruiters, found {recruiter_count}")
 
-        college_count = College.objects.filter(name__startswith="[DEMO-FACULTY]").count()
+        college_count = College.objects.filter(name__in=DEMO_FACULTY_INSTITUTION_NAMES).count()
         if college_count != 10:
             raise ValueError(f"Expected 10 Educational Institutions, found {college_count}")
 
-        job_count = FacultyVacancy.objects.filter(college__name__startswith="[DEMO-FACULTY]").count()
+        job_count = FacultyVacancy.objects.filter(college__name__in=DEMO_FACULTY_INSTITUTION_NAMES).count()
         if job_count != 10:
             raise ValueError(f"Expected 10 Faculty Jobs, found {job_count}")
 
-        app_count = FacultyApplication.objects.filter(college__name__startswith="[DEMO-FACULTY]").count()
+        app_count = FacultyApplication.objects.filter(college__name__in=DEMO_FACULTY_INSTITUTION_NAMES).count()
         if app_count < 30:
             raise ValueError(f"Expected at least 30 Applications, found {app_count}")
 
@@ -1363,7 +1365,7 @@ class Command(BaseCommand):
         # Assert no IT domain records were created by this script
         from apps.accounts.models import ITUser
         from apps.jobs.models import JobPosting
-        if ITUser.objects.filter(email__startswith="faculty.candidate").exists() or JobPosting.objects.filter(title__startswith="[DEMO-FACULTY]").exists():
+        if ITUser.objects.filter(email__startswith="faculty.candidate").exists():
             raise ValueError("IT domain records were illegally created in Faculty seeder!")
 
         self.stdout.write(self.style.SUCCESS("All invariants validated successfully!"))
