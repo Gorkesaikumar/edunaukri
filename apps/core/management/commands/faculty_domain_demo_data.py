@@ -444,8 +444,8 @@ FACULTY_JOBS_DATA = [
         "department": "Computer Science & Engineering",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "PhD in Computer Science / NET / SET Qualified",
-        "qualification_required": "M.Tech CSE / MCA / M.Sc Computer Science",
+        "preferred_qualification": QualificationLevel.PHD,
+        "qualification_required": "M.Tech CSE / MCA / M.Sc Computer Science (PhD / NET / SET preferred)",
         "specialization_required": "Computer Science, Data Structures, Web Technologies",
         "experience_min": 2,
         "experience_max": 6,
@@ -463,8 +463,8 @@ FACULTY_JOBS_DATA = [
         "department": "Computer Applications",
         "designation": Designation.LECTURER,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "SET Qualified / 2+ years teaching experience",
-        "qualification_required": "MCA / M.Sc Computer Science",
+        "preferred_qualification": QualificationLevel.MASTERS,
+        "qualification_required": "MCA / M.Sc Computer Science (SET Qualified / 2+ years teaching exp preferred)",
         "specialization_required": "Database Systems, Software Engineering, Java",
         "experience_min": 1,
         "experience_max": 4,
@@ -482,8 +482,8 @@ FACULTY_JOBS_DATA = [
         "department": "Artificial Intelligence & Machine Learning",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.PHD,
-        "preferred_qualification": "PhD in AI/ML with SCI journal publications",
-        "qualification_required": "PhD / M.Tech in AI/ML/Data Science",
+        "preferred_qualification": QualificationLevel.PHD,
+        "qualification_required": "PhD / M.Tech in AI/ML/Data Science (SCI journal publications preferred)",
         "specialization_required": "Machine Learning, Deep Learning, Python Programming",
         "experience_min": 4,
         "experience_max": 10,
@@ -501,8 +501,8 @@ FACULTY_JOBS_DATA = [
         "department": "Department of Management Studies",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "NET / PhD in Management with industry experience",
-        "qualification_required": "MBA (Finance / HR / Marketing)",
+        "preferred_qualification": QualificationLevel.PHD,
+        "qualification_required": "MBA (Finance / HR / Marketing) (NET / PhD preferred)",
         "specialization_required": "Corporate Finance, HR Analytics, Strategic Management",
         "experience_min": 3,
         "experience_max": 8,
@@ -520,8 +520,8 @@ FACULTY_JOBS_DATA = [
         "department": "Department of Mathematics",
         "designation": Designation.LECTURER,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "CSIR-NET / SET Qualified",
-        "qualification_required": "M.Sc Mathematics / Applied Mathematics",
+        "preferred_qualification": QualificationLevel.MASTERS,
+        "qualification_required": "M.Sc Mathematics / Applied Mathematics (CSIR-NET / SET preferred)",
         "specialization_required": "Calculus, Differential Equations, Discrete Math",
         "experience_min": 1,
         "experience_max": 5,
@@ -539,8 +539,8 @@ FACULTY_JOBS_DATA = [
         "department": "Humanities & Sciences",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "UGC-NET / SET / PhD in English",
-        "qualification_required": "M.A English / M.Phil",
+        "preferred_qualification": QualificationLevel.PHD,
+        "qualification_required": "M.A English / M.Phil (UGC-NET / SET / PhD preferred)",
         "specialization_required": "Soft Skills, Technical English, Phonetics & Communication",
         "experience_min": 2,
         "experience_max": 6,
@@ -558,8 +558,8 @@ FACULTY_JOBS_DATA = [
         "department": "Computer Science",
         "designation": Designation.LECTURER,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "MCA / M.Tech with teaching experience",
-        "qualification_required": "MCA / M.Sc CS / M.Tech",
+        "preferred_qualification": QualificationLevel.MASTERS,
+        "qualification_required": "MCA / M.Sc CS / M.Tech (Teaching exp preferred)",
         "specialization_required": "C, C++, Data Structures, OS",
         "experience_min": 1,
         "experience_max": 3,
@@ -577,8 +577,8 @@ FACULTY_JOBS_DATA = [
         "department": "Department of Commerce",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "NET / SET / M.Com with Tally / Excel certification",
-        "qualification_required": "M.Com / MBA",
+        "preferred_qualification": QualificationLevel.MASTERS,
+        "qualification_required": "M.Com / MBA (NET / SET / Tally / Excel cert preferred)",
         "specialization_required": "Financial Accounting, Business Analytics, Taxation",
         "experience_min": 2,
         "experience_max": 5,
@@ -596,8 +596,8 @@ FACULTY_JOBS_DATA = [
         "department": "Physics & Electronics",
         "designation": Designation.LECTURER,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "M.Sc Physics with SET / B.Ed",
-        "qualification_required": "M.Sc Physics",
+        "preferred_qualification": QualificationLevel.MASTERS,
+        "qualification_required": "M.Sc Physics (SET / B.Ed preferred)",
         "specialization_required": "Applied Physics, Digital Electronics, Semiconductor Physics",
         "experience_min": 1,
         "experience_max": 4,
@@ -615,8 +615,8 @@ FACULTY_JOBS_DATA = [
         "department": "Computer Science & Engineering",
         "designation": Designation.ASSISTANT_PROFESSOR,
         "minimum_qualification": QualificationLevel.MASTERS,
-        "preferred_qualification": "M.Tech CSE / PhD pursuing with GATE/NET",
-        "qualification_required": "M.Tech CSE / MCA",
+        "preferred_qualification": QualificationLevel.PHD,
+        "qualification_required": "M.Tech CSE / MCA (GATE/NET / PhD pursuing preferred)",
         "specialization_required": "Cloud Infrastructure, DevOps, Web Systems",
         "experience_min": 3,
         "experience_max": 7,
@@ -811,35 +811,39 @@ class Command(BaseCommand):
                 college = colleges[job_data["institution_index"]]
                 recruiter = recruiters[job_data["institution_index"]]
 
+                vacancy_defaults = {
+                    "college": college,
+                    "posted_by": recruiter,
+                    "title": job_data["title"],
+                    "vacancy_code": job_data["vacancy_code"],
+                    "department": job_data["department"],
+                    "designation": job_data["designation"],
+                    "minimum_qualification": job_data["minimum_qualification"],
+                    "preferred_qualification": job_data["preferred_qualification"],
+                    "qualification_required": job_data["qualification_required"],
+                    "specialization_required": job_data["specialization_required"],
+                    "experience_min": job_data["experience_min"],
+                    "experience_max": job_data["experience_max"],
+                    "salary_min": job_data["salary_min"],
+                    "salary_max": job_data["salary_max"],
+                    "salary_currency": "INR",
+                    "vacancy_count": job_data["vacancies"],
+                    "employment_type": "full_time",
+                    "work_type": "onsite",
+                    "city": job_data["city"],
+                    "state": college.state,
+                    "country": "India",
+                    "description": job_data["description"],
+                    "status": VacancyStatus.PUBLISHED,
+                    "published_at": now - timedelta(days=random.randint(25, 60)),
+                    "college_name_snapshot": college.name,
+                }
+
+                self._validate_model_values(FacultyVacancy, vacancy_defaults, context_label=job_data["slug"])
+
                 vacancy, _ = FacultyVacancy.all_objects.get_or_create(
                     slug=job_data["slug"],
-                    defaults={
-                        "college": college,
-                        "posted_by": recruiter,
-                        "title": job_data["title"],
-                        "vacancy_code": job_data["vacancy_code"],
-                        "department": job_data["department"],
-                        "designation": job_data["designation"],
-                        "minimum_qualification": job_data["minimum_qualification"],
-                        "preferred_qualification": job_data["preferred_qualification"],
-                        "qualification_required": job_data["qualification_required"],
-                        "specialization_required": job_data["specialization_required"],
-                        "experience_min": job_data["experience_min"],
-                        "experience_max": job_data["experience_max"],
-                        "salary_min": job_data["salary_min"],
-                        "salary_max": job_data["salary_max"],
-                        "salary_currency": "INR",
-                        "vacancy_count": job_data["vacancies"],
-                        "employment_type": "full_time",
-                        "work_type": "onsite",
-                        "city": job_data["city"],
-                        "state": college.state,
-                        "country": "India",
-                        "description": job_data["description"],
-                        "status": VacancyStatus.PUBLISHED,
-                        "published_at": now - timedelta(days=random.randint(25, 60)),
-                        "college_name_snapshot": college.name,
-                    },
+                    defaults=vacancy_defaults,
                 )
                 if vacancy.is_deleted or vacancy.status != VacancyStatus.PUBLISHED:
                     vacancy.is_deleted = False
@@ -1299,6 +1303,33 @@ class Command(BaseCommand):
 
             # 10. Print Summary Dashboard
             self._print_summary_dashboard(candidates, recruiters, colleges, jobs, app_stats)
+
+    def _validate_model_values(self, model, values_dict, context_label=""):
+        """Pre-flight schema validation checking max_length, choice keys, and nullability."""
+        errors = []
+        field_map = {f.name: f for f in model._meta.fields}
+
+        for key, value in values_dict.items():
+            if key not in field_map or value is None:
+                continue
+
+            field = field_map[key]
+
+            max_length = getattr(field, "max_length", None)
+            if max_length and isinstance(value, str) and len(value) > max_length:
+                errors.append(
+                    f"[{context_label}] {model.__name__}.{key}: {len(value)} chars exceeds max_length={max_length}: {value!r}"
+                )
+
+            if field.choices:
+                valid_keys = [choice[0] for choice in field.choices]
+                if value not in valid_keys:
+                    errors.append(
+                        f"[{context_label}] {model.__name__}.{key}: {value!r} is not a valid choice key. Expected one of: {valid_keys}"
+                    )
+
+        if errors:
+            raise ValueError(f"Pre-flight demo data schema validation failed:\n" + "\n".join(errors))
 
     def _validate_invariants(self):
         """Validates critical business logic and relationship invariants for demo data."""

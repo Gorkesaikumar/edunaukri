@@ -632,16 +632,20 @@ class Command(BaseCommand):
 
     def _ensure_fee_schedules(self):
         """Ensures FeeSchedule exists for IT recruitment billing."""
-        FeeSchedule.objects.get_or_create(
+        fee_sched, _ = FeeSchedule.all_objects.update_or_create(
             domain=DomainType.IT,
             defaults={
                 "name": "IT Standard Placement Fee Schedule",
                 "fee_type": FeeType.FIXED,
                 "fixed_amount": Decimal("50000.00"),
-                "percentage": Decimal("8.33"),
+                "percentage_rate": Decimal("8.33"),
                 "is_active": True,
             },
         )
+        if fee_sched.is_deleted:
+            fee_sched.is_deleted = False
+            fee_sched.deleted_at = None
+            fee_sched.save()
 
     def _create_dummy_resume(self) -> StoredFile:
         """Creates a dummy PDF resume stored file object to attach to candidate profiles."""
@@ -891,38 +895,42 @@ class Command(BaseCommand):
             posted_date = now - timedelta(days=data["days_ago_posted"])
 
             slug_base = f"{company.slug}-{data['title'].lower().replace(' ', '-')}"
+            job_defaults = {
+                "posted_by": recruiter,
+                "title": data["title"],
+                "job_code": f"IT-JOB-{1000 + data['index']}",
+                "category": "Software Engineering",
+                "department": "Engineering",
+                "description": data["description"],
+                "requirements": data["requirements"],
+                "roles_responsibilities": data["roles_responsibilities"],
+                "benefits": data["benefits"],
+                "education_requirement": data["education_requirement"],
+                "employment_type": data["employment_type"],
+                "work_mode": data["work_mode"],
+                "experience_min": data["experience_min"],
+                "experience_max": data["experience_max"],
+                "salary_min": data["salary_min"],
+                "salary_max": data["salary_max"],
+                "salary_currency": "INR",
+                "salary_visibility": SalaryVisibility.VISIBLE,
+                "vacancies": data["vacancies"],
+                "location": data["city"],
+                "city": data["city"],
+                "state": "Telangana" if data["city"] != "Remote" else "",
+                "country": "India",
+                "status": JobStatus.PUBLISHED,
+                "published_at": posted_date,
+                "expires_at": posted_date + timedelta(days=60),
+                "company_name_snapshot": company.name,
+            }
+
+            self._validate_model_values(JobPosting, job_defaults, context_label=data["title"])
+
             job, _ = JobPosting.all_objects.get_or_create(
                 company=company,
                 slug=slug_base,
-                defaults={
-                    "posted_by": recruiter,
-                    "title": data["title"],
-                    "job_code": f"IT-JOB-{1000 + data['index']}",
-                    "category": "Software Engineering",
-                    "department": "Engineering",
-                    "description": data["description"],
-                    "requirements": data["requirements"],
-                    "roles_responsibilities": data["roles_responsibilities"],
-                    "benefits": data["benefits"],
-                    "education_requirement": data["education_requirement"],
-                    "employment_type": data["employment_type"],
-                    "work_mode": data["work_mode"],
-                    "experience_min": data["experience_min"],
-                    "experience_max": data["experience_max"],
-                    "salary_min": data["salary_min"],
-                    "salary_max": data["salary_max"],
-                    "salary_currency": "INR",
-                    "salary_visibility": SalaryVisibility.VISIBLE,
-                    "vacancies": data["vacancies"],
-                    "location": data["city"],
-                    "city": data["city"],
-                    "state": "Telangana" if data["city"] != "Remote" else "",
-                    "country": "India",
-                    "status": JobStatus.PUBLISHED,
-                    "published_at": posted_date,
-                    "expires_at": posted_date + timedelta(days=60),
-                    "company_name_snapshot": company.name,
-                },
+                defaults=job_defaults,
             )
 
             if job.is_deleted or job.status != JobStatus.PUBLISHED:
@@ -1444,6 +1452,33 @@ class Command(BaseCommand):
             guarantee.save()
 
         return guarantee
+
+    def _validate_model_values(self, model, values_dict, context_label=""):
+        """Pre-flight schema validation checking max_length, choice keys, and nullability."""
+        errors = []
+        field_map = {f.name: f for f in model._meta.fields}
+
+        for key, value in values_dict.items():
+            if key not in field_map or value is None:
+                continue
+
+            field = field_map[key]
+
+            max_length = getattr(field, "max_length", None)
+            if max_length and isinstance(value, str) and len(value) > max_length:
+                errors.append(
+                    f"[{context_label}] {model.__name__}.{key}: {len(value)} chars exceeds max_length={max_length}: {value!r}"
+                )
+
+            if field.choices:
+                valid_keys = [choice[0] for choice in field.choices]
+                if value not in valid_keys:
+                    errors.append(
+                        f"[{context_label}] {model.__name__}.{key}: {value!r} is not a valid choice key. Expected one of: {valid_keys}"
+                    )
+
+        if errors:
+            raise ValueError(f"Pre-flight demo data schema validation failed:\n" + "\n".join(errors))
 
     def _validate_demo_data(self):
         """Validates all invariants programmatically after demo data creation."""
