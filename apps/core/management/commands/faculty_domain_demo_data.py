@@ -747,10 +747,10 @@ class Command(BaseCommand):
             for idx, inst_data in enumerate(FACULTY_INSTITUTIONS_DATA):
                 rec_data = FACULTY_RECRUITERS_DATA[idx]
 
-                college, _ = College.all_objects.get_or_create(
-                    name=inst_data["name"],
+                college, _ = College.all_objects.update_or_create(
+                    slug=inst_data["slug"],
                     defaults={
-                        "slug": inst_data["slug"],
+                        "name": inst_data["name"],
                         "institution_type": inst_data["institution_type"],
                         "ownership_type": inst_data["ownership_type"],
                         "city": inst_data["city"],
@@ -766,6 +766,8 @@ class Command(BaseCommand):
                         "profile_visibility": "public",
                         "profile_completeness": 100,
                         "profile_completed": True,
+                        "is_deleted": False,
+                        "deleted_at": None,
                     },
                 )
                 if college.is_deleted or not college.is_active:
