@@ -101,6 +101,8 @@ class InstitutionOpening:
     posted_display: str
     detail_url: str
     apply_url: str
+    is_applied: bool = False
+    is_eligible: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -115,6 +117,8 @@ class InstitutionOpening:
             "posted_display": self.posted_display,
             "detail_url": self.detail_url,
             "apply_url": self.apply_url,
+            "is_applied": self.is_applied,
+            "is_eligible": self.is_eligible,
         }
 
 
@@ -454,13 +458,39 @@ class InstitutionMarketplaceService(BaseService):
         )
 
     def _build_company_profile(self, company: Company, *, user) -> InstitutionProfile:
-        jobs = self._live_jobs_qs().filter(company=company).order_by("-published_at")
-        open_count = jobs.count()
-        applicants = sum(j.application_count for j in jobs[:200])
+        jobs = list(self._live_jobs_qs().filter(company=company).order_by("-published_at")[:50])
+        open_count = self._live_jobs_qs().filter(company=company).count()
+        applicants = sum(j.application_count for j in jobs)
         recruiters = CompanyMember.objects.filter(
             company=company, is_active=True, is_deleted=False
         ).count()
-        openings = [self._map_job_opening(j, user=user) for j in jobs[:50]]
+
+        is_seeker = self._is_job_seeker(user)
+        applied_job_ids = set()
+        if is_seeker and jobs:
+            from apps.applications.models.application import JobApplication
+            from apps.it_recruitment.models import JobSeekerProfile
+
+            seeker_profile_id = (
+                JobSeekerProfile.objects.filter(user=user, is_deleted=False)
+                .values_list("pk", flat=True)
+                .first()
+            )
+            if seeker_profile_id:
+                applied_job_ids = set(
+                    JobApplication.objects.filter(
+                        job_seeker_id=seeker_profile_id,
+                        is_deleted=False,
+                        job_posting_id__in=[j.pk for j in jobs],
+                    ).values_list("job_posting_id", flat=True)
+                )
+
+        openings = [
+            self._map_job_opening(
+                j, user=user, is_seeker=is_seeker, applied_job_ids=applied_job_ids
+            )
+            for j in jobs
+        ]
         gallery = self._gallery_for_org(company.cover_banner_file, company.logo_file)
         benefits = self._parse_benefits(company.benefits)
         profile_url = reverse("institution_detail", kwargs={"slug": company.slug})
@@ -517,17 +547,43 @@ class InstitutionMarketplaceService(BaseService):
         )
 
     def _build_college_profile(self, college: College, *, user) -> InstitutionProfile:
-        vacancies = (
-            self._live_vacancies_qs().filter(college=college).order_by("-published_at")
+        vacancies = list(
+            self._live_vacancies_qs().filter(college=college).order_by("-published_at")[:50]
         )
-        open_count = vacancies.count()
-        applicants = sum(v.application_count for v in vacancies[:200])
+        open_count = self._live_vacancies_qs().filter(college=college).count()
+        applicants = sum(v.application_count for v in vacancies)
         members = (
             college.members.filter(is_active=True, is_deleted=False).count()
             if hasattr(college, "members")
             else 0
         )
-        openings = [self._map_vacancy_opening(v, user=user) for v in vacancies[:50]]
+
+        is_professor = self._is_professor_user(user)
+        applied_vacancy_ids = set()
+        if is_professor and vacancies:
+            from apps.academic_recruitment.models.professor import ProfessorProfile
+            from apps.applications.models.application import FacultyApplication
+
+            prof_profile_id = (
+                ProfessorProfile.objects.filter(user=user, is_deleted=False)
+                .values_list("pk", flat=True)
+                .first()
+            )
+            if prof_profile_id:
+                applied_vacancy_ids = set(
+                    FacultyApplication.objects.filter(
+                        professor_id=prof_profile_id,
+                        is_deleted=False,
+                        vacancy_id__in=[v.pk for v in vacancies],
+                    ).values_list("vacancy_id", flat=True)
+                )
+
+        openings = [
+            self._map_vacancy_opening(
+                v, user=user, is_professor=is_professor, applied_vacancy_ids=applied_vacancy_ids
+            )
+            for v in vacancies
+        ]
         gallery = self._gallery_for_org(college.cover_banner_file, college.logo_file)
         benefits = self._parse_benefits(college.facilities)
         employee_parts = []
@@ -585,14 +641,23 @@ class InstitutionMarketplaceService(BaseService):
             share_url=profile_url,
         )
 
-    def _map_job_opening(self, job: JobPosting, *, user) -> InstitutionOpening:
-        is_seeker = self._is_job_seeker(user)
+    def _map_job_opening(
+        self,
+        job: JobPosting,
+        *,
+        user,
+        is_seeker: bool | None = None,
+        applied_job_ids: set | None = None,
+    ) -> InstitutionOpening:
+        if is_seeker is None:
+            is_seeker = self._is_job_seeker(user)
         detail = reverse("marketplace_job_detail", kwargs={"job_id": job.pk})
         apply = (
             detail
             if is_seeker
             else f"{reverse('it_login_job_seeker')}?next={quote(detail, safe='')}"
         )
+        is_applied = bool(applied_job_ids and job.pk in applied_job_ids)
         return InstitutionOpening(
             id=str(job.pk),
             title=job.title,
@@ -609,13 +674,27 @@ class InstitutionMarketplaceService(BaseService):
             posted_display=self._mapper._posted(job.published_at or job.created_at),
             detail_url=detail,
             apply_url=apply,
+            is_applied=is_applied,
+            is_eligible=is_seeker,
         )
 
     def _map_vacancy_opening(
-        self, vacancy: FacultyVacancy, *, user
+        self,
+        vacancy: FacultyVacancy,
+        *,
+        user,
+        is_professor: bool | None = None,
+        applied_vacancy_ids: set | None = None,
     ) -> InstitutionOpening:
-        detail = f"{reverse('institution_detail', kwargs={'slug': vacancy.college.slug})}#opening-{vacancy.pk}"
-        apply = f"{reverse('it_login_job_seeker')}?next={quote(detail, safe='')}"
+        if is_professor is None:
+            is_professor = self._is_professor_user(user)
+        detail = reverse("marketplace_vacancy_detail", kwargs={"job_id": vacancy.pk})
+        apply = (
+            detail
+            if is_professor
+            else f"{reverse('faculty_login_professor')}?next={quote(detail, safe='')}"
+        )
+        is_applied = bool(applied_vacancy_ids and vacancy.pk in applied_vacancy_ids)
         return InstitutionOpening(
             id=str(vacancy.pk),
             title=vacancy.title,
@@ -634,6 +713,8 @@ class InstitutionMarketplaceService(BaseService):
             ),
             detail_url=detail,
             apply_url=apply,
+            is_applied=is_applied,
+            is_eligible=is_professor,
         )
 
     def _get_public_company(self, slug: str) -> Company | None:
@@ -690,6 +771,14 @@ class InstitutionMarketplaceService(BaseService):
                 user, ITUserRoleType.JOB_SEEKER
             )
         )
+
+    @staticmethod
+    def _is_professor_user(user) -> bool:
+        if not user or not user.is_authenticated:
+            return False
+        from apps.accounts.models.professor_user import ProfessorUser
+
+        return isinstance(user, ProfessorUser)
 
     @staticmethod
     def _openings_label(count: int, domain: str) -> str:

@@ -108,7 +108,7 @@
                                 <p class="im-opening__posted"><i class="bi bi-clock"></i> {{ job.posted_display }}</p>
                             </div>
                             <div class="im-opening__actions">
-                                {% if is_job_seeker and job.domain == 'it' %}
+                                {% if job.is_eligible and job.domain == 'it' %}
                                 <button type="button"
                                         class="ed-icon-btn ed-icon-btn--lg jsd-save-btn"
                                         data-save-job-toggle
@@ -118,8 +118,14 @@
                                 </button>
                                 {% endif %}
                                 <a href="{{ job.detail_url }}" class="ed-btn ed-btn--outline">View</a>
-                                {% if is_job_seeker and job.domain == 'it' %}
-                                <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply</a>
+                                {% if job.is_applied %}
+                                <span class="jm-applied-label jm-applied-label--lg">
+                                    <i class="bi bi-check-circle-fill"></i> Applied
+                                </span>
+                                {% elif job.is_eligible %}
+                                <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply Now</a>
+                                {% elif is_authenticated %}
+                                <button type="button" class="ed-btn ed-btn--outline" disabled title="Your account role is not eligible to apply for this opening">Apply</button>
                                 {% else %}
                                 <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Sign in to Apply</a>
                                 {% endif %}

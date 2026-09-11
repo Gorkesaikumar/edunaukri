@@ -106,6 +106,10 @@
             {% else %}
             <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Apply Now</a>
             {% endif %}
+            {% elif is_authenticated %}
+            <button type="button" class="ed-btn ed-btn--outline" disabled title="Your account role is not eligible to apply for this position">Apply</button>
+            {% else %}
+            <a href="{{ job.apply_url }}" class="ed-btn ed-btn--gradient">Sign in to Apply</a>
             {% endif %}
         </div>
     </div>

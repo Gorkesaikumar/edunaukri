@@ -22,6 +22,14 @@ def _is_job_seeker(user) -> bool:
     )
 
 
+def _is_professor_user(user) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    from apps.accounts.models.professor_user import ProfessorUser
+
+    return isinstance(user, ProfessorUser)
+
+
 class InstitutionsBrowseView(TemplateView):
     template_name = "institutions/browse.html"
 
@@ -33,6 +41,7 @@ class InstitutionsBrowseView(TemplateView):
         context["marketplace"] = result
         context["filters"] = filters
         context["is_job_seeker"] = _is_job_seeker(self.request.user)
+        context["is_faculty_seeker"] = _is_professor_user(self.request.user)
         context["is_authenticated"] = self.request.user.is_authenticated
         context["login_url"] = reverse("it_login_job_seeker")
         context["search_api_url"] = reverse("institutions_search_api")
@@ -48,9 +57,13 @@ class InstitutionDetailView(TemplateView):
         profile = service.get_profile(slug, user=request.user)
         if not profile:
             return render(request, "institutions/not_found.html", status=404)
+        is_it_seeker = _is_job_seeker(request.user)
+        is_faculty_seeker = _is_professor_user(request.user)
         context = {
             "profile": profile,
-            "is_job_seeker": _is_job_seeker(request.user),
+            "is_job_seeker": is_it_seeker or is_faculty_seeker,
+            "is_it_seeker": is_it_seeker,
+            "is_faculty_seeker": is_faculty_seeker,
             "is_authenticated": request.user.is_authenticated,
             "login_url": reverse("it_login_job_seeker"),
         }

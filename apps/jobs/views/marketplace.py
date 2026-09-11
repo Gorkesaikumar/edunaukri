@@ -48,12 +48,20 @@ def _get_seeker_profile(user) -> JobSeekerProfile | None:
 
 
 def _is_job_seeker(user) -> bool:
-    if not user.is_authenticated:
+    if not user or not user.is_authenticated:
         return False
     try:
         return bool(RoleAssignmentService().user_has_it_role(user, ITUserRoleType.JOB_SEEKER))
     except AttributeError:
         return False
+
+
+def _is_professor_user(user) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    from apps.accounts.models.professor_user import ProfessorUser
+
+    return isinstance(user, ProfessorUser)
 
 
 class MarketplaceBrowseView(TemplateView):
@@ -65,9 +73,11 @@ class MarketplaceBrowseView(TemplateView):
         context = super().get_context_data(**kwargs)
         service = JobMarketplaceService()
         filters = service.parse_filters(self.request.GET)
+        is_it_seeker = _is_job_seeker(self.request.user)
+        is_faculty_seeker = _is_professor_user(self.request.user)
         profile = (
             _get_seeker_profile(self.request.user)
-            if _is_job_seeker(self.request.user)
+            if is_it_seeker
             else None
         )
         result = service.browse(
@@ -76,14 +86,16 @@ class MarketplaceBrowseView(TemplateView):
 
         context["marketplace"] = result
         context["filters"] = filters
-        context["is_job_seeker"] = _is_job_seeker(self.request.user)
+        context["is_job_seeker"] = is_it_seeker or is_faculty_seeker
+        context["is_it_seeker"] = is_it_seeker
+        context["is_faculty_seeker"] = is_faculty_seeker
         context["is_authenticated"] = self.request.user.is_authenticated
         context["profile"] = profile
         context["login_url"] = reverse("it_login_job_seeker")
         context["signup_url"] = reverse("it_signup_job_seeker")
         context["search_api_url"] = reverse("marketplace_search_api")
         context["suggest_api_url"] = reverse("marketplace_suggest_api")
-        if _is_job_seeker(self.request.user):
+        if is_it_seeker:
             pu = _jobseeker_pu(self.request)
             context["saved_job_toggle_url"] = pu("jobseeker_saved_job_toggle_api")
             context["saved_job_status_url"] = pu("jobseeker_saved_job_status_api")

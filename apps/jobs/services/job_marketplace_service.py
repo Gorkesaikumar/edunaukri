@@ -306,6 +306,34 @@ class JobMarketplaceService(BaseService):
                 ).values_list("job_posting_id", flat=True)
             )
 
+        is_professor = False
+        prof_profile = None
+        faculty_saved_ids: set = set()
+        faculty_applied_ids: set = set()
+        if user and user.is_authenticated:
+            from apps.accounts.models.professor_user import ProfessorUser
+
+            if isinstance(user, ProfessorUser):
+                is_professor = True
+                from apps.academic_recruitment.models.professor import ProfessorProfile
+                from apps.applications.models.application import FacultyApplication
+                from apps.faculty.models import SavedVacancy
+
+                prof_profile = ProfessorProfile.objects.filter(
+                    user=user, is_deleted=False
+                ).first()
+                if prof_profile:
+                    faculty_saved_ids = set(
+                        SavedVacancy.objects.filter(
+                            professor=prof_profile, is_deleted=False
+                        ).values_list("vacancy_id", flat=True)
+                    )
+                    faculty_applied_ids = set(
+                        FacultyApplication.objects.filter(
+                            professor=prof_profile, is_deleted=False
+                        ).values_list("vacancy_id", flat=True)
+                    )
+
         # Build Domain specific queries
         if filters.domain_filter == "faculty":
             it_qs = JobPosting.objects.none()
@@ -349,10 +377,16 @@ class JobMarketplaceService(BaseService):
                 obj,
                 domain=domain,
                 user=user,
-                profile=profile,
+                profile=profile or prof_profile,
                 match_percent=scores.get(obj.pk),
-                is_saved=(domain == "it" and obj.pk in saved_ids),
-                has_applied=(domain == "it" and obj.pk in applied_ids),
+                is_saved=(
+                    (domain == "it" and obj.pk in saved_ids)
+                    or (domain == "faculty" and obj.pk in faculty_saved_ids)
+                ),
+                has_applied=(
+                    (domain == "it" and obj.pk in applied_ids)
+                    or (domain == "faculty" and obj.pk in faculty_applied_ids)
+                ),
             )
             for obj, domain in page_items
         ]
@@ -388,6 +422,19 @@ class JobMarketplaceService(BaseService):
             profile = JobSeekerProfile.objects.filter(
                 user=user, is_deleted=False
             ).first()
+
+        is_faculty_seeker = False
+        prof_profile = None
+        if user and user.is_authenticated:
+            from apps.accounts.models.professor_user import ProfessorUser
+
+            if isinstance(user, ProfessorUser):
+                is_faculty_seeker = True
+                from apps.academic_recruitment.models.professor import ProfessorProfile
+
+                prof_profile = ProfessorProfile.objects.filter(
+                    user=user, is_deleted=False
+                ).first()
 
         match_percent = None
         is_saved = False
@@ -445,13 +492,23 @@ class JobMarketplaceService(BaseService):
             if job.specialization_required:
                 skills_display = _split_csv(job.specialization_required)
 
-            # Faculty matching logic could be implemented here for professors.
+            if prof_profile:
+                from apps.applications.models.application import FacultyApplication
+                from apps.faculty.models import SavedVacancy
 
+                is_saved = SavedVacancy.objects.filter(
+                    professor=prof_profile, vacancy=job, is_deleted=False
+                ).exists()
+                has_applied = FacultyApplication.objects.filter(
+                    professor=prof_profile, vacancy=job, is_deleted=False
+                ).exists()
+
+        active_profile = profile or prof_profile
         card = self._map_card(
             job,
             domain=domain,
             user=user,
-            profile=profile,
+            profile=active_profile,
             match_percent=match_percent,
             is_saved=is_saved,
             has_applied=has_applied,
@@ -462,8 +519,10 @@ class JobMarketplaceService(BaseService):
             "skills": skills_display,
             "related_jobs": related,
             "is_authenticated": bool(user and user.is_authenticated),
-            "is_job_seeker": is_seeker,
-            "profile": profile,
+            "is_job_seeker": is_seeker or is_faculty_seeker,
+            "is_it_seeker": is_seeker,
+            "is_faculty_seeker": is_faculty_seeker,
+            "profile": active_profile,
             "login_url": self._login_url(job, domain),
             "domain": domain,
         }
@@ -915,6 +974,11 @@ class JobMarketplaceService(BaseService):
                 user, ITUserRoleType.JOB_SEEKER
             )
         )
+        is_professor = False
+        if user and user.is_authenticated:
+            from apps.accounts.models.professor_user import ProfessorUser
+
+            is_professor = isinstance(user, ProfessorUser)
 
         login_next = quote(detail_url, safe="")
 
@@ -936,12 +1000,28 @@ class JobMarketplaceService(BaseService):
             )
             can_save = is_seeker
         else:
+            from apps.authentication.services.portal_url_service import PortalURLService
+
             apply_url = (
-                detail_url  # Faculty jobs redirect to their detail page for applying
+                PortalURLService.professor(
+                    user, "professor_apply_vacancy", vacancy_id=job.pk
+                )
+                if (is_professor and user)
+                else f"{reverse('faculty_login_professor')}?next={login_next}"
             )
-            save_url = None
-            save_login = None
-            can_save = False
+            save_url = (
+                PortalURLService.professor(
+                    user, "professor_save_vacancy", vacancy_id=job.pk
+                )
+                if (is_professor and user)
+                else None
+            )
+            save_login = (
+                f"{reverse('faculty_login_professor')}?next={login_next}"
+                if not is_professor
+                else None
+            )
+            can_save = is_professor
 
         deadline_display = None
         if job.application_deadline:
@@ -980,7 +1060,7 @@ class JobMarketplaceService(BaseService):
             match_percent=match_percent if is_seeker else None,
             is_saved=is_saved,
             has_applied=has_applied,
-            can_apply=not has_applied,
+            can_apply=(is_seeker if domain == "it" else is_professor) and not has_applied,
             can_save=can_save,
             domain=domain,
             domain_label=domain_label,

@@ -51,15 +51,32 @@
                     <div class="jm-detail__actions">
                         {% if card.has_applied %}
                         <span class="jm-applied-label jm-applied-label--lg"><i class="bi bi-check-circle-fill"></i> Applied</span>
-                        {% elif is_job_seeker %}
+                        {% elif is_faculty_seeker %}
+                        <form method="post" action="{{ card.apply_url }}" id="jmDetailApplyForm">
+                            {% csrf_token %}
+                            <button type="submit" class="ed-btn ed-btn--gradient ed-btn--lg">Apply Now</button>
+                        </form>
+                        {% elif is_it_seeker %}
                         <form method="post" action="{% url 'marketplace_job_apply' job_id=job.pk %}" id="jmDetailApplyForm">
                             {% csrf_token %}
                             <button type="submit" class="ed-btn ed-btn--gradient ed-btn--lg">Apply Now</button>
                         </form>
+                        {% elif is_authenticated %}
+                        <button type="button" class="ed-btn ed-btn--outline ed-btn--lg" disabled title="Your account role is not eligible to apply for this vacancy">Apply</button>
                         {% else %}
                         <a href="{{ login_url }}" class="ed-btn ed-btn--gradient ed-btn--lg">Sign in to Apply</a>
                         {% endif %}
-                        {% if is_job_seeker %}
+
+                        {% if is_faculty_seeker %}
+                        <button type="button"
+                                class="ed-btn ed-btn--outline fjd-save-btn{% if card.is_saved %} is-saved{% endif %}"
+                                data-save-vacancy-toggle
+                                data-vacancy-id="{{ job.pk }}"
+                                aria-pressed="{{ card.is_saved|yesno:'true,false' }}">
+                            <i class="bi {% if card.is_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                            {% if card.is_saved %}Saved{% else %}Save Job{% endif %}
+                        </button>
+                        {% elif is_it_seeker %}
                         <button type="button"
                                 class="ed-btn ed-btn--outline jsd-save-btn{% if card.is_saved %} is-saved{% endif %}"
                                 data-save-job-toggle
@@ -69,7 +86,7 @@
                             {% if card.is_saved %}Saved{% else %}Save Job{% endif %}
                         </button>
                         {% else %}
-                        <a href="{% url 'it_login_job_seeker' %}?next={{ request.path|urlencode }}&save_job={{ job.pk }}" class="ed-btn ed-btn--outline">
+                        <a href="{% url 'faculty_login_professor' %}?next={{ request.path|urlencode }}" class="ed-btn ed-btn--outline">
                             <i class="bi bi-bookmark"></i> Save Job
                         </a>
                         {% endif %}

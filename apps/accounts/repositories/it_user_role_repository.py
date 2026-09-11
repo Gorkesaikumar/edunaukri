@@ -17,11 +17,17 @@ class ITUserRoleRepository(BaseRepository):
         return obj
 
     def get_roles(self, user) -> list[str]:
+        if not user or not hasattr(user, "roles"):
+            return []
         return list(user.roles.filter(is_deleted=False).values_list("role", flat=True))
 
     def has_role(self, user, role: str) -> bool:
+        if not user or not hasattr(user, "roles"):
+            return False
         return user.roles.filter(role=role, is_deleted=False).exists()
 
     def primary_role(self, user) -> str | None:
+        if not user or not hasattr(user, "roles"):
+            return None
         primary = user.roles.filter(is_primary=True, is_deleted=False).first()
         return primary.role if primary else None

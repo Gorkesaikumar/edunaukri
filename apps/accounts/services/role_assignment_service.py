@@ -22,4 +22,6 @@ class RoleAssignmentService(BaseService):
         return self.repository.get_roles(user)
 
     def user_has_it_role(self, user, role: str) -> bool:
+        if not user or not getattr(user, "is_authenticated", False):
+            return False
         return self.repository.has_role(user, role)
