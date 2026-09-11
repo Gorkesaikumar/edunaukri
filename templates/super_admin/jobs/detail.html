@@ -134,8 +134,10 @@
                                 </div>
                                 <p class="text-xs text-on-surface-variant font-semibold mt-0.5 truncate">
                                     {{ app.applicant_details.designation|default:"Professional Candidate" }}
-                                    {% if app.applicant_details.company or app.applicant_details.institution %}
-                                    <span class="text-on-surface/70 font-normal">at {{ app.applicant_details.company|default:app.applicant_details.institution }}</span>
+                                    {% if app.applicant_details.company %}
+                                    <span class="text-on-surface/70 font-normal">at {{ app.applicant_details.company }}</span>
+                                    {% elif app.applicant_details.institution %}
+                                    <span class="text-on-surface/70 font-normal">at {{ app.applicant_details.institution }}</span>
                                     {% endif %}
                                 </p>
                                 <div class="flex flex-wrap items-center gap-y-1 gap-x-3 text-[11px] text-on-surface-variant mt-2 font-medium">

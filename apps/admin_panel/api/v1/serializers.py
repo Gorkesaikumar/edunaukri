@@ -119,6 +119,7 @@ class AdminJobApplicationSerializer(JobApplicationSerializer):
             "resume_url": media_url(getattr(obj, "resume_file", None)),
             "designation": getattr(profile, "headline", ""),
             "company": getattr(profile, "current_company", ""),
+            "institution": "",
             "location": getattr(profile, "current_location", ""),
             "experience": getattr(profile, "experience_years", None),
         }
@@ -152,6 +153,7 @@ class AdminFacultyApplicationSerializer(FacultyApplicationSerializer):
             "avatar_url": media_url(getattr(profile, "profile_photo", None)),
             "resume_url": media_url(getattr(obj, "cv_file", None)),
             "designation": getattr(profile, "current_designation", ""),
+            "company": "",
             "institution": getattr(profile, "current_institution", ""),
             "location": getattr(profile, "current_location", ""),
             "experience": getattr(profile, "experience_years", None),

@@ -83,23 +83,63 @@ class SuperAdminClaimCandidateSummaryAPIView(SuperAdminPortalMixin, View):
                     "annual_ctc": "N/A"
                 }
 
-            # 4. Guarantee Info
+            # 4. Guarantee Info & 90-Day Calculation
+            joining_dt = claim.joining_date or claim.guarantee_start_date
+            days_employed = 0
+            if claim.exit_date and joining_dt:
+                days_employed = (claim.exit_date - joining_dt).days
+
+            is_eligible = True
+            if claim.exit_date and claim.guarantee_end_date:
+                is_eligible = claim.exit_date <= claim.guarantee_end_date
+            elif days_employed > 90:
+                is_eligible = False
+
+            if is_eligible:
+                eligibility_text = f"Eligible — candidate exited after {days_employed} days (within 90-day window)"
+            else:
+                eligibility_text = f"Not Eligible — candidate exit occurred after {days_employed} days (exceeds 90-day guarantee)"
+
             guarantee_data = {
                 "start_date": claim.guarantee_start_date.strftime("%Y-%m-%d") if claim.guarantee_start_date else "",
                 "end_date": claim.guarantee_end_date.strftime("%Y-%m-%d") if claim.guarantee_end_date else "",
+                "joining_date": claim.joining_date.strftime("%Y-%m-%d") if claim.joining_date else "",
                 "exit_date": claim.exit_date.strftime("%Y-%m-%d") if claim.exit_date else "",
-                "days_employed": (claim.exit_date - claim.guarantee_start_date).days if claim.exit_date and claim.guarantee_start_date else 0,
-                "eligible": True if (claim.exit_date and claim.guarantee_end_date and claim.exit_date <= claim.guarantee_end_date) else False
+                "days_employed": days_employed,
+                "eligible": is_eligible,
+                "eligibility_text": eligibility_text,
             }
-            
-            # 5. Claim Info
+
+            # 5. Invoice & Financial Details
+            invoice_amount = "N/A"
+            if claim.invoice_id:
+                inv = Invoice.objects.filter(pk=claim.invoice_id).first()
+                if inv:
+                    invoice_amount = str(inv.total_amount)
+
+            refund_amount = str(claim.refund_amount) if claim.refund_amount else invoice_amount
+
+            # 6. Comprehensive Claim Info & Actions
+            from apps.guarantee_claims.services.action_service import GuaranteeClaimActionService
+            available_actions = GuaranteeClaimActionService.get_available_actions(claim)
+
             claim_info = {
+                "id": str(claim.id),
                 "claim_number": claim.claim_number,
-                "exit_reason": dict(claim._meta.get_field("exit_reason").choices).get(claim.exit_reason, claim.exit_reason),
+                "exit_reason": dict(claim._meta.get_field("exit_reason").choices).get(claim.exit_reason, claim.exit_reason) if claim.exit_reason else "N/A",
                 "requested_resolution": claim.get_claim_type_display(),
-                "status": claim.get_status_display()
+                "status": claim.status,
+                "status_display": claim.get_status_display(),
+                "reason": claim.reason or "No explanation provided.",
+                "claim_description": claim.claim_description or "",
+                "submitted_at": claim.submitted_at.strftime("%Y-%m-%d %H:%M") if claim.submitted_at else "",
+                "admin_notes": claim.admin_notes or claim.review_notes or "",
+                "invoice_amount": invoice_amount,
+                "refund_amount": refund_amount,
+                "supporting_documents": claim.supporting_documents or [],
+                "available_actions": available_actions,
             }
-            
+
             return JsonResponse({
                 "success": True,
                 "candidate": candidate_data,

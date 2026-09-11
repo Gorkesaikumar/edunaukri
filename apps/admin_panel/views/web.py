@@ -1043,41 +1043,96 @@ import json
 class SuperAdminGuaranteeClaimActionView(SuperAdminPortalMixin, View):
     def post(self, request, claim_id, *args, **kwargs):
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode("utf-8")) if request.body else {}
             action = data.get("action")
-            notes = data.get("notes", "Action performed via Super Admin Dashboard")
-            
+            notes = data.get("notes", "").strip() or "Action performed via Super Admin Dashboard"
+
             from apps.guarantee_claims.models.claim import GuaranteeClaim
             from apps.guarantee_claims.services.workflow_service import GuaranteeClaimWorkflowService
             from apps.guarantee_claims.services.refund_service import GuaranteeRefundService
-            from apps.guarantee_claims.constants.enums import ClaimStatus
-            from decimal import Decimal
-            
-            claim = GuaranteeClaim.objects.get(pk=claim_id)
-            
-            if action == "review":
-                GuaranteeClaimWorkflowService.change_status(claim, ClaimStatus.UNDER_REVIEW, changed_by_id=request.user.id, notes=notes)
-            elif action == "reject":
-                GuaranteeClaimWorkflowService.change_status(claim, ClaimStatus.REJECTED, changed_by_id=request.user.id, notes=notes)
-            elif action == "approve_refund":
-                # By default, approving full refund based on invoice
-                from apps.invoices.models import Invoice
-                invoice = Invoice.objects.filter(pk=claim.invoice_id).first()
-                if not invoice:
-                    return JsonResponse({"success": False, "error": "No associated invoice found."})
-                GuaranteeRefundService.process_refund_approval(claim, invoice.total_amount, admin_id=request.user.id, notes=notes)
-            elif action == "mark_refunded":
-                from apps.guarantee_claims.models.refund import GuaranteeRefund
-                refund = GuaranteeRefund.objects.filter(claim_id=claim.pk).first()
-                if refund:
-                    GuaranteeRefundService.record_manual_refund_transaction(
-                        refund, transaction_reference=data.get('transaction_ref', 'MANUAL-WEB'), admin_id=request.user.id, notes=notes
+            from apps.guarantee_claims.constants.enums import ClaimStatus, ClaimResolution
+            from django.db import transaction
+            from django.utils import timezone
+
+            with transaction.atomic():
+                claim = GuaranteeClaim.objects.select_for_update().get(pk=claim_id)
+
+                if action == "review":
+                    if claim.status == ClaimStatus.SUBMITTED:
+                        GuaranteeClaimWorkflowService.change_status(
+                            claim, ClaimStatus.UNDER_REVIEW, changed_by_id=request.user.id, notes=notes
+                        )
+
+                elif action in ["approve", "approve_refund"]:
+                    if claim.status in [ClaimStatus.APPROVED, ClaimStatus.REFUND_PROCESSING, ClaimStatus.REFUNDED, ClaimStatus.RESOLVED]:
+                        return JsonResponse({"success": False, "error": f"Claim {claim.claim_number} has already been approved/processed."})
+                    
+                    if claim.status not in [ClaimStatus.SUBMITTED, ClaimStatus.UNDER_REVIEW, ClaimStatus.MORE_INFORMATION_REQUIRED]:
+                        return JsonResponse({"success": False, "error": f"Cannot approve claim from current status ({claim.get_status_display()})."})
+
+                    claim.admin_notes = notes
+                    claim.approved_by_id = request.user.id
+                    claim.approval_date = timezone.now()
+                    claim.save(update_fields=["admin_notes", "approved_by_id", "approval_date"])
+
+                    if claim.status == ClaimStatus.SUBMITTED:
+                        GuaranteeClaimWorkflowService.change_status(
+                            claim, ClaimStatus.UNDER_REVIEW, changed_by_id=request.user.id, notes="Moved to under review before approval"
+                        )
+
+                    from apps.invoices.models import Invoice
+                    invoice = Invoice.objects.filter(pk=claim.invoice_id).first() if claim.invoice_id else None
+                    if invoice:
+                        approved_amt = invoice.total_amount
+                        GuaranteeRefundService.process_refund_approval(claim, approved_amt, admin_id=request.user.id, notes=notes)
+                    else:
+                        GuaranteeClaimWorkflowService.change_status(
+                            claim, ClaimStatus.APPROVED, changed_by_id=request.user.id, notes=notes
+                        )
+
+                elif action == "reject":
+                    if claim.status in [ClaimStatus.REJECTED, ClaimStatus.RESOLVED, ClaimStatus.CANCELLED]:
+                        return JsonResponse({"success": False, "error": f"Claim {claim.claim_number} is already {claim.get_status_display()}."})
+
+                    if not notes or notes == "Action performed via Super Admin Dashboard":
+                        return JsonResponse({"success": False, "error": "Rejection reason / admin notes are required when rejecting a claim."})
+
+                    claim.admin_notes = notes
+                    claim.resolution_notes = notes
+                    claim.save(update_fields=["admin_notes", "resolution_notes"])
+
+                    GuaranteeClaimWorkflowService.change_status(
+                        claim, ClaimStatus.REJECTED, changed_by_id=request.user.id, notes=notes
                     )
-            elif action == "resolve":
-                GuaranteeClaimWorkflowService.change_status(claim, ClaimStatus.RESOLVED, changed_by_id=request.user.id, notes=notes)
-            else:
-                return JsonResponse({"success": False, "error": "Invalid action."})
-                
-            return JsonResponse({"success": True, "message": f"Claim updated successfully to {claim.get_status_display()}"})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
+
+                elif action == "mark_refunded":
+                    from apps.guarantee_claims.models.refund import GuaranteeRefund, RefundStatus
+                    refund = GuaranteeRefund.objects.select_for_update().filter(claim_id=claim.pk).first()
+                    if not refund:
+                        return JsonResponse({"success": False, "error": "No refund record found for this claim."})
+                    
+                    if refund.refund_status == RefundStatus.COMPLETED or claim.status == ClaimStatus.REFUNDED:
+                        return JsonResponse({"success": False, "error": "Refund has already been completed."})
+
+                    txn_ref = data.get("transaction_ref", "").strip() or f"MANUAL-{timezone.now().strftime('%Y%m%d%H%M')}"
+                    GuaranteeRefundService.record_manual_refund_transaction(
+                        refund, transaction_reference=txn_ref, admin_id=request.user.id, notes=notes
+                    )
+
+                elif action == "resolve":
+                    if claim.status in [ClaimStatus.RESOLVED, ClaimStatus.CANCELLED]:
+                        return JsonResponse({"success": False, "error": f"Claim {claim.claim_number} is already resolved."})
+
+                    GuaranteeClaimWorkflowService.change_status(
+                        claim, ClaimStatus.RESOLVED, changed_by_id=request.user.id, notes=notes
+                    )
+
+                else:
+                    return JsonResponse({"success": False, "error": f"Unsupported action: '{action}'."})
+
+            claim.refresh_from_db()
+            return JsonResponse({"success": True, "message": f"Claim {claim.claim_number} updated successfully to {claim.get_status_display()}"})
+
+        except Exception as exc:
+            logger.exception("Error executing guarantee claim action")
+            return JsonResponse({"success": False, "error": str(exc)}, status=400)
