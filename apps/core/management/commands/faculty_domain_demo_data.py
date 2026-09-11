@@ -743,9 +743,49 @@ class Command(BaseCommand):
             self.stdout.write("Creating 10 Educational Institutions & 10 Recruiter accounts...")
             recruiters = []
             colleges = []
-
             for idx, inst_data in enumerate(FACULTY_INSTITUTIONS_DATA):
                 rec_data = FACULTY_RECRUITERS_DATA[idx]
+
+                rec_user, _ = CollegeUser.all_objects.get_or_create(
+                    email=rec_data["email"],
+                    defaults={
+                        "is_active": True,
+                        "email_verified": True,
+                    },
+                )
+                rec_user.set_password(password)
+                rec_user.is_active = True
+                rec_user.email_verified = True
+                rec_user.is_deleted = False
+                rec_user.deleted_at = None
+                rec_user.save()
+
+                logo_file, _ = StoredFile.all_objects.get_or_create(
+                    original_filename=f"{inst_data['slug']}_logo.png",
+                    defaults={
+                        "owner_type": EntityReferenceType.FACULTY_COLLEGE,
+                        "owner_id": rec_user.pk,
+                        "uploaded_by_id": rec_user.pk,
+                        "file_type": StorageFileType.OTHER,
+                        "storage_backend": StorageBackendType.LOCAL,
+                        "storage_path": "demo/college_logo.png",
+                        "mime_type": "image/png",
+                        "file_size_bytes": 10240,
+                    },
+                )
+                cover_file, _ = StoredFile.all_objects.get_or_create(
+                    original_filename=f"{inst_data['slug']}_cover.jpg",
+                    defaults={
+                        "owner_type": EntityReferenceType.FACULTY_COLLEGE,
+                        "owner_id": rec_user.pk,
+                        "uploaded_by_id": rec_user.pk,
+                        "file_type": StorageFileType.OTHER,
+                        "storage_backend": StorageBackendType.LOCAL,
+                        "storage_path": "demo/college_cover.jpg",
+                        "mime_type": "image/jpeg",
+                        "file_size_bytes": 20480,
+                    },
+                )
 
                 college, _ = College.all_objects.update_or_create(
                     slug=inst_data["slug"],
@@ -756,8 +796,20 @@ class Command(BaseCommand):
                         "city": inst_data["city"],
                         "state": inst_data["state"],
                         "country": "India",
+                        "address_line": f"100 Campus Drive, {inst_data['city']}",
+                        "contact_email": rec_data["email"],
+                        "contact_phone": rec_data["phone"],
                         "website_url": inst_data["website_url"],
                         "description": inst_data["description"],
+                        "vision": "To be a globally recognized center of academic excellence and innovation.",
+                        "mission": "Empowering students with industry-relevant skills, research capabilities, and ethical values.",
+                        "naac_grade": "A+",
+                        "accreditation": "NAAC A+ Accredited, UGC Recognized",
+                        "linkedin_url": f"https://linkedin.com/school/{inst_data['slug']}",
+                        "twitter_url": f"https://twitter.com/{inst_data['slug']}",
+                        "facebook_url": f"https://facebook.com/{inst_data['slug']}",
+                        "logo_file": logo_file,
+                        "cover_banner_file": cover_file,
                         "established_year": inst_data["established_year"],
                         "number_of_students": inst_data["number_of_students"],
                         "number_of_faculty": inst_data["number_of_faculty"],
@@ -775,20 +827,6 @@ class Command(BaseCommand):
                     college.deleted_at = None
                     college.is_active = True
                     college.save()
-
-                rec_user, _ = CollegeUser.all_objects.get_or_create(
-                    email=rec_data["email"],
-                    defaults={
-                        "is_active": True,
-                        "email_verified": True,
-                    },
-                )
-                rec_user.set_password(password)
-                rec_user.is_active = True
-                rec_user.email_verified = True
-                rec_user.is_deleted = False
-                rec_user.deleted_at = None
-                rec_user.save()
 
                 cm, _ = CollegeMember.all_objects.get_or_create(
                     college=college,
