@@ -76,8 +76,12 @@
 
 .fjd-set-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 0.75rem 1.25rem;
+}
+
+.fjd-set-info-grid > div {
+  min-width: 0;
 }
 
 .fjd-set-info-grid span {
@@ -85,10 +89,16 @@
   font-size: 0.6875rem;
   color: var(--fjd-on-surface-variant);
   margin-bottom: 0.15rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .fjd-set-info-grid strong {
   font-size: 0.8125rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
 }
 
 .fjd-set-badge {

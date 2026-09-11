@@ -275,8 +275,12 @@
 
 .jsd-int-info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   gap: 0.75rem 1rem;
+}
+
+.jsd-int-info-grid > div {
+  min-width: 0;
 }
 
 .jsd-int-info-grid span {
@@ -288,6 +292,8 @@
 
 .jsd-int-info-grid strong {
   font-size: 0.875rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .jsd-int-status-desc {

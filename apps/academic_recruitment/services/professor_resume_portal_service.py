@@ -101,8 +101,21 @@ class ProfessorResumePortalService(BaseService):
             elif (parsed_resume and parsed_resume.status == "failed") or not is_trust_verified:
                 parsed_data = {"status": "failed"}
 
-        faculty_skills = (parsed_resume.extracted_skills if parsed_resume and parsed_resume.extracted_skills else []) + (profile.research_interests or [])
-        faculty_skills = list(set(faculty_skills))
+        extracted_skills = parsed_resume.extracted_skills if (parsed_resume and parsed_resume.extracted_skills) else []
+        if isinstance(extracted_skills, str):
+            extracted_skills = [s.strip() for s in extracted_skills.split(",") if s.strip()]
+        elif not isinstance(extracted_skills, list):
+            extracted_skills = list(extracted_skills) if hasattr(extracted_skills, "__iter__") else []
+
+        research_interests_list = []
+        if profile.research_interests:
+            if isinstance(profile.research_interests, str):
+                research_interests_list = [s.strip() for s in profile.research_interests.split(",") if s.strip()]
+            elif isinstance(profile.research_interests, (list, tuple)):
+                research_interests_list = [str(s).strip() for s in profile.research_interests if s]
+
+        faculty_skills = extracted_skills + research_interests_list
+        faculty_skills = list(dict.fromkeys(faculty_skills))
 
         # Calculate a real-time dynamic score based on the skills detected
         if is_trust_verified:
